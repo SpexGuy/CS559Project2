@@ -44,6 +44,39 @@ Mesh *Mesh::newMars(float radius, float radScale, char *filename) {
 
 Mesh *Mesh::newMars(float radius, float radScale,
 					vector<vector<float>> radii) {
+
+						
+
+	//stacks are the rows of the mesh
+	int stacks = radii.size();
+
+	//Assumes that the 2D has the same amount of slices for each stack
+	//Slices are the columns of the mesh
+	int slices = radii[0].size();
+
+	//vect2D points(stacks);
+	vector<vec3> points(stacks*slices);
+
+	for(int i = 0; i< stacks; i++)
+	{
+		//vect2D points(slices);
+		//vector<vec3> rows(stacks);
+
+		for( int j = 0; j < slices; j++)
+		{
+			float r = radius + radScale*radii[i][j];
+			float theta = 360.0f * ((float) j / (float)slices);
+			float phi = 360.0f * ((float) i / (float)stacks);
+
+			float x = r*sin(theta)*sin(phi);
+			float y = r*cos(theta)*sin(phi);
+			float z = cos(phi);
+			points.push_back(vec3(x,y,z));
+		}
+		//points.push_back(rows);
+		//rows.clear();
+	}
+
 	return NULL;
 }
 
