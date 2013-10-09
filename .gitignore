@@ -83,6 +83,7 @@ build/
 *.scc
 Debug/
 Release/
+*- Copy/
 
 # Visual C++ cache files
 ipch/
@@ -187,6 +188,9 @@ $RECYCLE.BIN/
 
 # Mac crap
 .DS_Store
+
+# bat files
+*.bat
 
 
 #############
