@@ -43,38 +43,46 @@ Mesh *Mesh::newMars(float radius, float radScale, char *filename) {
 }
 
 Mesh *Mesh::newMars(float radius, float radScale,
-					vector<vector<float>> radii) {
-
-						
-
-	//stacks are the rows of the mesh
-	int stacks = radii.size();
-
+					vector<vector<float>> radii)
+{
 	//Assumes that the 2D has the same amount of slices for each stack
 	//Slices are the columns of the mesh
-	int slices = radii[0].size();
 
-	//vect2D points(stacks);
-	vector<vec3> points(stacks*slices);
+	int height = radii.size();
+	assert(height > 0);
+	int width = radii[0].size();
+	assert(width > 0);
 
-	for(int i = 0; i< stacks; i++)
-	{
-		//vect2D points(slices);
-		//vector<vec3> rows(stacks);
+	vector<vec3> points(height*width);
 
-		for( int j = 0; j < slices; j++)
-		{
+	for(int i = 0; i< height; i++) {
+		for( int j = 0; j < width; j++) {
 			float r = radius + radScale*radii[i][j];
-			float theta = 360.0f * ((float) j / (float)slices);
-			float phi = 360.0f * ((float) i / (float)stacks);
+			float theta = 360.0f * ((float) j / (float)width);
+			float phi = 180.0f * ((float) i / (float)height);
 
 			float x = r*sin(theta)*sin(phi);
 			float y = r*cos(theta)*sin(phi);
 			float z = cos(phi);
 			points.push_back(vec3(x,y,z));
 		}
-		//points.push_back(rows);
-		//rows.clear();
+	}
+
+	vector<ivec3> trigs(height*width);
+	for (int c = 0; c < height-1; c++) {
+		for (int d = 0; d < width; d++) {
+			int tlIndex = c*width + d;
+			int blIndex = tlIndex + width;
+			int trIndex = c*width + (d+1)%width;
+			int brIndex = trIndex + width;
+			trigs.push_back(ivec3(trIndex, tlIndex, blIndex));
+			trigs.push_back(ivec3(blIndex, brIndex, trIndex));
+		}
+	}
+	int botRow = (height-1)*width;
+	for (int c = 0; c < width; c++) {
+		trigs.push_back(ivec3(c, (c+1)%width, points.size()-2));
+		trigs.push_back(ivec3(botRow + c, botRow + (c+1)%width, points.size()-1));
 	}
 
 	return NULL;
