@@ -5,9 +5,9 @@ class Mesh {
 private:
 	Mesh();
 protected:
-	std::vector<glm::vec3> *points;
-	std::vector<glm::ivec3> *trigs;
-	std::vector<glm::vec3> *normals;
+	std::vector<glm::vec3> points;
+	std::vector<glm::ivec3> trigs;
+	std::vector<glm::vec3> normals;
 public:
 	/** generates a mesh with the given points. Trigs is a vector of
 	 * triangles.  A triangle is a vec3 of indexes in <points>
@@ -15,7 +15,7 @@ public:
 	 * to trig[2] and crossing it with the vector from trig[1] to trig[0].
 	 * Calculates point normals by averaging the vectors from all triangles
 	 * which have this point as a vertex. */
-	Mesh(std::vector<glm::vec3> *points, std::vector<glm::ivec3> *trigs);
+	Mesh(std::vector<glm::vec3> points, std::vector<glm::ivec3> trigs);
 
 	/** creates a spherical Mesh with a base radius offset by data
 	 * from the given file, scaled by radScale.
