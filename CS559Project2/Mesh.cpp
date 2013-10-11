@@ -23,7 +23,7 @@ using namespace glm;
 //	return 0;
 //}
 
-Mesh *Mesh::newMars(float radius, float radScale, char *filename){
+Mesh *Mesh::newMars(float radius, float radScale, char *filename, bool crosshatch){
 	ifstream inFile(filename);
 	if (inFile.is_open()) {
 		int width, height;
@@ -44,7 +44,7 @@ Mesh *Mesh::newMars(float radius, float radScale, char *filename){
 
 		cout << "done reading" << endl;
 
-		return Mesh::newMars(radius, radScale, radii);
+		return Mesh::newMars(radius, radScale, radii, crosshatch);
 	} else {
 		cerr << "Could not open file '" << filename << "'!" << endl;
 		assert(false);
@@ -53,7 +53,7 @@ Mesh *Mesh::newMars(float radius, float radScale, char *filename){
 }
 
 Mesh *Mesh::newMars(float radius, float radScale,
-					vector<vector<float>> radii)
+					vector<vector<float>> radii, bool crosshatch)
 {
 	//Assumes that the 2D has the same amount of slices for each stack
 	//Slices are the columns of the mesh
@@ -68,8 +68,8 @@ Mesh *Mesh::newMars(float radius, float radScale,
 	for(int i = 0; i< height; i++) {
 		for( int j = 0; j < width; j++) {
 			float r = radius + radScale*radii[i][j];
-			float theta = 2*M_PI * float(j) / float(width);
-			float phi = M_PI * float(i+1) / float(height+1);
+			float theta = float(2*M_PI * float(j) / float(width));
+			float phi = float(M_PI * float(i+1) / float(height+1));
 
 			float x = r*sin(theta)*sin(phi);
 			float z = r*cos(theta)*sin(phi);
@@ -89,48 +89,57 @@ Mesh *Mesh::newMars(float radius, float radScale,
 	points.push_back(vec3(0, radius, 0));
 	points.push_back(vec3(0, -radius, 0));
 
-	vector<ivec3> trigs/*(height*width)*/;
+	vector<ivec3> trigs = generateTrigs(points, width, height, true, crosshatch);
+
+	return new Mesh(points, trigs);
+}
+
+vector<ivec3> Mesh::generateTrigs(vector<vec3> points, int width, int height, bool endcaps, bool crosshatch) {
+	assert(points.size() >= width*height + (endcaps ? 2 : 0));
+	vector<ivec3> trigs;
 	for (int c = 0; c < height-1; c++) {
 		for (int d = 0; d < width; d++) {
 			int tlIndex = c*width + d;
 			int blIndex = tlIndex + width;
 			int trIndex = c*width + (d+1)%width;
 			int brIndex = trIndex + width;
-			trigs.push_back(ivec3(trIndex, tlIndex, blIndex));
+			if (crosshatch && ((c%2 == 0) ^ (d%2 == 0))) {
+				trigs.push_back(ivec3(tlIndex, blIndex, brIndex));
+				trigs.push_back(ivec3(brIndex, trIndex, tlIndex));
+			} else {
+				trigs.push_back(ivec3(trIndex, tlIndex, blIndex));
+				trigs.push_back(ivec3(blIndex, brIndex, trIndex));
+			}
 
 #ifdef DEBUG
 			if(c < 1 && (d > width - 1 || d < 1))
 			cout << "( " << trIndex << ", " << tlIndex << "," << blIndex << " )" <<endl;
-#endif
-
-			trigs.push_back(ivec3(blIndex, brIndex, trIndex));
-
-#ifdef DEBUG
 			if(c < 1 && (d > width - 1 || d < 1))
-			cout << "( " << blIndex << ", " << brIndex << "," << trIndex << " )" <<endl;
+			cout << "( " << blIndex << ", " << brIndex << "," << trIndex << " )" <<endl<<endl;
 #endif
 		}
 	}
-	int botRow = (height-1)*width;
-	for (int c = 0; c < width; c++) {
-		trigs.push_back(ivec3(c, (c+1)%width, points.size()-2));
-		trigs.push_back(ivec3(botRow + c, botRow + (c+1)%width, points.size()-1));
+
+	if (endcaps) {
+		int botRow = (height-1)*width;
+		for (int c = 0; c < width; c++) {
+			trigs.push_back(ivec3(c, (c+1)%width, points.size()-2));
+			trigs.push_back(ivec3(botRow + c, botRow + (c+1)%width, points.size()-1));
+		}
 	}
 
-	return new Mesh(points, trigs);
+	return trigs;
 }
+
+
+
+
 
 Mesh::Mesh(vector<vec3> points, vector<ivec3> trigs) {
 	this->points = points;
 	this->trigs = trigs;
 	//TODO: compute normals
 }
-
-
-
-
-
-
 
 bool Mesh::initialize() {
 	if (!this->PostGLInitialize(&this->vertex_array_handle, &this->vertex_coordinate_handle, this->points.size() * sizeof(vec3), &this->points[0]))

@@ -234,7 +234,7 @@ int main(int argc, char * argv[])
 		return 0;
 	}
 
-	mars = Mesh::newMars(1, 0.08f, "mars_low_rez.txt");
+	mars = Mesh::newMars(1, 0.08f, "mars_low_rez.txt", true);
 
 	//mars = Mesh::newMars(1, 0, "55sphere.txt");
 

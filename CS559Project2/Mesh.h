@@ -25,7 +25,8 @@ public:
 	virtual bool initialize();
 
 	//@Override
-	virtual void draw(const glm::mat4 & projection, glm::mat4 modelview, const glm::ivec2 & size, const float time = 0);
+	virtual void draw(const glm::mat4 & projection, glm::mat4 modelview,
+			const glm::ivec2 & size, const float time = 0);
 
 	virtual ~Mesh();
 
@@ -44,11 +45,15 @@ public:
 	 * by tabs.
 	 * Returns */
 	static Mesh *newMars(float radius, float radScale,
-		char *filename);
+		char *filename, bool crosshatch = false);
 
 	/** creates a spherical mesh with the radius at point i,j
 	 * calculated as radius + radScale*radii[i][j]. 
 	 */
 	static Mesh *newMars(float radius, float radScale,
-		std::vector<std::vector<float>> radii);
+		std::vector<std::vector<float>> radii, bool crosshatch = false);
+
+
+	static std::vector<glm::ivec3> generateTrigs(std::vector<glm::vec3> points,
+			int width, int height, bool endcaps, bool crosshatch);
 };
