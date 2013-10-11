@@ -3,6 +3,7 @@
 #include <vector>
 #include "Mesh.h"
 #include "shader.h"
+#include "object.h"
 #include <glm/glm.hpp>
 
 using namespace std;
@@ -145,6 +146,41 @@ Mesh::Mesh(vector<vec3> points, vector<ivec3> trigs) {
 	this->points = points;
 	this->trigs = trigs;
 	//TODO: compute normals
+}
+
+bool Mesh::initialize() {
+	if (!this->PostGLInitialize(&this->vertex_array_handle, &this->vertex_coordinate_handle, this->points.size() * sizeof(vec3), &this->points[0]))
+	return false;
+
+	/*	The VertexAttributesPCN class stores vertex attributes: position, color and normal in that order.
+
+		Vertex attributes are stored in an interleaved manner aiding speed of vertex processing.
+	*/
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAttributesPCN), (GLvoid *) 0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAttributesPCN), (GLvoid *) (sizeof(vec3) * 2));	// Note offset - legacy of older code
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAttributesPCN), (GLvoid *) (sizeof(vec3) * 1));	// Same
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	//if (this->normal_vertices.size() > 0)
+	//{
+	//	if (!this->PostGLInitialize(&this->normal_array_handle, &this->normal_coordinate_handle, this->normal_vertices.size() * sizeof(VertexAttributesP), &this->normal_vertices[0]))
+	//		return false;
+
+	//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAttributesP), (GLvoid *) 0);
+	//	glEnableVertexAttribArray(0);
+	//	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//	glBindVertexArray(0);
+	//}
+
+}
+
+void Mesh::draw(const mat4 &projection, mat4 modelview, const ivec2 &size, const float time = 0) {
+	
 }
 
 Mesh::~Mesh() {

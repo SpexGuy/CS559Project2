@@ -1,10 +1,10 @@
 #include <vector>
+#include "object.h"
 #include <glm/glm.hpp>
 #include "object.h"
 #include "shader.h"
 
-
-class Mesh : public Object{
+class Mesh : public Object {
 private:
 	Mesh();
 protected:
@@ -21,6 +21,18 @@ public:
 	 * which have this point as a vertex. */
 	Mesh(std::vector<glm::vec3> points, std::vector<glm::ivec3> trigs);
 
+	//@Override
+	virtual bool initialize();
+
+	//@Override
+	virtual void draw(const glm::mat4 & projection, glm::mat4 modelview, const glm::ivec2 & size, const float time = 0);
+
+	virtual ~Mesh();
+
+
+
+	//---------Static Members------------------------
+
 	/** creates a spherical Mesh with a base radius offset by data
 	 * from the given file, scaled by radScale.
 	 *
@@ -29,7 +41,8 @@ public:
 	 * The first line is the width followed by the height of the data,
 	 * separated by a tab. There should be exactly <height> more lines,
 	 * each consisting of <width> float values between 0 and 1, separated
-	 * by tabs. */
+	 * by tabs.
+	 * Returns */
 	static Mesh *newMars(float radius, float radScale,
 		char *filename);
 
@@ -38,12 +51,4 @@ public:
 	 */
 	static Mesh *newMars(float radius, float radScale,
 		std::vector<std::vector<float>> radii);
-
-	//@overridee
-	virtual bool initialize();
-	//@overridee
-	virtual void draw(const glm::mat4 & projection, glm::mat4 modelview, const glm::ivec2 & size, const float time = 0);
-	
-	virtual ~Mesh();
-
 };
