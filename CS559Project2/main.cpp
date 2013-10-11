@@ -21,9 +21,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
-#include "background.h"
-#include "top.h"
+#include "Mesh.h"
 
 using namespace std;
 using namespace glm;
@@ -51,8 +49,7 @@ public:
 	vector<string> instructions;
 } window;
 
-Background background;
-Top top;
+Mesh *mars;
 
 void DisplayInstructions()
 {
@@ -84,8 +81,8 @@ void DisplayInstructions()
 void CloseFunc()
 {
 	window.window_handle = -1;
-	background.TakeDown();
-	top.TakeDown();
+	mars->TakeDown();
+	delete mars;
 }
 
 void ReshapeFunc(int w, int h)
@@ -100,80 +97,87 @@ void ReshapeFunc(int w, int h)
 
 void KeyboardFunc(unsigned char c, int x, int y)
 {
-	float current_time = float(glutGet(GLUT_ELAPSED_TIME)) / 1000.0f;
+	//float current_time = float(glutGet(GLUT_ELAPSED_TIME)) / 1000.0f;
 
-	switch (c)
-	{
-	case 's':
-		top.StepShader();
-		break;
+	//switch (c)
+	//{
+	//case 's':
+	//	top.StepShader();
+	//	break;
 
-	case 'n':
-		top.EnableNormals(window.normals = !window.normals);
-		break;
+	//case 'n':
+	//	top.EnableNormals(window.normals = !window.normals);
+	//	break;
 
-	case 'w':
-		window.wireframe = !window.wireframe;
-		break;
+	//case 'w':
+	//	window.wireframe = !window.wireframe;
+	//	break;
 
-	case 'p':
-		if (window.paused == true)
-		{
-			// Will be leaving paused state
-			window.total_time_paused += (current_time - window.time_last_pause_began);
-		}
-		else
-		{
-			// Will be entering paused state
-			window.time_last_pause_began = current_time;
-		}
-		window.paused = !window.paused;
-		break;
+	//case 'p':
+	//	if (window.paused == true)
+	//	{
+	//		// Will be leaving paused state
+	//		window.total_time_paused += (current_time - window.time_last_pause_began);
+	//	}
+	//	else
+	//	{
+	//		// Will be entering paused state
+	//		window.time_last_pause_began = current_time;
+	//	}
+	//	window.paused = !window.paused;
+	//	break;
 
-	case 'x':
-	case 27:
-		glutLeaveMainLoop();
-		return;
-	}
+	//case 'x':
+	//case 27:
+	//	glutLeaveMainLoop();
+	//	return;
+	//}
 }
 
 void SpecialFunc(int c, int x, int y)
 {
-	switch (c)
-	{
-	case GLUT_KEY_UP:
-		++window.slices;
-		top.TakeDown();
-		top.Initialize(window.slices);
-		break;
+	//switch (c)
+	//{
+	//case GLUT_KEY_UP:
+	//	++window.slices;
+	//	top.TakeDown();
+	//	top.Initialize(window.slices);
+	//	break;
 
-	case GLUT_KEY_DOWN:
-		if (window.slices > 1)
-		{
-			--window.slices;
-			top.TakeDown();
-			top.Initialize(window.slices);
-		}
-		break;
-	}
+	//case GLUT_KEY_DOWN:
+	//	if (window.slices > 1)
+	//	{
+	//		--window.slices;
+	//		top.TakeDown();
+	//		top.Initialize(window.slices);
+	//	}
+	//	break;
+	//}
 }
 
 void DisplayFunc()
 {
 	float current_time = float(glutGet(GLUT_ELAPSED_TIME)) / 1000.0f;
 
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glViewport(0, 0, window.size.x, window.size.y);
-	background.Draw(window.size);
+//	background.Draw(window.size);
 	mat4 projection = perspective(25.0f, window.window_aspect, 1.0f, 10.0f);
 	mat4 modelview = lookAt(vec3(0.0f, 0.0f, 5.5f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
 	// glPolygonMode is NOT modern OpenGL but will be allowed in Projects 2 and 3
-	glPolygonMode(GL_FRONT_AND_BACK, window.wireframe ? GL_LINE : GL_FILL);
-	top.Draw(projection, modelview, window.size, (window.paused ? window.time_last_pause_began : current_time) - window.total_time_paused);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	DisplayInstructions();
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	mars->draw(projection, modelview, window.size, (window.paused ? window.time_last_pause_began : current_time) - window.total_time_paused);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//DisplayInstructions();
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixf(value_ptr(projection));
+	glMatrixMode(GL_MODELVIEW);
+	glLoadMatrixf(value_ptr(modelview));
+	glutWireCube(1);
+
 	glFlush();
 }
 
@@ -187,7 +191,6 @@ void TimerFunc(int value)
 	}
 }
 
-/*
 int main(int argc, char * argv[])
 {
 	glutInit(&argc, argv);
@@ -222,12 +225,9 @@ int main(int argc, char * argv[])
 		return 0;
 	}
 
-	if (!background.Initialize())
-		return 0;
-
-	if (!top.Initialize(window.slices))
-		return 0;
+	mars = Mesh::newMars(0, 1, "mars_low_rez.txt");
+	if (!mars->initialize())
+		return -1;
 
 	glutMainLoop();
 }
-*/

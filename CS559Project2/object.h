@@ -41,9 +41,6 @@ protected:
 	GLuint normal_array_handle;
 
 	bool GLReturnedError(char * s);
-	std::vector<GLuint> vertex_indices;
-	std::vector<VertexAttributesP> normal_vertices;
-	std::vector<GLuint> normal_indices;
 
 private:
 	void InternalInitialize();

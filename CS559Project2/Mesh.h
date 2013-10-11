@@ -1,8 +1,8 @@
+#pragma once
 #include <vector>
 #include "object.h"
-#include <glm/glm.hpp>
-#include "object.h"
 #include "shader.h"
+#include <glm/glm.hpp>
 
 class Mesh : public Object {
 private:

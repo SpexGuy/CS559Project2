@@ -11,13 +11,13 @@ using namespace glm;
 
 #define DEBUG
 
-int main() {
-	Mesh::newMars(10, 1, "mars_low_rez.txt");
-	cout << "worked!" << endl;
-	int i;
-	cin >> i;
-	return 0;
-}
+//int main() {
+//	Mesh::newMars(10, 1, "mars_low_rez.txt");
+//	cout << "worked!" << endl;
+//	int i;
+//	cin >> i;
+//	return 0;
+//}
 
 Mesh *Mesh::newMars(float radius, float radScale, char *filename){
 	ifstream inFile(filename);
@@ -115,72 +115,54 @@ Mesh *Mesh::newMars(float radius, float radScale,
 	return new Mesh(points, trigs);
 }
 
-void Mesh::draw(const mat4 & projection,mat4 modelview, const ivec2 & size, const float time)
-{
-	//If there is an error return
-	if (this->GLReturnedError("Mesh::Draw - on entry"))
-		return;
-
-	glEnable(GL_DEPTH_TEST);
-	//for test 1 will will use the same rotate with time as top
-	modelview = rotate(modelview, time * 30.0f, vec3(1.0f, 0.0f, 0.0f));
-	modelview = rotate(modelview, time * 120.0f, vec3(0.0f, 1.0f, 0.0f));
-
-	mat4 mvp = projection * modelview;
-	mat3 nm = inverse(transpose(mat3(modelview)));
-
-	this->shaders[this->shader_index]->Use();
-	this->GLReturnedError("Top::Draw - after use");
-	this->shaders[this->shader_index]->CommonSetup(time, value_ptr(size), value_ptr(projection), value_ptr(modelview), value_ptr(mvp), value_ptr(nm));
-	this->GLReturnedError("Top::Draw - after common setup");
-	glBindVertexArray(this->vertex_array_handle);
-	glDrawElements(GL_TRIANGLES , this->vertex_indices.size(), GL_UNSIGNED_INT , &this->vertex_indices[0]);
-	glBindVertexArray(0);
-
-	this->GLReturnedError("Mesh::draw - after draw");
-	glUseProgram(0);
-	if (this->GLReturnedError("Mesh::draw - on exit"))
-		return;
-}
 Mesh::Mesh(vector<vec3> points, vector<ivec3> trigs) {
 	this->points = points;
 	this->trigs = trigs;
 	//TODO: compute normals
 }
 
+
+
+
+
+
+
 bool Mesh::initialize() {
 	if (!this->PostGLInitialize(&this->vertex_array_handle, &this->vertex_coordinate_handle, this->points.size() * sizeof(vec3), &this->points[0]))
 	return false;
 
-	/*	The VertexAttributesPCN class stores vertex attributes: position, color and normal in that order.
-
-		Vertex attributes are stored in an interleaved manner aiding speed of vertex processing.
-	*/
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAttributesPCN), (GLvoid *) 0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAttributesPCN), (GLvoid *) (sizeof(vec3) * 2));	// Note offset - legacy of older code
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAttributesPCN), (GLvoid *) (sizeof(vec3) * 1));	// Same
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (GLvoid *) 0);
 	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+	
+	if (!this->shader.Initialize("solid_shader.vert", "solid_shader.frag"))
+		return false;
 
-	//if (this->normal_vertices.size() > 0)
-	//{
-	//	if (!this->PostGLInitialize(&this->normal_array_handle, &this->normal_coordinate_handle, this->normal_vertices.size() * sizeof(VertexAttributesP), &this->normal_vertices[0]))
-	//		return false;
-
-	//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAttributesP), (GLvoid *) 0);
-	//	glEnableVertexAttribArray(0);
-	//	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	//	glBindVertexArray(0);
-	//}
-
+	return true;
 }
 
-void Mesh::draw(const mat4 &projection, mat4 modelview, const ivec2 &size, const float time = 0) {
-	
+void Mesh::draw(const mat4 & projection,mat4 modelview, const ivec2 & size, const float time) {
+	if (this->GLReturnedError("Mesh::Draw - on entry"))
+		return;
+
+	glEnable(GL_DEPTH_TEST);
+
+	mat4 mvp = projection * modelview;
+	mat3 nm = inverse(transpose(mat3(modelview)));
+
+	this->shader.Use();
+	this->GLReturnedError("Top::Draw - after use");
+	this->shader.CommonSetup(time, value_ptr(size), value_ptr(projection), value_ptr(modelview), value_ptr(mvp), value_ptr(nm));
+	this->GLReturnedError("Top::Draw - after common setup");
+	glBindVertexArray(this->vertex_array_handle);
+	glDrawElements(GL_TRIANGLES , this->trigs.size()*3, GL_UNSIGNED_INT , &this->trigs[0]);
+	glBindVertexArray(0);
+
+	this->GLReturnedError("Mesh::draw - after draw");
+	glUseProgram(0);
+	if (this->GLReturnedError("Mesh::draw - on exit"))
+		return;
 }
 
 Mesh::~Mesh() {
