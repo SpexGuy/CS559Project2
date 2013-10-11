@@ -1,10 +1,14 @@
 #include <vector>
 #include <glm/glm.hpp>
+#include "object.h"
+#include "shader.h"
 
-class Mesh {
+
+class Mesh : public Object{
 private:
 	Mesh();
 protected:
+	Shader shader;
 	std::vector<glm::vec3> points;
 	std::vector<glm::ivec3> trigs;
 	std::vector<glm::vec3> normals;
@@ -35,6 +39,11 @@ public:
 	static Mesh *newMars(float radius, float radScale,
 		std::vector<std::vector<float>> radii);
 
+	//@overridee
+	virtual bool initialize();
+	//@overridee
+	virtual void draw(const glm::mat4 & projection, glm::mat4 modelview, const glm::ivec2 & size, const float time = 0);
+	
 	virtual ~Mesh();
 
 };

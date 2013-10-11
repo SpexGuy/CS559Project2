@@ -187,6 +187,7 @@ void TimerFunc(int value)
 	}
 }
 
+/*
 int main(int argc, char * argv[])
 {
 	glutInit(&argc, argv);
@@ -229,3 +230,4 @@ int main(int argc, char * argv[])
 
 	glutMainLoop();
 }
+*/

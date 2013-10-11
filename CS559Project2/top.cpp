@@ -55,7 +55,7 @@ bool Top::Initialize(int slices)
 	if (this->GLReturnedError("Top::Initialize - on entry"))
 		return false;
 
-	if (!super::Initialize())
+	if (!super::initialize())
 		return false;
 
 	if (slices < 0)
@@ -123,7 +123,7 @@ bool Top::Initialize(int slices)
 
 		Vertex attributes are stored in an interleaved manner aiding speed of vertex processing.
 	*/
-
+	
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAttributesPCN), (GLvoid *) 0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAttributesPCN), (GLvoid *) (sizeof(vec3) * 2));	// Note offset - legacy of older code
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexAttributesPCN), (GLvoid *) (sizeof(vec3) * 1));	// Same

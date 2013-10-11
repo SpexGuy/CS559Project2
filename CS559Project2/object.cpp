@@ -58,6 +58,9 @@ void Object::TakeDown()
 	this->InternalInitialize();
 }
 
+/*
+	Sets up allocates buffers adn
+*/
 bool Object::PostGLInitialize(GLuint * vertex_array_handle, GLuint * vertex_coordinate_handle, GLsizeiptr sz, const GLvoid * ptr)
 {
 	glGenVertexArrays(1, vertex_array_handle);
@@ -68,7 +71,7 @@ bool Object::PostGLInitialize(GLuint * vertex_array_handle, GLuint * vertex_coor
 	return !this->GLReturnedError("Object::PostGLInitialize - on exit");
 }
 
-bool Object::Initialize()
+bool Object::initialize()
 {
 	this->InternalInitialize();
 	return true;

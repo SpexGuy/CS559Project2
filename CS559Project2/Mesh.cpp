@@ -2,10 +2,13 @@
 #include <fstream>
 #include <vector>
 #include "Mesh.h"
+#include "shader.h"
 #include <glm/glm.hpp>
 
 using namespace std;
 using namespace glm;
+
+#define DEBUG
 
 int main() {
 	Mesh::newMars(10, 1, "mars_low_rez.txt");
@@ -15,7 +18,7 @@ int main() {
 	return 0;
 }
 
-Mesh *Mesh::newMars(float radius, float radScale, char *filename) {
+Mesh *Mesh::newMars(float radius, float radScale, char *filename){
 	ifstream inFile(filename);
 	if (inFile.is_open()) {
 		int width, height;
@@ -66,9 +69,17 @@ Mesh *Mesh::newMars(float radius, float radScale,
 			float x = r*sin(theta)*sin(phi);
 			float y = r*cos(theta)*sin(phi);
 			float z = cos(phi);
+#ifdef DEBUG
+			if(i < 1 && j < 10)
+				cout << "( " << x << ", " << y << "," << z << " )" <<endl;
+#endif
 			points.push_back(vec3(x,y,z));
 		}
 	}
+#ifdef DEBUG
+			
+			cout << "Triangles" <<endl;
+#endif
 	points.push_back(vec3(0, 0, radius));
 	points.push_back(vec3(0, 0, -radius));
 
@@ -80,7 +91,18 @@ Mesh *Mesh::newMars(float radius, float radScale,
 			int trIndex = c*width + (d+1)%width;
 			int brIndex = trIndex + width;
 			trigs.push_back(ivec3(trIndex, tlIndex, blIndex));
+
+#ifdef DEBUG
+			if(c < 1 && (d > width - 1 || d < 1))
+			cout << "( " << trIndex << ", " << tlIndex << "," << blIndex << " )" <<endl;
+#endif
+
 			trigs.push_back(ivec3(blIndex, brIndex, trIndex));
+
+#ifdef DEBUG
+			if(c < 1 && (d > width - 1 || d < 1))
+			cout << "( " << blIndex << ", " << brIndex << "," << trIndex << " )" <<endl;
+#endif
 		}
 	}
 	int botRow = (height-1)*width;
@@ -92,6 +114,33 @@ Mesh *Mesh::newMars(float radius, float radScale,
 	return new Mesh(points, trigs);
 }
 
+void Mesh::draw(const mat4 & projection,mat4 modelview, const ivec2 & size, const float time)
+{
+	//If there is an error return
+	if (this->GLReturnedError("Mesh::Draw - on entry"))
+		return;
+
+	glEnable(GL_DEPTH_TEST);
+	//for test 1 will will use the same rotate with time as top
+	modelview = rotate(modelview, time * 30.0f, vec3(1.0f, 0.0f, 0.0f));
+	modelview = rotate(modelview, time * 120.0f, vec3(0.0f, 1.0f, 0.0f));
+
+	mat4 mvp = projection * modelview;
+	mat3 nm = inverse(transpose(mat3(modelview)));
+
+	this->shaders[this->shader_index]->Use();
+	this->GLReturnedError("Top::Draw - after use");
+	this->shaders[this->shader_index]->CommonSetup(time, value_ptr(size), value_ptr(projection), value_ptr(modelview), value_ptr(mvp), value_ptr(nm));
+	this->GLReturnedError("Top::Draw - after common setup");
+	glBindVertexArray(this->vertex_array_handle);
+	glDrawElements(GL_TRIANGLES , this->vertex_indices.size(), GL_UNSIGNED_INT , &this->vertex_indices[0]);
+	glBindVertexArray(0);
+
+	this->GLReturnedError("Mesh::draw - after draw");
+	glUseProgram(0);
+	if (this->GLReturnedError("Mesh::draw - on exit"))
+		return;
+}
 Mesh::Mesh(vector<vec3> points, vector<ivec3> trigs) {
 	this->points = points;
 	this->trigs = trigs;
