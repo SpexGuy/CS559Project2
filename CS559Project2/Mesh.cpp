@@ -1,3 +1,7 @@
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
+#include <math.h>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -59,17 +63,18 @@ Mesh *Mesh::newMars(float radius, float radScale,
 	int width = radii[0].size();
 	assert(width > 0);
 
-	vector<vec3> points(height*width + 2);
+	vector<vec3> points/*(height*width + 2)*/;
 
 	for(int i = 0; i< height; i++) {
 		for( int j = 0; j < width; j++) {
 			float r = radius + radScale*radii[i][j];
-			float theta = 360.0f * ((float) j / (float)width);
-			float phi = 180.0f * (float(i+1) / float(height+1));
+			float theta = 2*M_PI * float(j) / float(width);
+			float phi = M_PI * float(i+1) / float(height+1);
 
 			float x = r*sin(theta)*sin(phi);
-			float y = r*cos(theta)*sin(phi);
-			float z = cos(phi);
+			float z = r*cos(theta)*sin(phi);
+			float y = r*cos(phi);
+
 #ifdef DEBUG
 			if(i < 1 && j < 10)
 				cout << "( " << x << ", " << y << "," << z << " )" <<endl;
@@ -81,10 +86,10 @@ Mesh *Mesh::newMars(float radius, float radScale,
 			
 			cout << "Triangles" <<endl;
 #endif
-	points.push_back(vec3(0, 0, radius));
-	points.push_back(vec3(0, 0, -radius));
+	points.push_back(vec3(0, radius, 0));
+	points.push_back(vec3(0, -radius, 0));
 
-	vector<ivec3> trigs(height*width);
+	vector<ivec3> trigs/*(height*width)*/;
 	for (int c = 0; c < height-1; c++) {
 		for (int d = 0; d < width; d++) {
 			int tlIndex = c*width + d;
@@ -147,6 +152,8 @@ void Mesh::draw(const mat4 & projection,mat4 modelview, const ivec2 & size, cons
 		return;
 
 	glEnable(GL_DEPTH_TEST);
+
+	modelview = rotate(modelview, 30.0f, vec3(0.0f, 1.0f, 0.0f));
 
 	mat4 mvp = projection * modelview;
 	mat3 nm = inverse(transpose(mat3(modelview)));

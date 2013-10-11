@@ -50,6 +50,7 @@ public:
 } window;
 
 Mesh *mars;
+float cangle = 0.0f;
 
 void DisplayInstructions()
 {
@@ -136,8 +137,8 @@ void KeyboardFunc(unsigned char c, int x, int y)
 
 void SpecialFunc(int c, int x, int y)
 {
-	//switch (c)
-	//{
+	switch (c)
+	{
 	//case GLUT_KEY_UP:
 	//	++window.slices;
 	//	top.TakeDown();
@@ -152,31 +153,39 @@ void SpecialFunc(int c, int x, int y)
 	//		top.Initialize(window.slices);
 	//	}
 	//	break;
-	//}
+		
+	case GLUT_KEY_LEFT:
+		cangle -= 1.0f;
+		break;
+	case GLUT_KEY_RIGHT:
+		cangle += 1.0f;
+		break;
+	}
 }
 
 void DisplayFunc()
 {
 	float current_time = float(glutGet(GLUT_ELAPSED_TIME)) / 1000.0f;
 
-	//glEnable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glViewport(0, 0, window.size.x, window.size.y);
 //	background.Draw(window.size);
 	mat4 projection = perspective(25.0f, window.window_aspect, 1.0f, 10.0f);
 	mat4 modelview = lookAt(vec3(0.0f, 0.0f, 5.5f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
+	mat4 context = rotate(modelview, cangle, vec3(0.0f, 1.0f, 0.0f));
 	// glPolygonMode is NOT modern OpenGL but will be allowed in Projects 2 and 3
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	mars->draw(projection, modelview, window.size, (window.paused ? window.time_last_pause_began : current_time) - window.total_time_paused);
+	mars->draw(projection, context, window.size, (window.paused ? window.time_last_pause_began : current_time) - window.total_time_paused);
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	//DisplayInstructions();
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixf(value_ptr(projection));
-	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixf(value_ptr(modelview));
-	glutWireCube(1);
+	//glMatrixMode(GL_PROJECTION);
+	//glLoadMatrixf(value_ptr(projection));
+	//glMatrixMode(GL_MODELVIEW);
+	//glLoadMatrixf(value_ptr(modelview));
+	//glutWireCube(1);
 
 	glFlush();
 }
@@ -225,9 +234,22 @@ int main(int argc, char * argv[])
 		return 0;
 	}
 
-	mars = Mesh::newMars(0, 1, "mars_low_rez.txt");
+	mars = Mesh::newMars(1, 0.08f, "mars_low_rez.txt");
+
+	//mars = Mesh::newMars(1, 0, "55sphere.txt");
+
 	if (!mars->initialize())
 		return -1;
 
 	glutMainLoop();
 }
+
+//int main() {
+//	cout << "Vector test!" << endl;
+//	vector<int> vec(4);
+//	cout << "base size: " << vec.size() << endl;
+//	vec.push_back(4);
+//	cout << "after push: " << vec.size() << ',' << vec[0] << ',' << vec[4] << endl;
+//	int i;
+//	cin >> i;
+//}
