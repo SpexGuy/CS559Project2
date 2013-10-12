@@ -124,7 +124,7 @@ vector<ivec3> Mesh::generateTrigs(vector<vec3> points, int width, int height, bo
 		int botRow = (height-1)*width;
 		for (int c = 0; c < width; c++) {
 			trigs.push_back(ivec3(c, (c+1)%width, points.size()-2));
-			trigs.push_back(ivec3(botRow + c, botRow + (c+1)%width, points.size()-1));
+			trigs.push_back(ivec3(points.size()-1, botRow + (c+1)%width, botRow + c));
 		}
 	}
 
@@ -138,8 +138,36 @@ vector<ivec3> Mesh::generateTrigs(vector<vec3> points, int width, int height, bo
 Mesh::Mesh(vector<vec3> points, vector<ivec3> trigs) {
 	this->points = points;
 	this->trigs = trigs;
+
+
 	//TODO: compute normals
+	this->normals = vector<vec3>(points.size());
+	for (int c = 0; c < normals.size(); c++) {
+		normals[c] = vec3(0.0f);
+	}
+
+	for (int c = 0; c < trigs.size(); c++) {
+		vec3 vect1 = points[trigs[c].y] - points[trigs[c].z];
+		vec3 vect2 = points[trigs[c].y] - points[trigs[c].x];
+		vec3 planeNormal = cross(vect1, vect2);
+
+		normals[trigs[c].x] += planeNormal;
+		normals[trigs[c].y] += planeNormal;
+		normals[trigs[c].z] += planeNormal;
+	}
+	
+	for (int c = 0; c < normals.size(); c++) {
+		normals[c] = normalize(normals[c]);
+	}
+
+	for (int c = 0; c < normals.size(); c++) {
+		normPoints.push_back(points[c]);
+		normPoints.push_back(points[c] + vec3(0.1f)*normals[c]);
+		normSegs.push_back(ivec2(2*c, 2*c+1));
+	}
 }
+
+
 
 bool Mesh::initialize() {
 	if (!this->PostGLInitialize(&this->vertex_array_handle, &this->vertex_coordinate_handle, this->points.size() * sizeof(vec3), &this->points[0]))
@@ -149,6 +177,17 @@ bool Mesh::initialize() {
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+
+	if (this->normPoints.size() > 0) {
+		if (!this->PostGLInitialize(&this->normal_array_handle, &this->normal_coordinate_handle, this->normPoints.size() * sizeof(vec3), &this->normPoints[0]))
+			return false;
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (GLvoid *) 0);
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+	}
+
 	
 	if (!this->shader.Initialize("solid_shader.vert", "solid_shader.frag"))
 		return false;
@@ -171,11 +210,18 @@ void Mesh::draw(const mat4 & projection,mat4 modelview, const ivec2 & size, cons
 	this->GLReturnedError("Top::Draw - after use");
 	this->shader.CommonSetup(time, value_ptr(size), value_ptr(projection), value_ptr(modelview), value_ptr(mvp), value_ptr(nm));
 	this->GLReturnedError("Top::Draw - after common setup");
+
 	glBindVertexArray(this->vertex_array_handle);
 	glDrawElements(GL_TRIANGLES , this->trigs.size()*3, GL_UNSIGNED_INT , &this->trigs[0]);
 	glBindVertexArray(0);
 
 	this->GLReturnedError("Mesh::draw - after draw");
+
+	glBindVertexArray(this->normal_array_handle);
+	glDrawElements(GL_LINES , this->normSegs.size()*2, GL_UNSIGNED_INT , &this->normSegs[0]);
+	glBindVertexArray(0);
+
+	this->GLReturnedError("Mesh::draw - after normals draw");
 	glUseProgram(0);
 	if (this->GLReturnedError("Mesh::draw - on exit"))
 		return;

@@ -12,6 +12,8 @@ protected:
 	std::vector<glm::vec3> points;
 	std::vector<glm::ivec3> trigs;
 	std::vector<glm::vec3> normals;
+	std::vector<glm::vec3> normPoints;
+	std::vector<glm::ivec2> normSegs;
 public:
 	/** generates a mesh with the given points. Trigs is a vector of
 	 * triangles.  A triangle is a vec3 of indexes in <points>
