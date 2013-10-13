@@ -29,7 +29,7 @@ public:
 
 	//@Override
 	virtual void draw(const glm::mat4 & projection, glm::mat4 modelview,
-			const glm::ivec2 & size, const float time = 0);
+			const glm::ivec2 & size, const float time, bool normals, glm::vec3 light);
 
 	virtual ~Mesh();
 

@@ -24,7 +24,8 @@ public:
 	void Use();
 	virtual bool Initialize(char * vertex_shader_file, char * fragment_shader_file);
 	virtual void CustomSetup();
-	void CommonSetup(const float time, const GLint * size, const GLfloat * projection, const GLfloat * modelview, const GLfloat * mvp, const GLfloat * nm);
+	void CommonSetup(const float time, const GLint * size, const GLfloat * projection, const GLfloat * modelview, const GLfloat * mvp, 
+					const GLfloat * nm, const GLfloat * light );
 
 	GLuint modelview_matrix_handle;
 	GLuint projection_matrix_handle;
@@ -32,6 +33,8 @@ public:
 	GLuint mvp_handle;
 	GLuint size_handle;
 	GLuint time_handle;
+	GLuint light_handle;
+
 
 	GLuint vertex_shader_id;
 	GLuint fragment_shader_id;
