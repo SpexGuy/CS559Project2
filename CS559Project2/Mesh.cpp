@@ -8,6 +8,7 @@
 #include "Mesh.h"
 #include "shader.h"
 #include "object.h"
+#include "Vertex.h"
 #include <glm/glm.hpp>
 
 using namespace std;
@@ -135,34 +136,32 @@ vector<ivec3> Mesh::generateTrigs(vector<vec3> points, int width, int height, bo
 
 
 
-Mesh::Mesh(vector<vec3> points, vector<ivec3> trigs) {
-	this->points = points;
+Mesh::Mesh(vector<vec3> ppoints, vector<ivec3> trigs) {
+	this->points = vector<VertexPN>(ppoints.size());
 	this->trigs = trigs;
 
-
-	//TODO: compute normals
-	this->normals = vector<vec3>(points.size());
-	for (int c = 0; c < normals.size(); c++) {
-		normals[c] = vec3(0.0f);
+	for (int c = 0; c < points.size(); c++) {
+		points[c].position = ppoints[c];
+		points[c].normal = vec3(0.0f);
 	}
 
 	for (int c = 0; c < trigs.size(); c++) {
-		vec3 vect1 = points[trigs[c].y] - points[trigs[c].z];
-		vec3 vect2 = points[trigs[c].y] - points[trigs[c].x];
+		vec3 vect1 = ppoints[trigs[c].y] - ppoints[trigs[c].z];
+		vec3 vect2 = ppoints[trigs[c].y] - ppoints[trigs[c].x];
 		vec3 planeNormal = cross(vect1, vect2);
 
-		normals[trigs[c].x] += planeNormal;
-		normals[trigs[c].y] += planeNormal;
-		normals[trigs[c].z] += planeNormal;
+		points[trigs[c].x].normal += planeNormal;
+		points[trigs[c].y].normal += planeNormal;
+		points[trigs[c].z].normal += planeNormal;
 	}
 	
-	for (int c = 0; c < normals.size(); c++) {
-		normals[c] = normalize(normals[c]);
+	for (int c = 0; c < points.size(); c++) {
+		points[c].normal = normalize(points[c].normal);
 	}
 
-	for (int c = 0; c < normals.size(); c++) {
-		normPoints.push_back(points[c]);
-		normPoints.push_back(points[c] + vec3(0.1f)*normals[c]);
+	for (int c = 0; c < points.size(); c++) {
+		normPoints.push_back(points[c].position);
+		normPoints.push_back(points[c].position + vec3(0.1f)*points[c].normal);
 		normSegs.push_back(ivec2(2*c, 2*c+1));
 	}
 }
@@ -170,10 +169,11 @@ Mesh::Mesh(vector<vec3> points, vector<ivec3> trigs) {
 
 
 bool Mesh::initialize() {
-	if (!this->PostGLInitialize(&this->vertex_array_handle, &this->vertex_coordinate_handle, this->points.size() * sizeof(vec3), &this->points[0]))
-	return false;
+	if (!this->PostGLInitialize(&this->vertex_array_handle, &this->vertex_coordinate_handle, this->points.size() * sizeof(VertexPN), &this->points[0]))
+		return false;
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (GLvoid *) 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPN), (GLvoid *) 0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPN), (GLvoid *) (1*sizeof(vec3)));
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
@@ -189,7 +189,9 @@ bool Mesh::initialize() {
 	}
 
 	
-	if (!this->shader.Initialize("solid_shader.vert", "solid_shader.frag"))
+	if (!this->solidShader.Initialize("solid_shader.vert", "solid_shader.frag"))
+		return false;
+	if (!this->shader.Initialize("top_shader.vert", "top_shader.frag"))
 		return false;
 
 	return true;
@@ -217,6 +219,13 @@ void Mesh::draw(const mat4 & projection,mat4 modelview, const ivec2 & size, cons
 
 	this->GLReturnedError("Mesh::draw - after draw");
 
+	glUseProgram(0);
+
+	this->solidShader.Use();
+	this->GLReturnedError("Top::Draw - after use");
+	this->solidShader.CommonSetup(time, value_ptr(size), value_ptr(projection), value_ptr(modelview), value_ptr(mvp), value_ptr(nm));
+	this->GLReturnedError("Top::Draw - after common setup");
+	
 	glBindVertexArray(this->normal_array_handle);
 	glDrawElements(GL_LINES , this->normSegs.size()*2, GL_UNSIGNED_INT , &this->normSegs[0]);
 	glBindVertexArray(0);

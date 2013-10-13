@@ -2,6 +2,7 @@
 #include <vector>
 #include "object.h"
 #include "shader.h"
+#include "Vertex.h"
 #include <glm/glm.hpp>
 
 class Mesh : public Object {
@@ -9,9 +10,9 @@ private:
 	Mesh();
 protected:
 	Shader shader;
-	std::vector<glm::vec3> points;
+	Shader solidShader;
+	std::vector<VertexPN> points;
 	std::vector<glm::ivec3> trigs;
-	std::vector<glm::vec3> normals;
 	std::vector<glm::vec3> normPoints;
 	std::vector<glm::ivec2> normSegs;
 public:

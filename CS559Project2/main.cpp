@@ -176,7 +176,7 @@ void DisplayFunc()
 	mat4 modelview = lookAt(vec3(0.0f, 0.0f, 5.5f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
 	mat4 context = rotate(modelview, cangle, vec3(0.0f, 1.0f, 0.0f));
 	// glPolygonMode is NOT modern OpenGL but will be allowed in Projects 2 and 3
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	mars->draw(projection, context, window.size, (window.paused ? window.time_last_pause_began : current_time) - window.total_time_paused);
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	//DisplayInstructions();
