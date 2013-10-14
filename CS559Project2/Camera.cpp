@@ -1,0 +1,86 @@
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
+#include <math.h>
+#include "Camera.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+using namespace glm;
+
+Projection::Projection() {
+	hither = 1.0f;
+	yon = 10.0f;
+}
+
+void Projection::setPlanes(float hither, float yon) {
+	if (hither <= 0)
+		hither = 0.0000001f;
+	if (hither >= yon)
+		yon = hither + 0.0000001f;
+	this->hither = hither;
+	this->yon = yon;
+}
+
+void Projection::reshape(int x, int y) {
+	if (y > 0) {
+		size = ivec2(x, y);
+	}
+}
+
+
+
+OrthogonalProjection::OrthogonalProjection(float height) {
+	setHeight(height);
+}
+
+void OrthogonalProjection::setHeight(float height) {
+	this->height = height;
+}
+
+mat4 OrthogonalProjection::generateProjectionMatrix() {
+	float aspect = float(size.x)/float(size.y);
+	if (size.x > size.y) {
+		return ortho(-aspect*height, aspect*height, -height, height, hither, yon);
+	} else {
+		return ortho(-height, height, -height/aspect, height/aspect, hither, yon);
+	}
+}
+
+
+
+PerspectiveProjection::PerspectiveProjection(float fov) {
+	this->fov = fov;
+}
+
+mat4 PerspectiveProjection::generateProjectionMatrix() {
+	return perspective(fov, float(size.x)/float(size.y), hither, yon);
+}
+
+void PerspectiveProjection::addFov(float addition) {
+	setFov(fov + addition);
+}
+void PerspectiveProjection::setFov(float fov) {
+	if (fov > 80)
+		fov = 80;
+	else if (fov < 10)
+		fov = 10;
+	this->fov = fov;
+}
+float PerspectiveProjection::getFov() {
+	return fov;
+}
+
+
+
+DynamicProjectionCamera::DynamicProjectionCamera(Projection *proj) {
+	this->projection = proj;
+}
+
+mat4 DynamicProjectionCamera::generateProjectionMatrix() {
+	return projection->generateProjectionMatrix();
+}
+
+void DynamicProjectionCamera::reshape(int x, int y) {
+	this->projection->reshape(x, y);
+}
