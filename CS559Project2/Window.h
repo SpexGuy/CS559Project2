@@ -11,6 +11,9 @@ protected:
 	int windowHandle; //the GL window index
 	bool windowClosed;
 	glm::ivec2 size;
+	
+	virtual void renderViews() = 0;
+
 public:
 	/* DOES NOT initialize() the window !!!
 	 * This should be done after GL is initialized.*/
@@ -26,7 +29,7 @@ public:
 	
 	/* renders the window
 	 * The window is left active after this function. */
-	virtual void render() = 0;
+	void render();
 	
 	/* called when the window is reshaped
 	 * DOES NOT change the focused window. */
@@ -52,9 +55,11 @@ private:
 	SingleViewportWindow();
 protected:
 	View *view;
+
+	virtual void renderViews();
+
 public:
 	SingleViewportWindow(View *view);
-	virtual void render();
 };
 
 /**
@@ -67,7 +72,9 @@ private:
 protected:
 	View *leftView;
 	View *rightView;
+
+	virtual void renderViews();
+
 public:
 	DoubleViewportWindow(View *leftView, View *rightView);
-	virtual void render();
 };

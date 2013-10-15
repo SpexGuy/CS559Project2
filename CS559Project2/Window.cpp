@@ -45,18 +45,22 @@ void Window::reshape(int x, int y) {
 	}
 }
 
+void Window::render() {
+	activate();
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	renderViews();
+	glutSwapBuffers();
+}
+
 
 
 SingleViewportWindow::SingleViewportWindow(View *view) {
 	this->view = view;
 }
 
-void SingleViewportWindow::render() {
-	activate();
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+void SingleViewportWindow::renderViews() {
 	Graphics::inst()->viewport(0, 0, size.x, size.y);
 	view->render();
-	glutSwapBuffers();
 }
 
 
@@ -65,13 +69,10 @@ DoubleViewportWindow::DoubleViewportWindow(View *leftView, View *rightView) {
 	this->rightView = rightView;
 }
 
-void DoubleViewportWindow::render() {
-	activate();
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+void DoubleViewportWindow::renderViews() {
 	int centerX = size.x / 2;
 	Graphics::inst()->viewport(0, 0, centerX, size.y);
 	leftView->render();
 	Graphics::inst()->viewport(centerX, 0, centerX, size.y);
 	rightView->render();
-	glutSwapBuffers();
 }
