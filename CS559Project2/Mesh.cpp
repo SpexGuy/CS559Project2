@@ -203,8 +203,6 @@ bool Mesh::initialize() {
 }
 
 void Mesh::draw(mat4 model) const {
-	const ivec2 & size = ivec2(1024, 1024);
-	const float time = 0;
 	bool normals = false;
 	if (this->GLReturnedError("Mesh::Draw - on entry"))
 		return;

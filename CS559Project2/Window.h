@@ -54,7 +54,6 @@ protected:
 	View *view;
 public:
 	SingleViewportWindow(View *view);
-	virtual void reshape(int x, int y);
 	virtual void render();
 };
 
@@ -70,6 +69,5 @@ protected:
 	View *rightView;
 public:
 	DoubleViewportWindow(View *leftView, View *rightView);
-	virtual void reshape(int x, int y);
 	virtual void render();
 };

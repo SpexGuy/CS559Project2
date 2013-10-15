@@ -11,7 +11,6 @@ class Camera {
 public:
 	virtual glm::mat4 generateProjectionMatrix() = 0;
 	virtual glm::mat4 generateViewMatrix() = 0;
-	virtual void reshape(int x, int y) = 0;
 };
 
 /**
@@ -20,11 +19,9 @@ public:
 class Projection {
 protected:
 	float hither, yon;
-	glm::ivec2 size;
 public:
 	Projection();
 	virtual glm::mat4 generateProjectionMatrix() = 0;
-	virtual void reshape(int x, int y);
 	void setPlanes(float hither, float yon);
 };
 
@@ -65,7 +62,6 @@ private:
 	DynamicProjectionCamera();
 public:
 	DynamicProjectionCamera(Projection *proj);
-	virtual void reshape(int x, int y);
 	virtual glm::mat4 generateProjectionMatrix();
 };
 

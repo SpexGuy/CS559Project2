@@ -30,6 +30,11 @@ void Graphics::drawWireCube() const {
 	glutWireCube(2.0f);
 }
 
+void Graphics::viewport(int x, int y, int width, int height) {
+	this->setSize(ivec2(width, height));
+	glViewport(x, y, width, height);
+}
+
 void Graphics::drawText2D(const mat4 &base, float x, float y, char *str, float size) const {
 	mat4 pos = translate(base, vec3(x, y, 0));
 	float scaleFactor = size/72.0f;
@@ -41,7 +46,6 @@ void Graphics::drawText2D(const mat4 &base, float x, float y, char *str, float s
 void Graphics::drawTriangles(const vector<ivec3> &trigs, const GLuint &vertexArrayHandle,
 							 const Shader &s, const mat4 &model) const {
 
-	const ivec2 & size = ivec2(1024, 1024);
 	const float time = 0;
 	vec3 light(2, 2, 0);				 
 								 

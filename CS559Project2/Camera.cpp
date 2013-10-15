@@ -3,6 +3,7 @@
 #endif
 #include <math.h>
 #include "Camera.h"
+#include "Graphics.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -22,12 +23,6 @@ void Projection::setPlanes(float hither, float yon) {
 	this->yon = yon;
 }
 
-void Projection::reshape(int x, int y) {
-	if (y > 0) {
-		size = ivec2(x, y);
-	}
-}
-
 
 
 OrthogonalProjection::OrthogonalProjection(float height) {
@@ -39,6 +34,7 @@ void OrthogonalProjection::setHeight(float height) {
 }
 
 mat4 OrthogonalProjection::generateProjectionMatrix() {
+	ivec2 size = Graphics::inst()->getSize();
 	float aspect = float(size.x)/float(size.y);
 	if (size.x > size.y) {
 		return ortho(-aspect*height, aspect*height, -height, height, hither, yon);
@@ -54,6 +50,7 @@ PerspectiveProjection::PerspectiveProjection(float fov) {
 }
 
 mat4 PerspectiveProjection::generateProjectionMatrix() {
+	ivec2 size = Graphics::inst()->getSize();
 	return perspective(fov, float(size.x)/float(size.y), hither, yon);
 }
 
@@ -79,8 +76,4 @@ DynamicProjectionCamera::DynamicProjectionCamera(Projection *proj) {
 
 mat4 DynamicProjectionCamera::generateProjectionMatrix() {
 	return projection->generateProjectionMatrix();
-}
-
-void DynamicProjectionCamera::reshape(int x, int y) {
-	this->projection->reshape(x, y);
 }

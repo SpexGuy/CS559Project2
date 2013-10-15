@@ -10,14 +10,17 @@
 class Graphics {
 private:
 	glm::mat4 projection;
-	glm::mat4 view;	
-
-	static GLsizei numHandles;
+	glm::mat4 view;
+	glm::ivec2 size;
 
 	static Graphics instance;
 
 	/* creates a Graphics instance but DOES NOT INITIALIZE IT */
 	Graphics();
+
+	inline void setSize(const glm::ivec2 &size) {
+		this->size = size;
+	}
 
 public:
 	/* Graphics is a Singleton */
@@ -41,6 +44,10 @@ public:
 					   const glm::mat4 &model)
 				const;
 
+	/* generates a glViewport with the given parameters.
+	 * also sets the size to (width, heigth). */
+	void viewport(int x, int y, int width, int height);
+
 	/* frees resources */
 	void takeDown();
 
@@ -48,16 +55,19 @@ public:
 	~Graphics();
 
 	//getters and setters
-	inline void setProjection(glm::mat4 &projection) {
+	inline void setProjection(const glm::mat4 &projection) {
 		this->projection = projection;
 	}
-	inline void setView(glm::mat4 &view) {
+	inline void setView(const glm::mat4 &view) {
 		this->view = view;
 	}
-	inline glm::mat4 getProjection() {
+	inline glm::mat4 getProjection() const {
 		return projection;
 	}
-	inline glm::mat4 getView() {
+	inline glm::mat4 getView() const {
 		return view;
+	}
+	inline glm::ivec2 getSize() const {
+		return size;
 	}
 };

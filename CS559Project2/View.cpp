@@ -39,11 +39,6 @@ void View::render() {
 	if (lit) glEnable(GL_LIGHTING);
 }
 
-void View::reshape(int x, int y) {
-	overlay->reshape(x, y);
-	camera->reshape(x, y);
-}
-
 void View::setupCamera() {
 	Graphics::inst()->setProjection(camera->generateProjectionMatrix());
 	Graphics::inst()->setView(camera->generateViewMatrix());
@@ -58,15 +53,8 @@ Model *View::getModel() {
 }
 
 
-
 ViewOverlay::ViewOverlay() {
-	size = ivec2(1, 1);
-}
 
-void ViewOverlay::reshape(int x, int y) {
-	if (y > 0) {
-		size = ivec2(x, y);
-	}
 }
 
 mat4 ViewOverlay::draw() const {
@@ -75,14 +63,11 @@ mat4 ViewOverlay::draw() const {
 
 void ViewOverlay::setupCamera() const {
 	Graphics::inst()->setProjection(
-			ortho(0.0f, float(size.x),
-				  0.0f, float(size.y),
+			ortho(0.0f, float(Graphics::inst()->getSize().x),
+				  0.0f, float(Graphics::inst()->getSize().y),
 				  0.0f, 1.0f));
 	Graphics::inst()->setView(
 			lookAt(vec3(0.0f, 0.0f, 0.0f),
 				   vec3(0.0f, 0.0f, -1.0f),
 				   vec3(0.0f, 1.0f, 0.0f)));
 }
-
-
-
