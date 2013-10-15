@@ -29,7 +29,7 @@ public:
 	virtual bool initialize();
 
 	//@Override
-	virtual void draw(const glm::mat4 &projection, const glm::mat4 &view, glm::mat4 modelview, const Graphics &g) const;
+	virtual void draw(glm::mat4 modelview) const;
 
 	virtual ~Mesh();
 

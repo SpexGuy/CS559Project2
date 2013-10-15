@@ -91,7 +91,7 @@ bool Globals::initialize() {
 		return false;
 	}
 
-	if (!Graphics::inst().initialize())
+	if (!Graphics::inst()->initialize())
 		return false;
 	if (!mars->initialize())
 		return false;
@@ -100,7 +100,7 @@ bool Globals::initialize() {
 }
 
 void Globals::takeDown() {
-	Graphics::inst().takeDown();
+	Graphics::inst()->takeDown();
 	mars->TakeDown();
 }
 

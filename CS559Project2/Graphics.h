@@ -1,4 +1,6 @@
 #pragma once
+#include <vector>
+#include "shader.h"
 #include <GL/freeglut.h>
 #include <glm/glm.hpp>
 
@@ -19,7 +21,7 @@ private:
 
 public:
 	/* Graphics is a Singleton */
-	static Graphics inst();
+	static Graphics *inst();
 
 	/* should be called once a window context has been created.
 	 * No other methods should be called until this has been. */
@@ -33,7 +35,13 @@ public:
 	 * MODIFIES THE MODELVIEW MATRIX */
 	void drawText2D(const glm::mat4 &base, float x, float y, char *str, float size) const;
 
-	/* destructs the object */
+	void drawTriangles(const std::vector<glm::ivec3> &trigs,
+					   const GLuint &vertexArrayHandle,
+					   const Shader &s,
+					   const glm::mat4 &model)
+				const;
+
+	/* frees resources */
 	void takeDown();
 
 	/* asserts that takeDown() has been called */

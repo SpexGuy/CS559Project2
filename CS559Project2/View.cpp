@@ -18,12 +18,13 @@ View::View(Camera *c, Model *m, ViewOverlay *o) {
 	overlay = o;
 }
 
-void View::render(const Graphics & g) {
-	mat4 proj = this->setProjection();
+void View::render() {
+	this->setupCamera();
 	mat4 context = mat4(1.0f);
 	mat4 view = camera->generateViewMatrix();
+	Graphics::inst()->setView(view);
 	model->updateLighting(view, context);
-	model->draw(proj, view, context, g);
+	model->draw(context);
 
 	//disable lighting and depth test for overlay
 	GLboolean lit = glIsEnabled(GL_LIGHTING);
@@ -31,7 +32,7 @@ void View::render(const Graphics & g) {
 	GLboolean dt = glIsEnabled(GL_DEPTH_TEST);
 	if (dt) glDisable(GL_DEPTH_TEST);
 
-	overlay->draw(g);
+	overlay->draw();
 
 	//reset depth test and lighting
 	if (dt) glEnable(GL_DEPTH_TEST);
@@ -43,10 +44,9 @@ void View::reshape(int x, int y) {
 	camera->reshape(x, y);
 }
 
-mat4 View::setProjection() {
-	mat4 prj = camera->generateProjectionMatrix();
-	Graphics::inst().setProjection(prj);
-	return prj;
+void View::setupCamera() {
+	Graphics::inst()->setProjection(camera->generateProjectionMatrix());
+	Graphics::inst()->setView(camera->generateViewMatrix());
 }
 
 Camera *View::getCamera() {
@@ -69,19 +69,19 @@ void ViewOverlay::reshape(int x, int y) {
 	}
 }
 
-mat4 ViewOverlay::draw(const Graphics &g) const {
+mat4 ViewOverlay::draw() const {
 	return mat4(1.0f);
 }
 
-mat4 ViewOverlay::setProjection() const {
-	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixf(
-		value_ptr(
+void ViewOverlay::setupCamera() const {
+	Graphics::inst()->setProjection(
 			ortho(0.0f, float(size.x),
 				  0.0f, float(size.y),
-				  0.0f, 1.0f)));
-
-	return lookAt(vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, 1.0f, 0.0f));
+				  0.0f, 1.0f));
+	Graphics::inst()->setView(
+			lookAt(vec3(0.0f, 0.0f, 0.0f),
+				   vec3(0.0f, 0.0f, -1.0f),
+				   vec3(0.0f, 1.0f, 0.0f)));
 }
 
 

@@ -55,7 +55,7 @@ void SingleViewportWindow::render() {
 	activate();
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, size.x, size.y);
-	view->render(Graphics::inst());
+	view->render();
 	glutSwapBuffers();
 }
 
@@ -78,9 +78,9 @@ void DoubleViewportWindow::render() {
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	int centerX = size.x / 2;
 	glViewport(0, 0, centerX, size.y);
-	leftView->render(Graphics::inst());
+	leftView->render();
 	glViewport(centerX, 0, centerX, size.y);
-	rightView->render(Graphics::inst());
+	rightView->render();
 	glutSwapBuffers();
 }
 

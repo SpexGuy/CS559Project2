@@ -202,11 +202,10 @@ bool Mesh::initialize() {
 	return true;
 }
 
-void Mesh::draw(const mat4 &projection, const mat4 &view, mat4 model, const Graphics &g) const {
+void Mesh::draw(mat4 model) const {
 	const ivec2 & size = ivec2(1024, 1024);
 	const float time = 0;
 	bool normals = false;
-	vec3 light(2, 2, 0);
 	if (this->GLReturnedError("Mesh::Draw - on entry"))
 		return;
 
@@ -216,41 +215,42 @@ void Mesh::draw(const mat4 &projection, const mat4 &view, mat4 model, const Grap
 
 	model = rotate(model, 30.0f, vec3(0.0f, 1.0f, 0.0f));
 
-	mat4 modelview = view * model;
-	vec3 light_pos = vec3(view * vec4(light,1.0f)); 
-	mat4 mvp = projection * modelview;
-	mat3 nm = inverse(transpose(mat3(modelview)));
+	Graphics::inst()->drawTriangles(trigs, vertex_array_handle, shader, model);
 
-	this->shader.Use();
-	this->GLReturnedError("Top::Draw - after use");
-	this->shader.CommonSetup(time, value_ptr(size), value_ptr(projection), value_ptr(modelview), value_ptr(mvp), value_ptr(nm), value_ptr(light_pos));
-	this->GLReturnedError("Top::Draw - after common setup");
+	//mat4 modelview = view * model;
+	//vec3 light_pos = vec3(view * vec4(light,1.0f)); 
+	//mat4 mvp = projection * modelview;
+	//mat3 nm = inverse(transpose(mat3(modelview)));
 
-	glBindVertexArray(this->vertex_array_handle);
-	glDrawElements(GL_TRIANGLES , this->trigs.size()*3, GL_UNSIGNED_INT , &this->trigs[0]);
-	glBindVertexArray(0);
+	//this->shader.Use();
+	//this->GLReturnedError("Top::Draw - after use");
+	//this->shader.CommonSetup(time, value_ptr(size), value_ptr(projection), value_ptr(modelview), value_ptr(mvp), value_ptr(nm), value_ptr(light_pos));
+	//this->GLReturnedError("Top::Draw - after common setup");
 
-	this->GLReturnedError("Mesh::draw - after draw");
+	//glBindVertexArray(this->vertex_array_handle);
+	//glDrawElements(GL_TRIANGLES , this->trigs.size()*3, GL_UNSIGNED_INT , &this->trigs[0]);
+	//glBindVertexArray(0);
 
-	glUseProgram(0);
+	//this->GLReturnedError("Mesh::draw - after draw");
 
-	this->solidShader.Use();
-	this->GLReturnedError("Top::Draw - after use");
-	this->solidShader.CommonSetup(time, value_ptr(size), value_ptr(projection), value_ptr(modelview), value_ptr(mvp), value_ptr(nm), NULL);
-	this->GLReturnedError("Top::Draw - after common setup");
-	
+	//glUseProgram(0);
+
 	//drawing normals
-	if(normals)
-	{
-		glBindVertexArray(this->normal_array_handle);
-		glDrawElements(GL_LINES , this->normSegs.size()*2, GL_UNSIGNED_INT , &this->normSegs[0]);
-		glBindVertexArray(0);
+	//if(normals) {
+	//	this->solidShader.Use();
+	//	this->GLReturnedError("Top::Draw - after use");
+	//	this->solidShader.CommonSetup(time, value_ptr(size), value_ptr(projection), value_ptr(modelview), value_ptr(mvp), value_ptr(nm), NULL);
+	//	this->GLReturnedError("Top::Draw - after common setup");
+	//
+	//	glBindVertexArray(this->normal_array_handle);
+	//	glDrawElements(GL_LINES , this->normSegs.size()*2, GL_UNSIGNED_INT , &this->normSegs[0]);
+	//	glBindVertexArray(0);
 
-		this->GLReturnedError("Mesh::draw - after normals draw");
-		glUseProgram(0);
-		if (this->GLReturnedError("Mesh::draw - on exit"))
-		return;
-	}
+	//	this->GLReturnedError("Mesh::draw - after normals draw");
+	//	glUseProgram(0);
+	//	if (this->GLReturnedError("Mesh::draw - on exit"))
+	//	return;
+	//}
 }
 
 Mesh::~Mesh() {
