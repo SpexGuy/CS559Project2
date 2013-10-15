@@ -3,9 +3,10 @@
 #include "object.h"
 #include "shader.h"
 #include "Vertex.h"
+#include "Transformable.h"
 #include <glm/glm.hpp>
 
-class Mesh : public Object {
+class Mesh : public Drawable, public Object, public TransformableMixin {
 private:
 	Mesh();
 protected:
@@ -28,8 +29,7 @@ public:
 	virtual bool initialize();
 
 	//@Override
-	virtual void draw(const glm::mat4 & projection, glm::mat4 modelview,
-			const glm::ivec2 & size, const float time, bool normals, glm::vec3 light);
+	virtual void draw(const glm::mat4 &projection, const glm::mat4 &view, glm::mat4 modelview, const Graphics &g) const;
 
 	virtual ~Mesh();
 
@@ -39,7 +39,6 @@ public:
 
 	/** creates a spherical Mesh with a base radius offset by data
 	 * from the given file, scaled by radScale.
-	 *
 	 *
 	 * The file format is as follows:
 	 * The first line is the width followed by the height of the data,

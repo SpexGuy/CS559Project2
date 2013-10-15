@@ -26,7 +26,7 @@ void DrawableGroup::updateLighting(const mat4 & view, mat4 context) const {
 	}
 }
 
-void DrawableGroup::draw(const mat4 & view, mat4 context, const Graphics & g) const {
+void DrawableGroup::draw(const mat4 &projection, const mat4 &view, mat4 model, const Graphics & g) const {
 	for (
 		list<Drawable*>::const_iterator
 			iterator = elements.begin(),
@@ -34,7 +34,7 @@ void DrawableGroup::draw(const mat4 & view, mat4 context, const Graphics & g) co
 		iterator != end;
 		++iterator)
 	{
-		(*iterator)->draw(view, context, g);
+		(*iterator)->draw(projection, view, model, g);
 	}
 }
 

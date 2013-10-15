@@ -83,7 +83,7 @@ void Object::InternalInitialize()
 	this->normal_array_handle = this->normal_coordinate_handle = GLuint(-1);
 }
 
-bool Object::GLReturnedError(char * s)
+bool Object::GLReturnedError(char * s) const
 {
 	bool return_error = false;
 #ifdef _DEBUG

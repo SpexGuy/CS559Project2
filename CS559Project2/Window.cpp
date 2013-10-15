@@ -11,7 +11,6 @@ Window::Window() {
 	this->size = ivec2(1, 1);
 	this->windowHandle = -1;
 	this->windowClosed = true;
-	this->graphics = Graphics();
 }
 
 void Window::activate() {
@@ -25,12 +24,11 @@ bool Window::initialize(char *name) {
 		return false;
 	}
 	this->windowClosed = false;
-	return graphics.initialize();
+	return true;
 }
 
 void Window::onClose() {
 	windowClosed = true;
-	glutLeaveMainLoop();
 }
 
 void Window::update() {
@@ -57,7 +55,7 @@ void SingleViewportWindow::render() {
 	activate();
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, size.x, size.y);
-	view->render(graphics);
+	view->render(Graphics::inst());
 	glutSwapBuffers();
 }
 
@@ -80,9 +78,9 @@ void DoubleViewportWindow::render() {
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	int centerX = size.x / 2;
 	glViewport(0, 0, centerX, size.y);
-	leftView->render(graphics);
+	leftView->render(Graphics::inst());
 	glViewport(centerX, 0, centerX, size.y);
-	rightView->render(graphics);
+	rightView->render(Graphics::inst());
 	glutSwapBuffers();
 }
 

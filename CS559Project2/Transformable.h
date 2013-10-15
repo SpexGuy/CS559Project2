@@ -27,6 +27,7 @@ public:
  */
 class TransformableGroup : public DrawableGroup, public TransformableMixin {
 public:
-	virtual void draw(const glm::mat4 & view, glm::mat4 context, const Graphics & g) const;
+	//@Override
+	virtual void draw(const glm::mat4 &projection, const glm::mat4 &view, glm::mat4 model, const Graphics & g) const;
 
 };

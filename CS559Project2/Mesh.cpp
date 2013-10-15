@@ -202,15 +202,22 @@ bool Mesh::initialize() {
 	return true;
 }
 
-void Mesh::draw(const mat4 & projection,mat4 modelview, const ivec2 & size, const float time, bool normals, vec3 light) {
+void Mesh::draw(const mat4 &projection, const mat4 &view, mat4 model, const Graphics &g) const {
+	const ivec2 & size = ivec2(1024, 1024);
+	const float time = 0;
+	bool normals = false;
+	vec3 light(2, 2, 0);
 	if (this->GLReturnedError("Mesh::Draw - on entry"))
 		return;
 
+	transform(model);
+
 	glEnable(GL_DEPTH_TEST);
 
-	modelview = rotate(modelview, 30.0f, vec3(0.0f, 1.0f, 0.0f));
+	model = rotate(model, 30.0f, vec3(0.0f, 1.0f, 0.0f));
 
-	vec3 light_pos = vec3(modelview * vec4(light,1.0f)); 
+	mat4 modelview = view * model;
+	vec3 light_pos = vec3(view * vec4(light,1.0f)); 
 	mat4 mvp = projection * modelview;
 	mat3 nm = inverse(transpose(mat3(modelview)));
 

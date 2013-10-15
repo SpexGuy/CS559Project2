@@ -21,11 +21,11 @@ class Shader
 public:
 	Shader();
 	void TakeDown();
-	void Use();
+	void Use() const;
 	virtual bool Initialize(char * vertex_shader_file, char * fragment_shader_file);
-	virtual void CustomSetup();
+	virtual void CustomSetup() const;
 	void CommonSetup(const float time, const GLint * size, const GLfloat * projection, const GLfloat * modelview, const GLfloat * mvp, 
-					const GLfloat * nm, const GLfloat * light );
+					const GLfloat * nm, const GLfloat * light ) const;
 
 	GLuint modelview_matrix_handle;
 	GLuint projection_matrix_handle;
@@ -43,7 +43,7 @@ public:
 	std::stringstream GetShaderLog(GLuint shader_id);
 
 protected:
-	bool GLReturnedError(char * s);
+	bool GLReturnedError(char * s) const;
 };
 
 class BackgroundShader : public Shader

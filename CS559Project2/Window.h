@@ -10,7 +10,6 @@ class Window {
 protected:
 	int windowHandle; //the GL window index
 	bool windowClosed;
-	Graphics graphics; //there must be a different Graphics for each window because we are using CallLists
 	glm::ivec2 size;
 public:
 	/* DOES NOT initialize() the window !!!
@@ -39,6 +38,10 @@ public:
 	
 	/* activates the window and triggers glutPostRedisplay() */
 	virtual void update();
+
+	inline bool isClosed() {
+		return windowClosed;
+	}
 };
 
 /**

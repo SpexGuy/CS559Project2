@@ -11,66 +11,22 @@
 using namespace glm;
 using namespace std;
 
-GLsizei Graphics::numHandles = 4;
-
-const Graphics Graphics::inst;
+Graphics Graphics::instance;
+Graphics Graphics::inst() {
+	return instance;
+}
 
 Graphics::Graphics() {
-	this->sphereHandle = BAD_GL_VALUE;
-	this->wireCubeHandle = BAD_GL_VALUE;
-	this->wireSphereHandle = BAD_GL_VALUE;
-	this->cylinderHandle = BAD_GL_VALUE;
+	this->projection = mat4(1.0f);
+	this->view = mat4(1.0f);
 }
 
 bool Graphics::initialize() {
-	if (sphereHandle == BAD_GL_VALUE) {
-		GLUquadric * q = gluNewQuadric();
-		if (q != NULL) {
-			if ((sphereHandle = glGenLists(numHandles)) == 0) {
-				cout << "Graphics::initialize() - Failed to GenLists()" << endl;
-				return false;
-			}
-			glNewList(sphereHandle, GL_COMPILE);
-			gluSphere(q, 1.0, 32, 32);
-			glEndList();
-			
-			wireCubeHandle = sphereHandle + 1;
-			glNewList(wireCubeHandle, GL_COMPILE);
-			glutWireCube(2.0f);
-			glEndList();
-
-			wireSphereHandle = sphereHandle + 2;
-			glNewList(wireSphereHandle, GL_COMPILE);
-			glutWireSphere(1.0f, 32, 32);
-			glEndList();
-
-			cylinderHandle = sphereHandle + 3;
-			glNewList(cylinderHandle, GL_COMPILE);
-			gluCylinder(q, 1.0, 1.0, 1.0, 32, 32);
-			glEndList();
-
-			gluDeleteQuadric(q);
-		} else {
-			return false;
-		}
-	}
 	return true;
 }
 
-void Graphics::drawSphere() const {
-	glCallList(sphereHandle);
-}
-
 void Graphics::drawWireCube() const {
-	glCallList(wireCubeHandle);
-}
-
-void Graphics::drawWireSphere() const {
-	glCallList(wireSphereHandle);
-}
-
-void Graphics::drawCylinder() const {
-	glCallList(cylinderHandle);
+	glutWireCube(2.0f);
 }
 
 void Graphics::drawText2D(const mat4 &base, float x, float y, char *str, float size) const {
@@ -81,8 +37,9 @@ void Graphics::drawText2D(const mat4 &base, float x, float y, char *str, float s
 	glutStrokeString(GLUT_STROKE_ROMAN, (unsigned char*)str);
 }
 
+void Graphics::takeDown() {
+
+}
+
 Graphics::~Graphics() {
-	if (sphereHandle != BAD_GL_VALUE) {
-		glDeleteLists(sphereHandle, numHandles);
-	}
 }

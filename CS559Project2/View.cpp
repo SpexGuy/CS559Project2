@@ -19,11 +19,11 @@ View::View(Camera *c, Model *m, ViewOverlay *o) {
 }
 
 void View::render(const Graphics & g) {
-	this->setProjection();
+	mat4 proj = this->setProjection();
 	mat4 context = mat4(1.0f);
 	mat4 view = camera->generateViewMatrix();
 	model->updateLighting(view, context);
-	model->draw(view, context, g);
+	model->draw(proj, view, context, g);
 
 	//disable lighting and depth test for overlay
 	GLboolean lit = glIsEnabled(GL_LIGHTING);
@@ -43,9 +43,10 @@ void View::reshape(int x, int y) {
 	camera->reshape(x, y);
 }
 
-void View::setProjection() {
+mat4 View::setProjection() {
 	mat4 prj = camera->generateProjectionMatrix();
-	Graphics::inst.setProjection(prj);
+	Graphics::inst().setProjection(prj);
+	return prj;
 }
 
 Camera *View::getCamera() {
@@ -66,6 +67,10 @@ void ViewOverlay::reshape(int x, int y) {
 	if (y > 0) {
 		size = ivec2(x, y);
 	}
+}
+
+mat4 ViewOverlay::draw(const Graphics &g) const {
+	return mat4(1.0f);
 }
 
 mat4 ViewOverlay::setProjection() const {

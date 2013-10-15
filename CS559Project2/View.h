@@ -18,7 +18,7 @@ public:
 	Model *getModel();
 private:
 	View(); //force use of constructor with arguments
-	void setProjection();
+	glm::mat4 setProjection();
 protected:
 	ViewOverlay *overlay;
 	Camera *camera;
@@ -31,7 +31,7 @@ public:
 	ViewOverlay();
 	virtual void reshape(int x, int y);
 	/* renders the overlay. Returns the rendering context for the overlay. */
-	virtual glm::mat4 draw(const Graphics &g) const = 0;
+	virtual glm::mat4 draw(const Graphics &g) const;
 protected:
 	glm::ivec2 size;
 	/* sets up an orthographic projection matrix with the bottom left corner

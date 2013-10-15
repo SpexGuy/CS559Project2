@@ -37,7 +37,7 @@ Shader::Shader()
 */
 
 void Shader::CommonSetup(const float time, const GLint * size, const GLfloat * projection, const GLfloat * modelview,
-						 const GLfloat * mvp, const GLfloat * nm, const GLfloat * light)
+						 const GLfloat * mvp, const GLfloat * nm, const GLfloat * light) const
 {
 	if (this->time_handle != BAD_GL_VALUE)
 		glUniform1f(this->time_handle, time);
@@ -63,7 +63,7 @@ void Shader::CommonSetup(const float time, const GLint * size, const GLfloat * p
 
 }
 
-void Shader::Use()
+void Shader::Use() const
 {
 	assert(this->program_id != BAD_GL_VALUE);
 	glUseProgram(this->program_id);
@@ -127,7 +127,7 @@ bool Shader::Initialize(char * vertex_shader_file, char * fragment_shader_file)
 	return !GLReturnedError("Shader::Initialize - on exit");
 }
 
-void Shader::CustomSetup()
+void Shader::CustomSetup() const
 {
 }
 
@@ -210,7 +210,7 @@ stringstream Shader::GetShaderLog(GLuint shader_id)
 	return s;
 }
 
-bool Shader::GLReturnedError(char * s)
+bool Shader::GLReturnedError(char * s) const
 {
 	bool return_error = false;
 	GLenum glerror;

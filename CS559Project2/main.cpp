@@ -22,14 +22,102 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "Mesh.h"
+#include "Window.h"
+#include "View.h"
+#include "Camera.h"
+#include "Graphics.h"
 
 using namespace std;
 using namespace glm;
 
-class Window
+class Globals {
+public:
+	Window *window;
+	View *view;
+	ViewOverlay *overlay;
+	PerspectiveProjection *proj;
+	SpheroidCamera *cam;
+	Model *model;
+	Mesh *mars;
+
+	int period;
+	bool wireframe;
+
+	Globals();
+	bool initialize();
+	void takeDown();
+	virtual ~Globals();
+} globals;
+
+Globals::Globals() {
+	period = 1000 / 120;
+	proj = new PerspectiveProjection(35.0f);
+	cam = new SpheroidCamera(proj);
+	cam->setRadius(3);
+	overlay = new ViewOverlay();
+	model = new Model();
+	mars = Mesh::newMars(1, 0.08f, "mars_low_rez.txt", true);
+	//mars = Mesh::newMars(1, 0, "55sphere.txt", false);
+	model->addElement(mars);
+	view = new View(cam, model, overlay);
+	window = new SingleViewportWindow(view);
+	wireframe = false;
+}
+
+void windowReshape(int x, int y);
+void windowClose();
+void windowDisplay();
+void KeyboardFunc(unsigned char c, int x, int y);
+void SpecialFunc(int c, int x, int y);
+void TimerFunc(int value);
+
+bool Globals::initialize() {
+	if (!window->initialize("Mars"))
+		return false;
+	glutReshapeFunc(windowReshape);
+	glutCloseFunc(windowClose);
+	glutDisplayFunc(windowDisplay);
+	glutKeyboardFunc(KeyboardFunc);
+	glutSpecialFunc(SpecialFunc);
+	glutTimerFunc(period, TimerFunc, 0);
+	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glEnable(GL_CULL_FACE);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+
+
+	if (glewInit() != GLEW_OK) {
+		cerr << "GLEW failed to initialize." << endl;
+		return false;
+	}
+
+	if (!Graphics::inst().initialize())
+		return false;
+	if (!mars->initialize())
+		return false;
+
+	return true;
+}
+
+void Globals::takeDown() {
+	Graphics::inst().takeDown();
+	mars->TakeDown();
+}
+
+Globals::~Globals() {
+	delete proj;
+	delete cam;
+	delete overlay;
+	delete model;
+	delete view;
+	delete window;
+	delete mars;
+}
+
+class WindowPK
 {
 public:
-	Window()
+	WindowPK()
 	{
 		this->time_last_pause_began = this->total_time_paused = 0;
 		this->normals = this->wireframe = this->paused = false;
@@ -47,73 +135,23 @@ public:
 	ivec2 size;
 	float window_aspect;
 	vector<string> instructions;
-} window;
+};
 
-Mesh *mars;
-float cangle = 0.0f;
-float fov = 30.0f;
 
-void DisplayInstructions()
-{
-	if (window.window_handle == -1)
-		return;
-
-	vector<string> * s = &window.instructions;
-	glDisable(GL_LIGHTING);
-	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_DEPTH_TEST);
-	glColor3f(1.0f, 1.0f, 1.0f);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, window.size.x, 0, window.size.y, 1, 10);
-	glViewport(0, 0, window.size.x, window.size.y);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glTranslated(10, 15 * s->size(), -5.5);
-	glScaled(0.1, 0.1, 1.0);
-	for (auto i = s->begin(); i < s->end(); ++i)
-	{
-		glPushMatrix();
-		glutStrokeString(GLUT_STROKE_MONO_ROMAN, (const unsigned char *) (*i).c_str());
-		glPopMatrix();
-		glTranslated(0, -150, 0);
-	}
+void CloseFunc() {
+	glutLeaveMainLoop();
+	globals.takeDown();
 }
 
-void CloseFunc()
-{
-	window.window_handle = -1;
-	mars->TakeDown();
-	delete mars;
-}
-
-void ReshapeFunc(int w, int h)
-{
-	// Question for reader: Why is this 'if' statement here?
-	if (h > 0)
-	{
-		window.size = ivec2(w, h);
-		window.window_aspect = float(w) / float(h);
-	}
-}
-
-void KeyboardFunc(unsigned char c, int x, int y)
-{
+void KeyboardFunc(unsigned char c, int x, int y) {
 	//float current_time = float(glutGet(GLUT_ELAPSED_TIME)) / 1000.0f;
 
-	//switch (c)
-	//{
-	//case 's':
-	//	top.StepShader();
-	//	break;
-
-	//case 'n':
-	//	top.EnableNormals(window.normals = !window.normals);
-	//	break;
-
-	//case 'w':
-	//	window.wireframe = !window.wireframe;
-	//	break;
+	switch (c)
+	{
+	case 'w':
+		globals.wireframe = !globals.wireframe;
+		glPolygonMode(GL_FRONT_AND_BACK, globals.wireframe ? GL_LINE : GL_FILL);
+		break;
 
 	//case 'p':
 	//	if (window.paused == true)
@@ -129,135 +167,69 @@ void KeyboardFunc(unsigned char c, int x, int y)
 	//	window.paused = !window.paused;
 	//	break;
 
-	//case 'x':
-	//case 27:
-	//	glutLeaveMainLoop();
-	//	return;
-	//}
+	case 'e':
+		globals.mars->position(globals.mars->position() + vec3(0.0f, 0.05f, 0.0f));
+		break;
+	case 'd':
+		globals.mars->position(globals.mars->position() + vec3(0.0f, -0.05f, 0.0f));
+		break;
+
+	case 'x':
+	case 27:
+		glutLeaveMainLoop();
+		return;
+	}
 }
 
-void SpecialFunc(int c, int x, int y)
-{
-	switch (c)
-	{
-	//case GLUT_KEY_UP:
-	//	++window.slices;
-	//	top.TakeDown();
-	//	top.Initialize(window.slices);
-	//	break;
-
-	//case GLUT_KEY_DOWN:
-	//	if (window.slices > 1)
-	//	{
-	//		--window.slices;
-	//		top.TakeDown();
-	//		top.Initialize(window.slices);
-	//	}
-	//	break;
-		
+void SpecialFunc(int c, int x, int y) {
+	switch (c) {		
 	case GLUT_KEY_LEFT:
-		cangle -= 1.0f;
+		globals.cam->addAngle(-1.0f);
 		break;
 	case GLUT_KEY_RIGHT:
-		cangle += 1.0f;
+		globals.cam->addAngle(1.0f);
 		break;
-		case GLUT_KEY_UP:
-		fov += 1.0f;
+	case GLUT_KEY_UP:
+		globals.cam->addAxisAngle(-1.0f);
 		break;
 	case GLUT_KEY_DOWN:
-		fov -= 1.0f;
+		globals.cam->addAxisAngle(1.0f);
+		break;
+	case GLUT_KEY_PAGE_UP:
+		globals.proj->addFov(1.0f);
+		break;
+	case GLUT_KEY_PAGE_DOWN:
+		globals.proj->addFov(-1.0f);
 		break;
 	}
 }
 
-void DisplayFunc()
-{
-	float current_time = float(glutGet(GLUT_ELAPSED_TIME)) / 1000.0f;
-
-	glEnable(GL_CULL_FACE);
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glViewport(0, 0, window.size.x, window.size.y);
-//	background.Draw(window.size);
-	mat4 projection = perspective(fov, window.window_aspect, 1.0f, 10.0f);
-	mat4 modelview = lookAt(vec3(0.0f, 0.0f, 5.5f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f));
-	mat4 context = rotate(modelview, cangle, vec3(0.0f, 1.0f, 0.0f));
-	// glPolygonMode is NOT modern OpenGL but will be allowed in Projects 2 and 3
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	mars->draw(projection, context, window.size, (window.paused ? window.time_last_pause_began : current_time) - window.total_time_paused, false, vec3(1.0f,1.0f,1.0f));
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	//DisplayInstructions();
-
-	//glMatrixMode(GL_PROJECTION);
-	//glLoadMatrixf(value_ptr(projection));
-	//glMatrixMode(GL_MODELVIEW);
-	//glLoadMatrixf(value_ptr(modelview));
-	//glutWireCube(1);
-
-	glFlush();
-}
-
-void TimerFunc(int value)
-{
-	// Question for reader: Why is this 'if' statement here?
-	if (window.window_handle != -1)
-	{
-		glutTimerFunc(window.interval, TimerFunc, value);
-		glutPostRedisplay();
+void TimerFunc(int value) {
+	if (!globals.window->isClosed()) {
+		glutTimerFunc(globals.period, TimerFunc, value);
+		globals.window->update();
 	}
 }
 
-int main(int argc, char * argv[])
-{
+void windowReshape(int x, int y) {
+	globals.window->reshape(x, y);
+}
+void windowClose() {
+	globals.window->onClose();
+	CloseFunc();
+}
+void windowDisplay() {
+	globals.window->render();
+}
+
+int main(int argc, char * argv[]) {
 	glutInit(&argc, argv);
 	glutInitWindowSize(1024, 512);
 	glutInitWindowPosition(0, 0);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH);
 
-	window.window_handle = glutCreateWindow("A More Sophisticated Modern Hello World");
-	glutReshapeFunc(ReshapeFunc);
-	glutCloseFunc(CloseFunc);
-	glutDisplayFunc(DisplayFunc);
-	glutKeyboardFunc(KeyboardFunc);
-	glutSpecialFunc(SpecialFunc);
-	glutTimerFunc(window.interval, TimerFunc, 0);
-	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
-
-	window.instructions.push_back("This program is an expanded  'Hello World'");
-	window.instructions.push_back("using modern OpenGL.");
-	window.instructions.push_back("");
-	window.instructions.push_back("Perry Kivolowitz - For UW-Madison - CS 559");
-	window.instructions.push_back("");
-	window.instructions.push_back("UP / DN - changes slice count");
-	window.instructions.push_back("n - toggles");
-	window.instructions.push_back("p - toggles pause");
-	window.instructions.push_back("s - cycles shaders");
-	window.instructions.push_back("w - toggles wireframe");
-	window.instructions.push_back("x - exits");
-
-	if (glewInit() != GLEW_OK)
-	{
-		cerr << "GLEW failed to initialize." << endl;
-		return 0;
-	}
-
-
-	mars = Mesh::newMars(1, 0.08f, "mars_low_rez.txt", true);
-
-	//mars = Mesh::newMars(1, 0, "55sphere.txt", false);
-
-	if (!mars->initialize())
+	if (!globals.initialize())
 		return -1;
 
 	glutMainLoop();
 }
-
-//int main() {
-//	cout << "Vector test!" << endl;
-//	vector<int> vec(4);
-//	cout << "base size: " << vec.size() << endl;
-//	vec.push_back(4);
-//	cout << "after push: " << vec.size() << ',' << vec[0] << ',' << vec[4] << endl;
-//	int i;
-//	cin >> i;
-//}
