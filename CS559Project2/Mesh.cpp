@@ -7,7 +7,7 @@
 #include <vector>
 #include "ErrorCheck.h"
 #include "Mesh.h"
-#include "shader.h"
+#include "Shader.h"
 #include "Vertex.h"
 #include <glm/glm.hpp>
 
@@ -174,7 +174,7 @@ Mesh *Mesh::newCylinder(int stacks, int slices, bool crosshatch)
 }
 
 vector<ivec3> Mesh::generateTrigs(vector<vec3> points, int width, int height, bool endcaps, bool crosshatch) {
-	assert(points.size() >= width*height + (endcaps ? 2 : 0));
+	assert(int(points.size()) >= width*height + (endcaps ? 2 : 0));
 	vector<ivec3> trigs;
 	for (int c = 0; c < height-1; c++) {
 		for (int d = 0; d < width; d++) {
@@ -218,13 +218,13 @@ Mesh::Mesh(vector<vec3> ppoints, vector<ivec3> trigs) {
 	this->points = vector<VertexPN>(ppoints.size());
 	this->trigs = trigs;
 
-	for (int c = 0; c < points.size(); c++) {
+	for (int c = 0; c < int(points.size()); c++) {
 		points[c].position = ppoints[c];
 		points[c].normal = vec3(0.0f);
 		points[c].light_position = vec3( 0, 5.0f, 0.0f);
 	}
 
-	for (int c = 0; c < trigs.size(); c++) {
+	for (int c = 0; c < int(trigs.size()); c++) {
 		vec3 vect1 = ppoints[trigs[c].y] - ppoints[trigs[c].z];
 		vec3 vect2 = ppoints[trigs[c].y] - ppoints[trigs[c].x];
 		vec3 planeNormal = cross(vect1, vect2);
@@ -233,11 +233,11 @@ Mesh::Mesh(vector<vec3> ppoints, vector<ivec3> trigs) {
 		points[trigs[c].y].normal += planeNormal;
 		points[trigs[c].z].normal += planeNormal;
 	}
-	for (int c = 0; c < points.size(); c++) {
+	for (int c = 0; c < int(points.size()); c++) {
 		points[c].normal = normalize(points[c].normal);
 	}
 
-	for (int c = 0; c < points.size(); c++) {
+	for (int c = 0; c < int(points.size()); c++) {
 		normPoints.push_back(points[c].position);
 		normPoints.push_back(points[c].position + vec3(0.1f)*points[c].normal);
 		normSegs.push_back(ivec2(2*c, 2*c+1));
@@ -268,11 +268,8 @@ bool Mesh::initialize() {
 		glBindVertexArray(0);
 	}
 
-	
-	if (!this->solidShader.Initialize("solid_shader.vert", "solid_shader.frag"))
-		return false;
-	if (!this->shader.Initialize("top_shader.vert", "top_shader.frag"))
-		return false;
+	this->solidShader = ShaderFlyweight::inst()->getShader(SHADER_SOLID);
+	this->shader = ShaderFlyweight::inst()->getShader(SHADER_ADS);
 
 	return true;
 }

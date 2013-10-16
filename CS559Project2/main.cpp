@@ -63,6 +63,8 @@ Globals::Globals() {
 	sphere = Mesh::newSphere(10,10, true);
 	cylinder = Mesh::newCylinder(10,10,true);
 
+	model->addElement(mars);
+
 	view = new View(cam, model, overlay);
 	window = new SingleViewportWindow(view);
 	wireframe = false;
@@ -95,6 +97,8 @@ bool Globals::initialize() {
 		return false;
 	}
 
+	if (!ShaderFlyweight::inst()->initialize())
+		return false;
 	if (!Graphics::inst()->initialize())
 		return false;
 	if (!mars->initialize())
@@ -108,10 +112,11 @@ bool Globals::initialize() {
 }
 
 void Globals::takeDown() {
-	Graphics::inst()->takeDown();
 	mars->takeDown();
 	cylinder->takeDown();
 	sphere->takeDown();
+	Graphics::inst()->takeDown();
+	ShaderFlyweight::inst()->takeDown();
 }
 
 Globals::~Globals() {
@@ -122,8 +127,11 @@ Globals::~Globals() {
 	delete view;
 	delete window;
 	delete mars;
+	delete cylinder;
+	delete sphere;
 }
 
+//@Deprecated
 class WindowPK
 {
 public:
@@ -155,7 +163,7 @@ void CloseFunc() {
 
 void KeyboardFunc(unsigned char c, int x, int y) {
 	//float current_time = float(glutGet(GLUT_ELAPSED_TIME)) / 1000.0f;
-
+	bool normals;
 	switch (c)
 	{
 	case 'w':
@@ -164,7 +172,10 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 		break;
 
 	case 'n':
-		globals.mars->setDrawNormals(!globals.mars->isDrawingNormals());
+		normals = !globals.mars->isDrawingNormals();
+		globals.mars->setDrawNormals(normals);
+		globals.cylinder->setDrawNormals(normals);
+		globals.sphere->setDrawNormals(normals);
 		break;
 
 	//case 'p':

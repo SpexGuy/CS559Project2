@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "shader.h"
+#include "Shader.h"
 #include "Vertex.h"
 #include "Transformable.h"
 #include <glm/glm.hpp>
@@ -16,8 +16,8 @@ protected:
 	GLuint normal_coordinate_handle;
 	GLuint normal_array_handle;
 
-	Shader shader;
-	Shader solidShader;
+	Shader *shader;
+	Shader *solidShader;
 	std::vector<VertexPN> points;
 	std::vector<glm::ivec3> trigs;
 	std::vector<glm::vec3> normPoints;

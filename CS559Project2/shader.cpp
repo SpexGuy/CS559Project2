@@ -8,7 +8,7 @@
 	Updates:
 */
 
-#include "shader.h"
+#include "Shader.h"
 #include <assert.h>
 
 using namespace std;
@@ -36,7 +36,7 @@ Shader::Shader()
 	loaded with the CustomShader() function.
 */
 
-void Shader::CommonSetup(const float time, const GLint * size, const GLfloat * projection, const GLfloat * modelview,
+void Shader::commonSetup(const float time, const GLint * size, const GLfloat * projection, const GLfloat * modelview,
 						 const GLfloat * mvp, const GLfloat * nm, const GLfloat * light) const
 {
 	if (this->time_handle != BAD_GL_VALUE)
@@ -63,7 +63,7 @@ void Shader::CommonSetup(const float time, const GLint * size, const GLfloat * p
 
 }
 
-void Shader::Use() const
+void Shader::use() const
 {
 	assert(this->program_id != BAD_GL_VALUE);
 	glUseProgram(this->program_id);
@@ -72,7 +72,7 @@ void Shader::Use() const
 /*	The shader initialization code is lifted liberally from the GLSL 4.0 Cookbook.
 */
 
-bool Shader::Initialize(char * vertex_shader_file, char * fragment_shader_file)
+bool Shader::initialize(char * vertex_shader_file, char * fragment_shader_file)
 {
 	GLint check_value;
 
@@ -80,12 +80,12 @@ bool Shader::Initialize(char * vertex_shader_file, char * fragment_shader_file)
 		return false;
 
 	this->vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
-	this->LoadShader(vertex_shader_file, this->vertex_shader_id);
+	this->loadShader(vertex_shader_file, this->vertex_shader_id);
 	glCompileShader(this->vertex_shader_id);
 	glGetShaderiv(this->vertex_shader_id, GL_COMPILE_STATUS, &check_value);
 	if (check_value != GL_TRUE)
 	{
-		cerr << this->GetShaderLog(vertex_shader_id).str();
+		cerr << this->getShaderLog(vertex_shader_id).str();
 		cerr << "GLSL compilation failed - vertex shader: " << vertex_shader_file << endl;
 		return false;
 	}
@@ -94,12 +94,12 @@ bool Shader::Initialize(char * vertex_shader_file, char * fragment_shader_file)
 		return false;
 
 	this->fragment_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
-	this->LoadShader(fragment_shader_file, this->fragment_shader_id);
+	this->loadShader(fragment_shader_file, this->fragment_shader_id);
 	glCompileShader(this->fragment_shader_id);
 	glGetShaderiv(this->fragment_shader_id, GL_COMPILE_STATUS, &check_value);
 	if (check_value != GL_TRUE)
 	{
-		cerr << this->GetShaderLog(fragment_shader_id).str();
+		cerr << this->getShaderLog(fragment_shader_id).str();
 		cerr << "GLSL compilation failed - fragment shader: " << fragment_shader_file << endl;
 		return false;
 	}
@@ -127,12 +127,12 @@ bool Shader::Initialize(char * vertex_shader_file, char * fragment_shader_file)
 	return !GLReturnedError("Shader::Initialize - on exit");
 }
 
-void Shader::CustomSetup() const
+void Shader::customSetup() const
 {
 }
 
 
-void Shader::TakeDown()
+void Shader::takeDown()
 {
 	GLint temp;
 	GLsizei size;
@@ -162,7 +162,7 @@ void Shader::TakeDown()
 	This function is adapted from OpenGL 4.0 Shading Language Cookbook by David Wolff.
 */
 
-bool Shader::LoadShader(const char * file_name, GLuint shader_id)
+bool Shader::loadShader(const char * file_name, GLuint shader_id)
 {
 	assert(file_name != NULL);
 	if (GLReturnedError("Shader::LoadShader - on entrance"))
@@ -192,7 +192,7 @@ bool Shader::LoadShader(const char * file_name, GLuint shader_id)
 	This function is adapted from OpenGL 4.0 Shading Language Cookbook by David Wolff.
 */
 
-stringstream Shader::GetShaderLog(GLuint shader_id)
+stringstream Shader::getShaderLog(GLuint shader_id)
 {
 	stringstream s;
 	GLint log_length;
@@ -229,19 +229,72 @@ BackgroundShader::BackgroundShader() : super()
 	this->color_array_handle = BAD_GL_VALUE;
 }
 
-bool BackgroundShader::Initialize(char * vertex_shader_file, char * fragment_shader_file)
+bool BackgroundShader::initialize(char * vertex_shader_file, char * fragment_shader_file)
 {
-	if (!super::Initialize(vertex_shader_file, fragment_shader_file))
+	if (!super::initialize(vertex_shader_file, fragment_shader_file))
 		return false;
 
-	this->Use();
+	this->use();
 	this->color_array_handle = glGetUniformLocation(this->program_id, (const GLchar *) "color_array");
 	glUseProgram(0);
 //	assert(this->color_array_handle != BAD_GL_VALUE);
 	return true;
 }
 
-void BackgroundShader::CustomSetup(vec4 * color_array)
+void BackgroundShader::customSetup(vec4 * color_array)
 {
 	glUniform4fv(this->color_array_handle, 4, (GLfloat *) color_array);
+}
+
+
+
+
+
+ShaderFlyweight ShaderFlyweight::instance;
+ShaderFlyweight *ShaderFlyweight::inst() {
+	return &instance;
+}
+
+ShaderFlyweight::ShaderFlyweight() :
+	loadedShaders() {
+}
+
+bool ShaderFlyweight::initialize() {
+	loadShader(SHADER_SOLID, "solid_shader.vert", "solid_shader.frag");
+	loadShader(SHADER_ADS, "top_shader.vert", "top_shader.frag");
+	return true;
+}
+
+Shader *ShaderFlyweight::loadShader(int name, char *vertFile, char *fragFile) {
+	Shader *s = new Shader();
+	s->initialize(vertFile, fragFile);
+	loadedShaders[name] = s;
+	return s;
+}
+
+void ShaderFlyweight::addShader(int name, Shader *shader) {
+	assert(loadedShaders.find(name) == loadedShaders.end());
+	loadedShaders[name] = shader;
+}
+
+Shader *ShaderFlyweight::getShader(int name) {
+	assert(loadedShaders.find(name) != loadedShaders.end());
+	return loadedShaders[name];
+}
+
+void ShaderFlyweight::takeDown() {
+	for (map<int, Shader *>::iterator
+				iter = loadedShaders.begin(),
+				end = loadedShaders.end();
+			iter != end;
+			iter++)
+	{
+		iter->second->takeDown();
+		delete iter->second;
+	}
+	loadedShaders.clear();
+}
+
+ShaderFlyweight::~ShaderFlyweight() {
+	assert(loadedShaders.size() == 0);
 }

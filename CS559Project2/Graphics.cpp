@@ -54,7 +54,7 @@ void Graphics::drawText2D(const mat4 &base, float x, float y, char *str, float s
 }
 
 void Graphics::drawTriangles(const vector<ivec3> &trigs, const GLuint &vertexArrayHandle,
-							 const Shader &s, const mat4 &model) const {
+							 const Shader *s, const mat4 &model) const {
 
 	const float time = 0;
 	vec3 light(2, 2, 0);				 
@@ -64,9 +64,9 @@ void Graphics::drawTriangles(const vector<ivec3> &trigs, const GLuint &vertexArr
 	mat4 mvp = projection * modelview;
 	mat3 nm = inverse(transpose(mat3(modelview)));
 
-	s.Use();
+	s->use();
 	checkError("Graphics::draw - after use");
-	s.CommonSetup(time, value_ptr(size), value_ptr(projection), value_ptr(modelview), value_ptr(mvp), value_ptr(nm), value_ptr(light_pos));
+	s->commonSetup(time, value_ptr(size), value_ptr(projection), value_ptr(modelview), value_ptr(mvp), value_ptr(nm), value_ptr(light_pos));
 	checkError("Graphics::draw - after common setup");
 
 	glBindVertexArray(vertexArrayHandle);
@@ -78,7 +78,7 @@ void Graphics::drawTriangles(const vector<ivec3> &trigs, const GLuint &vertexArr
 }
 
 void Graphics::drawLines(const vector<ivec2> &segs, const GLuint &vertexArrayHandle,
-						 const Shader &s, const mat4 &model) const {
+						 const Shader *s, const mat4 &model) const {
 
 	const float time = 0;
 	vec3 light(2, 2, 0);				 
@@ -88,9 +88,9 @@ void Graphics::drawLines(const vector<ivec2> &segs, const GLuint &vertexArrayHan
 	mat4 mvp = projection * modelview;
 	mat3 nm = inverse(transpose(mat3(modelview)));
 
-	s.Use();
+	s->use();
 	checkError("Graphics::draw - after use");
-	s.CommonSetup(time, value_ptr(size), value_ptr(projection), value_ptr(modelview), value_ptr(mvp), value_ptr(nm), NULL);
+	s->commonSetup(time, value_ptr(size), value_ptr(projection), value_ptr(modelview), value_ptr(mvp), value_ptr(nm), NULL);
 	checkError("Top::Draw - after common setup");
 
 	glBindVertexArray(vertexArrayHandle);

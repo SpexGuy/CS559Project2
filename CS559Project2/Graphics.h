@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "shader.h"
+#include "Shader.h"
 #include <GL/freeglut.h>
 #include <glm/glm.hpp>
 
@@ -43,13 +43,13 @@ public:
 
 	void drawTriangles(const std::vector<glm::ivec3> &trigs,
 					   const GLuint &vertexArrayHandle,
-					   const Shader &s,
+					   const Shader *s,
 					   const glm::mat4 &model)
 				const;
 
 	void drawLines(const std::vector<glm::ivec2> &segs,
 				   const GLuint &vertexArrayHandle,
-				   const Shader &s,
+				   const Shader *s,
 				   const glm::mat4 &model)
 				const;
 
