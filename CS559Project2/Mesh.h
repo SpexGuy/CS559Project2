@@ -70,6 +70,9 @@ public:
 	static Mesh *newMars(float radius, float radScale,
 		std::vector<std::vector<float>> radii, bool crosshatch = false);
 
+	static Mesh *newCylinder(int stacks, int slices, bool crosshatch = false);
+
+	static Mesh *newSphere(int stacks, int slices, bool crosshatch = false);
 
 	static std::vector<glm::ivec3> generateTrigs(std::vector<glm::vec3> points,
 			int width, int height, bool endcaps, bool crosshatch);

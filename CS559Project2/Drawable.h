@@ -23,6 +23,7 @@ public:
 	virtual void updateLighting(const glm::mat4 & view, glm::mat4 context) const;
 	virtual void draw(glm::mat4 model) const;
 	void addElement(Drawable *drawable);
+	void clearElements();
 	std::list<Drawable*> *getElements();
 private:
 	std::list<Drawable*> elements;

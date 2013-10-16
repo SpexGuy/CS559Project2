@@ -42,6 +42,11 @@ void DrawableGroup::addElement(Drawable *el) {
 	elements.push_back(el);
 }
 
+void DrawableGroup::clearElements()
+{
+	elements.clear();
+}
+
 list<Drawable*> *DrawableGroup::getElements() {
 	return &elements;
 }

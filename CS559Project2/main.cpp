@@ -39,6 +39,9 @@ public:
 	SpheroidCamera *cam;
 	Model *model;
 	Mesh *mars;
+	Mesh *cylinder;
+	Mesh *sphere;
+
 
 	int period;
 	bool wireframe;
@@ -57,8 +60,9 @@ Globals::Globals() {
 	overlay = new ViewOverlay();
 	model = new Model();
 	mars = Mesh::newMars(1, 0.08f, "mars_low_rez.txt", true);
-	//mars = Mesh::newMars(1, 0, "55sphere.txt", false);
-	model->addElement(mars);
+	sphere = Mesh::newSphere(10,10, true);
+	cylinder = Mesh::newCylinder(10,10,true);
+
 	view = new View(cam, model, overlay);
 	window = new SingleViewportWindow(view);
 	wireframe = false;
@@ -95,6 +99,10 @@ bool Globals::initialize() {
 		return false;
 	if (!mars->initialize())
 		return false;
+	if (!cylinder->initialize())
+		return false;
+	if (!sphere->initialize())
+		return false;
 
 	return true;
 }
@@ -102,6 +110,8 @@ bool Globals::initialize() {
 void Globals::takeDown() {
 	Graphics::inst()->takeDown();
 	mars->takeDown();
+	cylinder->takeDown();
+	sphere->takeDown();
 }
 
 Globals::~Globals() {
@@ -176,6 +186,21 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 		break;
 	case 'd':
 		globals.mars->position(globals.mars->position() + vec3(0.0f, -0.05f, 0.0f));
+		break;
+
+	case 'm':
+		globals.model->clearElements();
+		globals.model->addElement(globals.mars);
+		break;
+
+	case 's':
+		globals.model->clearElements();
+		globals.model->addElement(globals.sphere);
+		break;
+
+	case 'c':
+		globals.model->clearElements();
+		globals.model->addElement(globals.cylinder);
 		break;
 
 	case 'x':
