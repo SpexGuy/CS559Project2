@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include "Graphics.h"
+#include "ErrorCheck.h"
 #include <GL/freeglut.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -24,6 +25,15 @@ Graphics::Graphics() {
 
 bool Graphics::initialize() {
 	return true;
+}
+
+bool Graphics::loadBuffer(GLuint *arrayHandle, GLuint *coordinateHandle, GLsizeiptr sz, const GLvoid *ptr) {
+	glGenVertexArrays(1, arrayHandle);
+	glBindVertexArray(*arrayHandle);
+	glGenBuffers(1, coordinateHandle);
+	glBindBuffer(GL_ARRAY_BUFFER, *coordinateHandle);
+	glBufferData(GL_ARRAY_BUFFER, sz, ptr, GL_STATIC_DRAW);
+	return !checkError("Graphics::loadBuffer - on exit");
 }
 
 void Graphics::drawWireCube() const {
@@ -55,9 +65,9 @@ void Graphics::drawTriangles(const vector<ivec3> &trigs, const GLuint &vertexArr
 	mat3 nm = inverse(transpose(mat3(modelview)));
 
 	s.Use();
-	//this->GLReturnedError("Top::Draw - after use");
+	checkError("Graphics::draw - after use");
 	s.CommonSetup(time, value_ptr(size), value_ptr(projection), value_ptr(modelview), value_ptr(mvp), value_ptr(nm), value_ptr(light_pos));
-	//this->GLReturnedError("Top::Draw - after common setup");
+	checkError("Graphics::draw - after common setup");
 
 	glBindVertexArray(vertexArrayHandle);
 	glDrawElements(GL_TRIANGLES , trigs.size()*3, GL_UNSIGNED_INT , &trigs[0]);
@@ -65,6 +75,30 @@ void Graphics::drawTriangles(const vector<ivec3> &trigs, const GLuint &vertexArr
 
 	glUseProgram(0);
 
+}
+
+void Graphics::drawLines(const vector<ivec2> &segs, const GLuint &vertexArrayHandle,
+						 const Shader &s, const mat4 &model) const {
+
+	const float time = 0;
+	vec3 light(2, 2, 0);				 
+								 
+	mat4 modelview = view * model;
+	vec3 light_pos = vec3(view * vec4(light,1.0f)); 
+	mat4 mvp = projection * modelview;
+	mat3 nm = inverse(transpose(mat3(modelview)));
+
+	s.Use();
+	checkError("Graphics::draw - after use");
+	s.CommonSetup(time, value_ptr(size), value_ptr(projection), value_ptr(modelview), value_ptr(mvp), value_ptr(nm), NULL);
+	checkError("Top::Draw - after common setup");
+
+	glBindVertexArray(vertexArrayHandle);
+	glDrawElements(GL_LINES , segs.size()*2, GL_UNSIGNED_INT , &segs[0]);
+	glBindVertexArray(0);
+
+	checkError("Mesh::draw - after normals draw");
+	glUseProgram(0);
 }
 
 void Graphics::takeDown() {

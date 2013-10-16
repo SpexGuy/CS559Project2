@@ -5,9 +5,9 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include "ErrorCheck.h"
 #include "Mesh.h"
 #include "shader.h"
-#include "object.h"
 #include "Vertex.h"
 #include <glm/glm.hpp>
 
@@ -137,6 +137,9 @@ vector<ivec3> Mesh::generateTrigs(vector<vec3> points, int width, int height, bo
 
 
 Mesh::Mesh(vector<vec3> ppoints, vector<ivec3> trigs) {
+	this->drawNormals = false;
+	this->vertex_array_handle = this->vertex_coordinate_handle = GLuint(-1);
+	this->normal_array_handle = this->normal_coordinate_handle = GLuint(-1);
 	this->points = vector<VertexPN>(ppoints.size());
 	this->trigs = trigs;
 
@@ -144,7 +147,6 @@ Mesh::Mesh(vector<vec3> ppoints, vector<ivec3> trigs) {
 		points[c].position = ppoints[c];
 		points[c].normal = vec3(0.0f);
 		points[c].light_position = vec3( 0, 5.0f, 0.0f);
-	
 	}
 
 	for (int c = 0; c < trigs.size(); c++) {
@@ -170,7 +172,7 @@ Mesh::Mesh(vector<vec3> ppoints, vector<ivec3> trigs) {
 
 
 bool Mesh::initialize() {
-	if (!this->PostGLInitialize(&this->vertex_array_handle, &this->vertex_coordinate_handle, this->points.size() * sizeof(VertexPN), &this->points[0]))
+	if (!Graphics::inst()->loadBuffer(&this->vertex_array_handle, &this->vertex_coordinate_handle, this->points.size() * sizeof(VertexPN), &this->points[0]))
 		return false;
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPN), (GLvoid *) 0);
@@ -184,7 +186,7 @@ bool Mesh::initialize() {
 	glBindVertexArray(0);
 
 	if (this->normPoints.size() > 0) {
-		if (!this->PostGLInitialize(&this->normal_array_handle, &this->normal_coordinate_handle, this->normPoints.size() * sizeof(vec3), &this->normPoints[0]))
+		if (!Graphics::inst()->loadBuffer(&this->normal_array_handle, &this->normal_coordinate_handle, this->normPoints.size() * sizeof(vec3), &this->normPoints[0]))
 			return false;
 
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (GLvoid *) 0);
@@ -203,8 +205,7 @@ bool Mesh::initialize() {
 }
 
 void Mesh::draw(mat4 model) const {
-	bool normals = false;
-	if (this->GLReturnedError("Mesh::Draw - on entry"))
+	if (checkError("Mesh::Draw - on entry"))
 		return;
 
 	transform(model);
@@ -215,44 +216,42 @@ void Mesh::draw(mat4 model) const {
 
 	Graphics::inst()->drawTriangles(trigs, vertex_array_handle, shader, model);
 
-	//mat4 modelview = view * model;
-	//vec3 light_pos = vec3(view * vec4(light,1.0f)); 
-	//mat4 mvp = projection * modelview;
-	//mat3 nm = inverse(transpose(mat3(modelview)));
-
-	//this->shader.Use();
-	//this->GLReturnedError("Top::Draw - after use");
-	//this->shader.CommonSetup(time, value_ptr(size), value_ptr(projection), value_ptr(modelview), value_ptr(mvp), value_ptr(nm), value_ptr(light_pos));
-	//this->GLReturnedError("Top::Draw - after common setup");
-
-	//glBindVertexArray(this->vertex_array_handle);
-	//glDrawElements(GL_TRIANGLES , this->trigs.size()*3, GL_UNSIGNED_INT , &this->trigs[0]);
-	//glBindVertexArray(0);
-
-	//this->GLReturnedError("Mesh::draw - after draw");
-
-	//glUseProgram(0);
-
-	//drawing normals
-	//if(normals) {
-	//	this->solidShader.Use();
-	//	this->GLReturnedError("Top::Draw - after use");
-	//	this->solidShader.CommonSetup(time, value_ptr(size), value_ptr(projection), value_ptr(modelview), value_ptr(mvp), value_ptr(nm), NULL);
-	//	this->GLReturnedError("Top::Draw - after common setup");
-	//
-	//	glBindVertexArray(this->normal_array_handle);
-	//	glDrawElements(GL_LINES , this->normSegs.size()*2, GL_UNSIGNED_INT , &this->normSegs[0]);
-	//	glBindVertexArray(0);
-
-	//	this->GLReturnedError("Mesh::draw - after normals draw");
-	//	glUseProgram(0);
-	//	if (this->GLReturnedError("Mesh::draw - on exit"))
-	//	return;
-	//}
+	if(drawNormals) {
+		Graphics::inst()->drawLines(normSegs, normal_array_handle, solidShader, model);
+		if (checkError("Mesh::draw - on exit"))
+			return;
+	}
 }
 
+/*	Notice the destructor in this case asserts that all resources
+	that don't go away by themselves have ALREADY been released. This
+	is because the destructor might be called after a GL context has
+	been destroyed, so I force the user of this class to call the
+	TakeDown() purposefully.
+*/
 Mesh::~Mesh() {
-	//delete points;
-	//delete trigs;
-	//delete normals;
+	assert(this->vertex_array_handle == GLuint(-1));
+	assert(this->vertex_coordinate_handle == GLuint(-1));
+	assert(this->normal_array_handle == GLuint(-1));
+	assert(this->normal_coordinate_handle == GLuint(-1));
 }
+
+void Mesh::takeDown() {
+	if (this->vertex_array_handle != GLuint(-1))
+		glDeleteVertexArrays(1, &this->vertex_array_handle);
+
+	if (this->vertex_coordinate_handle != GLuint(-1))
+		glDeleteBuffers(1, &this->vertex_coordinate_handle);
+
+	if (this->normal_array_handle != GLuint(-1))
+		glDeleteVertexArrays(1, &this->normal_array_handle);
+
+	if (this->normal_coordinate_handle != GLuint(-1))
+		glDeleteBuffers(1, &this->normal_coordinate_handle);
+
+	this->vertex_array_handle = this->vertex_coordinate_handle = GLuint(-1);
+	this->normal_array_handle = this->normal_coordinate_handle = GLuint(-1);
+
+}
+
+

@@ -1,15 +1,21 @@
 #pragma once
 #include <vector>
-#include "object.h"
 #include "shader.h"
 #include "Vertex.h"
 #include "Transformable.h"
 #include <glm/glm.hpp>
 
-class Mesh : public Drawable, public Object, public TransformableMixin {
+class Mesh : public Drawable, public TransformableMixin {
 private:
 	Mesh();
 protected:
+
+	bool drawNormals;
+	GLuint vertex_coordinate_handle;
+	GLuint vertex_array_handle;
+	GLuint normal_coordinate_handle;
+	GLuint normal_array_handle;
+
 	Shader shader;
 	Shader solidShader;
 	std::vector<VertexPN> points;
@@ -30,6 +36,15 @@ public:
 
 	//@Override
 	virtual void draw(glm::mat4 modelview) const;
+
+	virtual void takeDown();
+
+	inline void setDrawNormals(bool dn) {
+		this->drawNormals = dn;
+	}
+	inline bool isDrawingNormals() {
+		return drawNormals;
+	}
 
 	virtual ~Mesh();
 

@@ -30,6 +30,9 @@ public:
 	 * No other methods should be called until this has been. */
 	bool initialize();
 
+	bool loadBuffer(GLuint *arrayHandle, GLuint *coordinateHandle,
+		GLsizeiptr size, const GLvoid *pointer);
+
 	/* draws a wireframe cube from (-1, -1, -1) to (1, 1, 1) */
 	void drawWireCube() const;
 
@@ -42,6 +45,12 @@ public:
 					   const GLuint &vertexArrayHandle,
 					   const Shader &s,
 					   const glm::mat4 &model)
+				const;
+
+	void drawLines(const std::vector<glm::ivec2> &segs,
+				   const GLuint &vertexArrayHandle,
+				   const Shader &s,
+				   const glm::mat4 &model)
 				const;
 
 	/* generates a glViewport with the given parameters.

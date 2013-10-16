@@ -101,7 +101,7 @@ bool Globals::initialize() {
 
 void Globals::takeDown() {
 	Graphics::inst()->takeDown();
-	mars->TakeDown();
+	mars->takeDown();
 }
 
 Globals::~Globals() {
@@ -151,6 +151,10 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 	case 'w':
 		globals.wireframe = !globals.wireframe;
 		glPolygonMode(GL_FRONT_AND_BACK, globals.wireframe ? GL_LINE : GL_FILL);
+		break;
+
+	case 'n':
+		globals.mars->setDrawNormals(!globals.mars->isDrawingNormals());
 		break;
 
 	//case 'p':
