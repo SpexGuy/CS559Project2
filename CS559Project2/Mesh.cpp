@@ -169,8 +169,6 @@ Mesh::Mesh(vector<vec3> ppoints, vector<ivec3> trigs) {
 	}
 }
 
-
-
 bool Mesh::initialize() {
 	if (!Graphics::inst()->loadBuffer(&this->vertex_array_handle, &this->vertex_coordinate_handle, this->points.size() * sizeof(VertexPN), &this->points[0]))
 		return false;
