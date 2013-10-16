@@ -29,32 +29,66 @@ public:
  * A mixin which gives data members and modifying functions
  * to represent a spherical coordinate system
  */
-class SphericalCoordinateMixin {
+class SphericalAngleMixin {
 protected:
 	float angle;
 	float axisAngle;
 public:
-	/* initializes angle to 0, and axisAngle to 90 */
-	SphericalCoordinateMixin();
+	inline SphericalAngleMixin() {
+		this->angle = 0.0f;
+		this->axisAngle = 90.0f;
+	}
 
-	void setAngle(float angle);
-
-	void addAngle(float difference);
+	inline void setAngle(float angle) {
+		this->angle = float(fmod(angle, 360.0f));
+	}
+	inline void addAngle(float difference) {
+		setAngle(angle+difference);
+	}
 	
-	/* axisAngle will be put into the range [1, 179],
+	/* axisAngle will be clamped into the range [1, 179],
 	 * with 1 being close to parallel to the axis
 	  * and 90 being perpendicular */
-	void setAxisAngle(float axisAngle);
-	
-	void addAxisAngle(float difference);
+	inline void setAxisAngle(float axisAngle) {
+		if (axisAngle < 1)
+			axisAngle = 1.0f;
+		if (axisAngle > 179)
+			axisAngle = 179.0f;
+		this->axisAngle = axisAngle;
+	}
+	inline void addAxisAngle(float difference) {
+		setAxisAngle(axisAngle+difference);
+	}
+};
+
+class SphericalCoordinateMixin : public SphericalAngleMixin {
+protected:
+	float radius;
+public:
+	inline SphericalCoordinateMixin() {
+		this->radius = 1;
+	}
+	inline void setRadius(float radius) {
+		if (radius <= 0)
+			radius = 0.0000001f;
+		this->radius = radius;
+	}
+	inline void addRadius(float difference) {
+		setRadius(radius+difference);
+	}
 };
 
 /**
  * A Transformer mixin which implements rotation using
  * a spherical coordinate system
  */
-class SphericalRotationMixin : public Transformer, public SphericalCoordinateMixin {
+class SphericalRotationMixin : public Transformer, public SphericalAngleMixin {
 protected:
 	virtual void transform(glm::mat4 & context) const;
 
+};
+
+class SphericalPositionMixin : public Transformer, public SphericalCoordinateMixin {
+protected:
+	virtual void transform(glm::mat4 & context) const;
 };

@@ -8,10 +8,8 @@
  */
 class Drawable {
 public:
-	//called before anything is drawn to ensure that all objects are lighted
-	virtual void updateLighting(const glm::mat4 & view, glm::mat4 context) const;
 	//context is passed by value to avoid changes propagating up the call stack
-	virtual void draw(glm::mat4 model) const = 0;
+	virtual void draw(glm::mat4 model) = 0;
 };
 
 /**
@@ -20,11 +18,22 @@ public:
 class DrawableGroup : public Drawable {
 public:
 	DrawableGroup();
-	virtual void updateLighting(const glm::mat4 & view, glm::mat4 context) const;
-	virtual void draw(glm::mat4 model) const;
+
+	/* draws all drawables in the list */
+	virtual void draw(glm::mat4 model);
+
+	/* adds a drawable to the front of the list */
+	void addLight(Drawable *light);
+
+	/* adds a drawable to the end of the list */
 	void addElement(Drawable *drawable);
+
+	/* clears the list */
 	void clearElements();
+
+	/* returns a pointer to the list */
 	std::list<Drawable*> *getElements();
+
 private:
 	std::list<Drawable*> elements;
 };

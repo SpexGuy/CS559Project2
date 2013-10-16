@@ -12,6 +12,7 @@ private:
 	glm::mat4 projection;
 	glm::mat4 view;
 	glm::ivec2 size;
+	glm::vec3 light;
 
 	static Graphics instance;
 
@@ -70,6 +71,10 @@ public:
 	inline void setView(const glm::mat4 &view) {
 		this->view = view;
 	}
+	inline void setLight(const glm::vec3 &light) {
+		this->light = light;
+	}
+
 	inline glm::mat4 getProjection() const {
 		return projection;
 	}
@@ -78,5 +83,8 @@ public:
 	}
 	inline glm::ivec2 getSize() const {
 		return size;
+	}
+	inline glm::vec3 getLight() const {
+		return light;
 	}
 };

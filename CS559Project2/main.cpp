@@ -25,6 +25,7 @@
 #include "Window.h"
 #include "View.h"
 #include "Camera.h"
+#include "SpheroidLight.h"
 #include "Graphics.h"
 
 using namespace std;
@@ -37,6 +38,7 @@ public:
 	ViewOverlay *overlay;
 	PerspectiveProjection *proj;
 	SpheroidCamera *cam;
+	SpheroidLight *light;
 	Model *model;
 	Mesh *mars;
 	Mesh *cylinder;
@@ -59,10 +61,17 @@ Globals::Globals() {
 	cam->setRadius(3);
 	overlay = new ViewOverlay();
 	model = new Model();
+
+	light = new SpheroidLight();
+	light->setAngle(45);
+	light->setAxisAngle(45);
+	light->setRadius(5);
+
 	mars = Mesh::newMars(1, 0.08f, "mars_low_rez.txt", true);
 	sphere = Mesh::newSphere(10,10, true);
 	cylinder = Mesh::newCylinder(10,10,true);
 
+	model->addLight(light);
 	model->addElement(mars);
 
 	view = new View(cam, model, overlay);
@@ -192,6 +201,19 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 	//	window.paused = !window.paused;
 	//	break;
 
+	case ';':
+		globals.light->addAngle(1);
+		break;
+	case 'k':
+		globals.light->addAngle(-1);
+		break;
+	case 'o':
+		globals.light->addAxisAngle(-1);
+		break;
+	case 'l':
+		globals.light->addAxisAngle(1);
+		break;
+
 	case 'e':
 		globals.mars->position(globals.mars->position() + vec3(0.0f, 0.05f, 0.0f));
 		break;
@@ -201,16 +223,19 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 
 	case 'm':
 		globals.model->clearElements();
+		globals.model->addLight(globals.light);
 		globals.model->addElement(globals.mars);
 		break;
 
 	case 's':
 		globals.model->clearElements();
+		globals.model->addLight(globals.light);
 		globals.model->addElement(globals.sphere);
 		break;
 
 	case 'c':
 		globals.model->clearElements();
+		globals.model->addLight(globals.light);
 		globals.model->addElement(globals.cylinder);
 		break;
 
@@ -240,6 +265,10 @@ void SpecialFunc(int c, int x, int y) {
 		break;
 	case GLUT_KEY_PAGE_DOWN:
 		globals.proj->addFov(-1.0f);
+		break;
+
+	case GLUT_KEY_F11:
+		globals.window->toggleFullscreen();
 		break;
 	}
 }

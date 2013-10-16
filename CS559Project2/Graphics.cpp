@@ -21,6 +21,8 @@ Graphics *Graphics::inst() {
 Graphics::Graphics() {
 	this->projection = mat4(1.0f);
 	this->view = mat4(1.0f);
+	this->light = vec3(0.0f);
+	this->size = ivec2(1);
 }
 
 bool Graphics::initialize() {
@@ -57,7 +59,6 @@ void Graphics::drawTriangles(const vector<ivec3> &trigs, const GLuint &vertexArr
 							 const Shader *s, const mat4 &model) const {
 
 	const float time = 0;
-	vec3 light(2, 2, 0);				 
 								 
 	mat4 modelview = view * model;
 	vec3 light_pos = vec3(view * vec4(light,1.0f)); 
@@ -81,7 +82,6 @@ void Graphics::drawLines(const vector<ivec2> &segs, const GLuint &vertexArrayHan
 						 const Shader *s, const mat4 &model) const {
 
 	const float time = 0;
-	vec3 light(2, 2, 0);				 
 								 
 	mat4 modelview = view * model;
 	vec3 light_pos = vec3(view * vec4(light,1.0f)); 

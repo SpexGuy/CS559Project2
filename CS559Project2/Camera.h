@@ -72,7 +72,4 @@ class SpheroidCamera : public DynamicProjectionCamera, public SphericalCoordinat
 public:
 	SpheroidCamera(Projection *p);
 	virtual glm::mat4 generateViewMatrix();
-	void setRadius(float radius);
-protected:
-	float radius;
 };

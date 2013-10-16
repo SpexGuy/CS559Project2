@@ -9,15 +9,19 @@
 /**
  * Combines the abilities of Rotatable, Scaleable, and Translatable into a single interface
  */
-class Transformable : public Rotatable, public Scaleable, public Translatable {
-
+class Transformable : public Rotatable,
+					  public Scaleable,
+					  public Translatable {
 };
 
 /**
  * A mixin for quick implementation of the Transformable interface.
  */
-class TransformableMixin : public RotatableMixin, public ScaleableMixin, public TranslatableMixin {
+class TransformableMixin : public RotatableMixin,
+						   public ScaleableMixin,
+						   public TranslatableMixin {
 public:
+	//TODO: actually make this implement Transformable without ambiguity
 	/* Translates, then rotates, then scales */
 	virtual void transform(glm::mat4 & context) const;
 };
@@ -28,6 +32,6 @@ public:
 class TransformableGroup : public DrawableGroup, public TransformableMixin {
 public:
 	//@Override
-	virtual void draw(glm::mat4 model) const;
+	virtual void draw(glm::mat4 model);
 
 };

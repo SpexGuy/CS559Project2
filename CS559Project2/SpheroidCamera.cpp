@@ -22,7 +22,3 @@ mat4 SpheroidCamera::generateViewMatrix() {
 		vec3(0.0f, 1.0f, 0.0f)
 	);
 }
-
-void SpheroidCamera::setRadius(float radius) {
-	this->radius = radius;
-}

@@ -24,7 +24,7 @@ using namespace glm;
 //	return 0;
 //}
 
-Mesh *Mesh::newMars(float radius, float radScale, char *filename, bool crosshatch){
+Mesh *Mesh::newMars(float radius, float radScale, char *filename, bool crosshatch) {
 	ifstream inFile(filename);
 	if (inFile.is_open()) {
 		int width, height;
@@ -103,6 +103,8 @@ Mesh *Mesh::newSphere(int stacks, int slices, bool crosshatch)
 	assert(height > 0);
 	int width = slices;
 	assert(width > 0);
+
+	
 
 	vector<vec3> points/*(height*width + 2)*/;
 	float r = 1.0f;
@@ -211,6 +213,9 @@ vector<ivec3> Mesh::generateTrigs(vector<vec3> points, int width, int height, bo
 }
 
 
+
+
+
 Mesh::Mesh(vector<vec3> ppoints, vector<ivec3> trigs) {
 	this->drawNormals = false;
 	this->vertex_array_handle = this->vertex_coordinate_handle = GLuint(-1);
@@ -274,7 +279,7 @@ bool Mesh::initialize() {
 	return true;
 }
 
-void Mesh::draw(mat4 model) const {
+void Mesh::draw(mat4 model) {
 	if (checkError("Mesh::Draw - on entry"))
 		return;
 
