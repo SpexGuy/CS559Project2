@@ -10,7 +10,7 @@ uniform vec3 light_position;
 //The lower the bigger the shine
 const float shininess = 1000.0f;
 
-vec3 ads( )
+vec3 ads()
 {
   vec3 n = normal;
 

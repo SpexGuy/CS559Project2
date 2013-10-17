@@ -27,6 +27,8 @@
 #include "Camera.h"
 #include "SpheroidLight.h"
 #include "Graphics.h"
+#include "Function.h"
+#include "Animation.h"
 
 using namespace std;
 using namespace glm;
@@ -44,6 +46,11 @@ public:
 	Mesh *cylinder;
 	Mesh *sphere;
 
+	Animation *marsAnim;
+	TimeFunction<float> *marsAngle;
+	TimeFunction<vec3> *marsAxis;
+	TimeFunction<float> *const0;
+	TimeFunction<float> *const1;
 
 	int period;
 	bool wireframe;
@@ -67,12 +74,19 @@ Globals::Globals() {
 	light->setAxisAngle(45);
 	light->setRadius(5);
 
-	mars = Mesh::newMars(1, 0.08f, "mars_low_rez.txt", true);
+	mars = Mesh::newMars(1, 0.04f, "mars_hi_rez.txt", true);
 	sphere = Mesh::newSphere(10,10, true);
 	cylinder = Mesh::newCylinder(10,10,true);
 
+	const0 = new ConstantTimeFunction(0.0f);
+	const1 = new ConstantTimeFunction(1.0f);
+	marsAngle = new LinearTimeFunction(6.0f/1000.0f, 0.0f);
+	marsAxis = new Vec3TimeFunction(const0, const1, const0);
+	marsAnim = new RotationAnimation(mars, marsAxis, marsAngle);
+
 	model->addLight(light);
 	model->addElement(mars);
+	model->addAnimation(marsAnim);
 
 	view = new View(cam, model, overlay);
 	window = new SingleViewportWindow(view);
@@ -135,9 +149,16 @@ Globals::~Globals() {
 	delete model;
 	delete view;
 	delete window;
+	
 	delete mars;
 	delete cylinder;
 	delete sphere;
+
+	delete const0;
+	delete const1;
+	delete marsAngle;
+	delete marsAxis;
+	delete marsAnim;
 }
 
 //@Deprecated
@@ -187,20 +208,12 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 		globals.sphere->setDrawNormals(normals);
 		break;
 
-	//case 'p':
-	//	if (window.paused == true)
-	//	{
-	//		// Will be leaving paused state
-	//		window.total_time_paused += (current_time - window.time_last_pause_began);
-	//	}
-	//	else
-	//	{
-	//		// Will be entering paused state
-	//		window.time_last_pause_began = current_time;
-	//	}
-	//	window.paused = !window.paused;
-	//	break;
-
+	case 'p':
+		if (globals.model->isPaused())
+			globals.model->play();
+		else
+			globals.model->pause();
+		break;
 	case ';':
 		globals.light->addAngle(1);
 		break;
@@ -275,6 +288,8 @@ void SpecialFunc(int c, int x, int y) {
 
 void TimerFunc(int value) {
 	if (!globals.window->isClosed()) {
+		int time = glutGet(GLUT_ELAPSED_TIME);
+		globals.model->update(time);
 		glutTimerFunc(globals.period, TimerFunc, value);
 		globals.window->update();
 	}

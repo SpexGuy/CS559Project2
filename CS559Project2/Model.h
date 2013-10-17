@@ -1,6 +1,6 @@
 #pragma once
 #include "Transformable.h"
+#include "Animation.h"
 
-class Model : public TransformableGroup {
-	//there will be more functionality here once animations are added.
+class Model : public TransformableGroup, public AnimationGroup {
 };
