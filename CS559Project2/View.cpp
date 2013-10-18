@@ -56,7 +56,7 @@ ViewOverlay::ViewOverlay() {
 
 }
 
-mat4 ViewOverlay::draw() const {
+mat4 ViewOverlay::draw() {
 	return mat4(1.0f);
 }
 

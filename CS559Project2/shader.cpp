@@ -26,6 +26,7 @@ Shader::Shader()
 	this->normal_matrix_handle = BAD_GL_VALUE;
 	this->size_handle = BAD_GL_VALUE;
 	this->light_handle = BAD_GL_VALUE;
+	this->color_handle = BAD_GL_VALUE;
 
 }
 
@@ -37,7 +38,7 @@ Shader::Shader()
 */
 
 void Shader::commonSetup(const float time, const GLint * size, const GLfloat * projection, const GLfloat * modelview,
-						 const GLfloat * mvp, const GLfloat * nm, const GLfloat * light) const
+						 const GLfloat * mvp, const GLfloat * nm, const GLfloat * light, const GLfloat * color) const
 {
 	if (this->time_handle != BAD_GL_VALUE)
 		glUniform1f(this->time_handle, time);
@@ -59,7 +60,10 @@ void Shader::commonSetup(const float time, const GLint * size, const GLfloat * p
 	this->GLReturnedError("Top::Draw - after normal_matrix_handle");
 	if (this->light_handle != BAD_GL_VALUE)
 		glUniform3fv(this->light_handle, 1, light);
-	this->GLReturnedError("Top::Draw - after normal_matrix_handle");
+	this->GLReturnedError("Top::Draw - after light_handle");
+	if (this->color_handle != BAD_GL_VALUE)
+		glUniform4fv(this->color_handle, 1, color);
+	this->GLReturnedError("Top::Draw - after color_handle");
 
 }
 
@@ -121,6 +125,7 @@ bool Shader::initialize(char * vertex_shader_file, char * fragment_shader_file)
 	this->size_handle = glGetUniformLocation(this->program_id, (const GLchar *) "size");
 	this->time_handle = glGetUniformLocation(this->program_id, (const GLchar *) "time");
 	this->light_handle = glGetUniformLocation(this->program_id, (const GLchar *) "light_position");
+	this->color_handle = glGetUniformLocation(this->program_id, (const GLchar *) "color");
 
 	glUseProgram(0);
 

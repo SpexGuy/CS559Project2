@@ -2,7 +2,8 @@
 
 layout (location = 0) out vec4 FragColor;
 
-void main()
-{
-	FragColor = vec4(1.0, 0.2, 0.2, 1.0);
+flat in vec4 fragColor;
+
+void main() {
+	FragColor = fragColor;
 }

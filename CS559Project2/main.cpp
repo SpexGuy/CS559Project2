@@ -26,6 +26,7 @@
 #include "View.h"
 #include "Camera.h"
 #include "SpheroidLight.h"
+#include "SplineEditor.h"
 #include "Graphics.h"
 #include "Function.h"
 #include "Animation.h"
@@ -33,11 +34,32 @@
 using namespace std;
 using namespace glm;
 
+class OverlayTest : public ViewOverlay {
+public:
+	mat4 draw();
+};
+
+mat4 OverlayTest::draw() {
+	setupCamera();
+	mat4 base(1.0f);
+	Graphics *g = Graphics::inst();
+	ivec2 size = g->getSize();
+	g->setColor(vec4(0.0f, 0.0f, 1.0f, 1.0f));
+	g->drawRect2D(base, 0, 0, float(size.x), size.y/4.0f);
+	g->setColor(vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	g->drawLine2D(base, vec2(200, 100), vec2(100, 200));
+	g->setColor(vec4(0.0f, 1.0f, 0.0f, 0.0f));
+	g->drawCircle2D(base, 100, 100, 50);
+
+	return base;
+}
+
 class Globals {
 public:
 	Window *window;
 	View *view;
-	ViewOverlay *overlay;
+	ViewOverlay *baseOverlay;
+	SplineEditorOverlay *splineOverlay;
 	PerspectiveProjection *proj;
 	SpheroidCamera *cam;
 	SpheroidLight *light;
@@ -54,19 +76,23 @@ public:
 
 	int period;
 	bool wireframe;
+	bool editMode;
 
 	Globals();
 	bool initialize();
+	void enterEditMode();
+	void exitEditMode();
 	void takeDown();
 	virtual ~Globals();
 } globals;
 
 Globals::Globals() {
 	period = 1000 / 120;
-	proj = new PerspectiveProjection(35.0f);
+	proj = new PerspectiveProjection(45.0f);
 	cam = new SpheroidCamera(proj);
 	cam->setRadius(3);
-	overlay = new ViewOverlay();
+	splineOverlay = new SplineEditorOverlay(5);
+	baseOverlay = new ViewOverlay();
 	model = new Model();
 
 	light = new SpheroidLight();
@@ -74,7 +100,7 @@ Globals::Globals() {
 	light->setAxisAngle(45);
 	light->setRadius(5);
 
-	mars = Mesh::newMars(1, 0.04f, "mars_hi_rez.txt", true);
+	mars = Mesh::newMars(1, 0.04f, "mars_low_rez.txt", true);
 	sphere = Mesh::newSphere(10,10, true);
 	cylinder = Mesh::newCylinder(10,10,true);
 
@@ -88,7 +114,9 @@ Globals::Globals() {
 	model->addElement(mars);
 	model->addAnimation(marsAnim);
 
-	view = new View(cam, model, overlay);
+	editMode = false;
+
+	view = new View(cam, model, baseOverlay);
 	window = new SingleViewportWindow(view);
 	wireframe = false;
 }
@@ -134,6 +162,20 @@ bool Globals::initialize() {
 	return true;
 }
 
+void Globals::enterEditMode() {
+	if (editMode)
+		return;
+	editMode = true;
+	view->setOverlay(splineOverlay);
+}
+
+void Globals::exitEditMode() {
+	if (!editMode)
+		return;
+	editMode = false;
+	view->setOverlay(baseOverlay);
+}
+
 void Globals::takeDown() {
 	mars->takeDown();
 	cylinder->takeDown();
@@ -145,7 +187,7 @@ void Globals::takeDown() {
 Globals::~Globals() {
 	delete proj;
 	delete cam;
-	delete overlay;
+	delete splineOverlay;
 	delete model;
 	delete view;
 	delete window;
@@ -194,6 +236,39 @@ void CloseFunc() {
 void KeyboardFunc(unsigned char c, int x, int y) {
 	//float current_time = float(glutGet(GLUT_ELAPSED_TIME)) / 1000.0f;
 	bool normals;
+
+	if (globals.editMode) {
+		switch(c) {
+		case '4':
+			globals.splineOverlay->moveHorizontal(-0.005);
+			break;
+		case '6':
+			globals.splineOverlay->moveHorizontal(0.005);
+			break;
+		case '2':
+			globals.splineOverlay->moveVertical(-0.005);
+			break;
+		case '8':
+			globals.splineOverlay->moveVertical(0.005);
+			break;
+		case '7':
+			globals.splineOverlay->addAngle(1);
+			break;
+		case '9':
+			globals.splineOverlay->addAngle(-1);
+			break;
+		case '1':
+			globals.splineOverlay->addSize(0.005);
+			break;
+		case '3':
+			globals.splineOverlay->addSize(-0.005);
+			break;
+		case '5':
+			globals.splineOverlay->next();
+			break;
+		}
+	}
+
 	switch (c)
 	{
 	case 'w':
@@ -240,6 +315,17 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 		globals.model->addElement(globals.mars);
 		break;
 
+	case '.':
+		globals.exitEditMode();
+		break;
+
+	case '0':
+		globals.enterEditMode();
+		globals.sphere->takeDown();
+		delete globals.sphere;
+		globals.sphere = Mesh::newSurfaceOfRotation(globals.splineOverlay->getSpline(30), 30, true);
+		globals.sphere->initialize();
+		//no break here.
 	case 's':
 		globals.model->clearElements();
 		globals.model->addLight(globals.light);

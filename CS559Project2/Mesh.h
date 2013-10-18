@@ -73,6 +73,8 @@ public:
 
 	static Mesh *newSphere(int stacks, int slices, bool crosshatch = false);
 
+	static Mesh *newSurfaceOfRotation(const std::vector<glm::vec2> &points, int slices, bool crosshatch = false);
+
 	static std::vector<glm::ivec3> generateTrigs(std::vector<glm::vec3> points,
 			int width, int height, bool endcaps, bool crosshatch);
 };

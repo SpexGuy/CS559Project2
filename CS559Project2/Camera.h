@@ -73,3 +73,15 @@ public:
 	SpheroidCamera(Projection *p);
 	virtual glm::mat4 generateViewMatrix();
 };
+
+class FreeFlyCamera : public DynamicProjectionCamera, public SphericalAngleMixin {
+private:
+	glm::vec3 position;
+public:
+	void moveForward(float offset);
+	void moveRight(float offset);
+	void moveUp(float offset);
+	void setPosition(glm::vec3 position);
+
+	virtual glm::mat4 generateViewMatrix();
+};

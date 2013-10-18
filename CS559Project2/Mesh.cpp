@@ -16,14 +16,6 @@ using namespace glm;
 
 #define DEBUG
 
-//int main() {
-//	Mesh::newMars(10, 1, "mars_low_rez.txt");
-//	cout << "worked!" << endl;
-//	int i;
-//	cin >> i;
-//	return 0;
-//}
-
 Mesh *Mesh::newMars(float radius, float radScale, char *filename, bool crosshatch) {
 	ifstream inFile(filename);
 	if (inFile.is_open()) {
@@ -175,6 +167,24 @@ Mesh *Mesh::newCylinder(int stacks, int slices, bool crosshatch)
 	return new Mesh(points, trigs);
 }
 
+Mesh *Mesh::newSurfaceOfRotation(const vector<vec2> &points, int slices, bool crosshatch) {
+	vector<vec3> verts;
+	for (int c = 1; c < points.size()-1; c++) {
+		for (int d = 0; d < slices; d++) {
+			verts.push_back(
+				vec3(points[c].y * cos(2*M_PI * float(d)/slices), 
+					 points[c].x,
+					 points[c].y * sin(2*M_PI * float(d)/slices)));
+		}
+	}
+	verts.push_back(vec3(0.0f, points[0].x, 0.0f));
+	verts.push_back(vec3(0.0f, points[points.size()-1].x, 0.0f));
+
+	vector<ivec3> trigs = generateTrigs(verts, slices, points.size()-2, true, crosshatch);
+
+	return new Mesh(verts, trigs);
+}
+
 vector<ivec3> Mesh::generateTrigs(vector<vec3> points, int width, int height, bool endcaps, bool crosshatch) {
 	assert(int(points.size()) >= width*height + (endcaps ? 2 : 0));
 	vector<ivec3> trigs;
@@ -239,6 +249,8 @@ Mesh::Mesh(vector<vec3> ppoints, vector<ivec3> trigs) {
 		points[trigs[c].z].normal += planeNormal;
 	}
 	for (int c = 0; c < int(points.size()); c++) {
+		if (points[c].normal == vec3(0.0f, 0.0f, 0.0f))
+			points[c].normal = vec3(0.0f, 1.0f, 0.0f);
 		points[c].normal = normalize(points[c].normal);
 	}
 
