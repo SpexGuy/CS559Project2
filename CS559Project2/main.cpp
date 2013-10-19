@@ -39,21 +39,6 @@ public:
 	mat4 draw();
 };
 
-mat4 OverlayTest::draw() {
-	setupCamera();
-	mat4 base(1.0f);
-	Graphics *g = Graphics::inst();
-	ivec2 size = g->getSize();
-	g->setColor(vec4(0.0f, 0.0f, 1.0f, 1.0f));
-	g->drawRect2D(base, 0, 0, float(size.x), size.y/4.0f);
-	g->setColor(vec4(1.0f, 0.0f, 0.0f, 1.0f));
-	g->drawLine2D(base, vec2(200, 100), vec2(100, 200));
-	g->setColor(vec4(0.0f, 1.0f, 0.0f, 0.0f));
-	g->drawCircle2D(base, 100, 100, 50);
-
-	return base;
-}
-
 class Globals {
 public:
 	Window *window;
@@ -61,6 +46,7 @@ public:
 	ViewOverlay *baseOverlay;
 	SplineEditorOverlay *splineOverlay;
 	PerspectiveProjection *proj;
+	FreeFlyCamera *flyCam;
 	SpheroidCamera *cam;
 	SpheroidLight *light;
 	Model *model;
@@ -77,11 +63,14 @@ public:
 	int period;
 	bool wireframe;
 	bool editMode;
+	bool flyMode;
 
 	Globals();
 	bool initialize();
 	void enterEditMode();
 	void exitEditMode();
+	void enterFreeflyMode();
+	void exitFreeflyMode();
 	void takeDown();
 	virtual ~Globals();
 } globals;
@@ -91,6 +80,9 @@ Globals::Globals() {
 	proj = new PerspectiveProjection(45.0f);
 	cam = new SpheroidCamera(proj);
 	cam->setRadius(3);
+	flyCam = new FreeFlyCamera(proj);
+	flyCam->setPosition(vec3(0.0f, 0.0f, 3.0f));
+	flyCam->setAngle(180);
 	splineOverlay = new SplineEditorOverlay(5);
 	baseOverlay = new ViewOverlay();
 	model = new Model();
@@ -114,9 +106,7 @@ Globals::Globals() {
 	model->addElement(mars);
 	model->addAnimation(marsAnim);
 
-	editMode = false;
-
-	view = new View(cam, model, baseOverlay);
+	view = new View(flyCam, model, baseOverlay);
 	window = new SingleViewportWindow(view);
 	wireframe = false;
 }
@@ -127,6 +117,7 @@ void windowDisplay();
 void KeyboardFunc(unsigned char c, int x, int y);
 void SpecialFunc(int c, int x, int y);
 void TimerFunc(int value);
+void PassiveMotionFunc(int x, int y);
 
 bool Globals::initialize() {
 	if (!window->initialize("Mars"))
@@ -137,10 +128,12 @@ bool Globals::initialize() {
 	glutKeyboardFunc(KeyboardFunc);
 	glutSpecialFunc(SpecialFunc);
 	glutTimerFunc(period, TimerFunc, 0);
+	glutPassiveMotionFunc(PassiveMotionFunc);
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glEnable(GL_CULL_FACE);
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	
 
 
 	if (glewInit() != GLEW_OK) {
@@ -159,6 +152,11 @@ bool Globals::initialize() {
 	if (!sphere->initialize())
 		return false;
 
+	editMode = true;
+	flyMode = true;
+	exitFreeflyMode();
+	exitEditMode();
+
 	return true;
 }
 
@@ -176,6 +174,20 @@ void Globals::exitEditMode() {
 	view->setOverlay(baseOverlay);
 }
 
+void Globals::enterFreeflyMode() {
+	if (flyMode)
+		return;
+	flyMode = true;
+	view->setCamera(flyCam);
+}
+
+void Globals::exitFreeflyMode() {
+	if (!flyMode)
+		return;
+	flyMode = false;
+	view->setCamera(cam);
+}
+
 void Globals::takeDown() {
 	mars->takeDown();
 	cylinder->takeDown();
@@ -187,6 +199,7 @@ void Globals::takeDown() {
 Globals::~Globals() {
 	delete proj;
 	delete cam;
+	delete flyCam;
 	delete splineOverlay;
 	delete model;
 	delete view;
@@ -233,6 +246,34 @@ void CloseFunc() {
 	globals.takeDown();
 }
 
+int lastX = 150;
+int lastY = 150;
+/** this function is adapted from a post by Steven Canfield
+ * on StackOverflow.com:
+ * http://stackoverflow.com/questions/728049/glutpassivemotionfunc-and-glutwarpmousepointer */
+void PassiveMotionFunc(int x, int y) {
+	int deltaX = x - lastX;
+	int deltaY = y - lastY;
+
+	lastX = x;
+	lastY = y;
+
+	ivec2 size = Graphics::inst()->getSize();
+	int centerx = size.x/2;
+	int centery = size.y/2;
+
+	if( !globals.flyMode || (deltaX == 0 && deltaY == 0) ) return;
+
+	globals.flyCam->addAngle(-deltaX/10.0f);
+	globals.flyCam->addAxisAngle(deltaY/10.0f);
+
+	if( x <= 10 || (y) <= 10 || x >= size.x-10 || y >= size.y-10) {
+		lastX = centerx;
+		lastY = centery;
+		glutWarpPointer( lastX, lastY );
+	}
+}
+
 void KeyboardFunc(unsigned char c, int x, int y) {
 	//float current_time = float(glutGet(GLUT_ELAPSED_TIME)) / 1000.0f;
 	bool normals;
@@ -265,6 +306,26 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 			break;
 		case '5':
 			globals.splineOverlay->next();
+			break;
+		}
+	}
+
+	if (globals.flyMode) {
+		switch(c) {
+		case 'e':
+			globals.flyCam->moveForward(0.05f);
+			break;
+		case 'd':
+			globals.flyCam->moveForward(-0.05f);
+			break;
+		case 'f':
+			globals.flyCam->moveRight(0.05f);
+			break;
+		case 's':
+			globals.flyCam->moveRight(-0.05f);
+			break;
+		case ' ':
+			globals.flyCam->moveUp(0.05f);
 			break;
 		}
 	}
@@ -302,13 +363,6 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 		globals.light->addAxisAngle(1);
 		break;
 
-	case 'e':
-		globals.mars->position(globals.mars->position() + vec3(0.0f, 0.05f, 0.0f));
-		break;
-	case 'd':
-		globals.mars->position(globals.mars->position() + vec3(0.0f, -0.05f, 0.0f));
-		break;
-
 	case 'm':
 		globals.model->clearElements();
 		globals.model->addLight(globals.light);
@@ -326,7 +380,7 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 		globals.sphere = Mesh::newSurfaceOfRotation(globals.splineOverlay->getSpline(30), 30, true);
 		globals.sphere->initialize();
 		//no break here.
-	case 's':
+	case 'a':
 		globals.model->clearElements();
 		globals.model->addLight(globals.light);
 		globals.model->addElement(globals.sphere);
@@ -338,6 +392,13 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 		globals.model->addElement(globals.cylinder);
 		break;
 
+	case 'z':
+		if (globals.flyMode)
+			globals.exitFreeflyMode();
+		else
+			globals.enterFreeflyMode();
+		break;
+
 	case 'x':
 	case 27:
 		glutLeaveMainLoop();
@@ -346,28 +407,37 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 }
 
 void SpecialFunc(int c, int x, int y) {
-	switch (c) {		
-	case GLUT_KEY_LEFT:
-		globals.cam->addAngle(-1.0f);
-		break;
-	case GLUT_KEY_RIGHT:
-		globals.cam->addAngle(1.0f);
-		break;
-	case GLUT_KEY_UP:
-		globals.cam->addAxisAngle(-1.0f);
-		break;
-	case GLUT_KEY_DOWN:
-		globals.cam->addAxisAngle(1.0f);
+
+	if (globals.flyMode) {
+		if (c == GLUT_KEY_SHIFT_L) {
+			globals.flyCam->moveUp(-0.05f);
+		}
+	} else {
+		switch (c) {		
+		case GLUT_KEY_LEFT:
+			globals.cam->addAngle(-1.0f);
+			break;
+		case GLUT_KEY_RIGHT:
+			globals.cam->addAngle(1.0f);
+			break;
+		case GLUT_KEY_UP:
+			globals.cam->addAxisAngle(-1.0f);
+			break;
+		case GLUT_KEY_DOWN:
+			globals.cam->addAxisAngle(1.0f);
+			break;
+		}
+	}
+
+	switch(c) {
+	case GLUT_KEY_F11:
+		globals.window->toggleFullscreen();
 		break;
 	case GLUT_KEY_PAGE_UP:
 		globals.proj->addFov(1.0f);
 		break;
 	case GLUT_KEY_PAGE_DOWN:
 		globals.proj->addFov(-1.0f);
-		break;
-
-	case GLUT_KEY_F11:
-		globals.window->toggleFullscreen();
 		break;
 	}
 }

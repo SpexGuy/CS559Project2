@@ -18,6 +18,9 @@ public:
 	inline void setOverlay(ViewOverlay *o) {
 		this->overlay = o;
 	}
+	inline void setCamera(Camera *c) {
+		this->camera = c;
+	}
 private:
 	View(); //force use of constructor with arguments
 	void setupCamera();

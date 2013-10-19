@@ -30,8 +30,8 @@ void FreeFlyCamera::moveForward(float offset) {
 }
 
 void FreeFlyCamera::moveRight(float offset) {
-	position.z += offset * sin(angle * M_PI / 180.0f);
-	position.x += offset * cos(angle * M_PI / 180.0f);
+	position.x += offset * sin((angle-90) * M_PI / 180.0f);
+	position.z += offset * cos((angle-90) * M_PI / 180.0f);
 }
 
 void FreeFlyCamera::moveUp(float offset) {
@@ -44,8 +44,9 @@ void FreeFlyCamera::setPosition(vec3 position) {
 
 mat4 FreeFlyCamera::generateViewMatrix() {
 	return lookAt(
-		vec3(0.0f, 0.0f, 0.0f),
-		vec3(sin(angle * M_PI / 180.0f) * sin(axisAngle * M_PI / 180.0f),
+		position,
+		position + vec3(
+			 sin(angle * M_PI / 180.0f) * sin(axisAngle * M_PI / 180.0f),
 			 cos(axisAngle * M_PI / 180.0f),
 			 cos(angle * M_PI / 180.0f) * sin(axisAngle * M_PI / 180.0f)),
 		vec3(0.0f, 1.0f, 0.0f));
