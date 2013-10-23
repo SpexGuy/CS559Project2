@@ -23,7 +23,6 @@ void View::render() {
 	mat4 context = mat4(1.0f);
 	mat4 view = camera->generateViewMatrix();
 	Graphics::inst()->setView(view);
-	model->updateLighting(view, context);
 	model->draw(context);
 
 	//disable lighting and depth test for overlay
@@ -57,7 +56,7 @@ ViewOverlay::ViewOverlay() {
 
 }
 
-mat4 ViewOverlay::draw() const {
+mat4 ViewOverlay::draw() {
 	return mat4(1.0f);
 }
 

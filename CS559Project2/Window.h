@@ -34,7 +34,11 @@ public:
 	/* called when the window is reshaped
 	 * DOES NOT change the focused window. */
 	virtual void reshape(int x, int y);
-	
+
+	virtual void toggleFullscreen();
+	virtual void enterFullscreen();
+	virtual void exitFullscreen();
+
 	/* called when the window is closed
 	 * DOES NOT change the focused window. */
 	virtual void onClose();

@@ -52,6 +52,21 @@ void Window::render() {
 	glutSwapBuffers();
 }
 
+void Window::toggleFullscreen() {
+	activate();
+	glutFullScreenToggle();
+}
+
+void Window::enterFullscreen() {
+	activate();
+	glutFullScreen();
+}
+
+void Window::exitFullscreen() {
+	activate();
+	glutLeaveFullScreen();
+}
+
 
 
 SingleViewportWindow::SingleViewportWindow(View *view) {

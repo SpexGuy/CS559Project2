@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "shader.h"
+#include "Shader.h"
 #include "Vertex.h"
 #include "Transformable.h"
 #include <glm/glm.hpp>
@@ -16,14 +16,13 @@ protected:
 	GLuint normal_coordinate_handle;
 	GLuint normal_array_handle;
 
-	Shader shader;
-	Shader solidShader;
+	Shader *shader;
+	Shader *solidShader;
 	std::vector<VertexPN> points;
 	std::vector<glm::ivec3> trigs;
 	std::vector<glm::vec3> normPoints;
 	std::vector<glm::ivec2> normSegs;
-	//added
-	glm::mat4 m;
+	
 
 public:
 	/** generates a mesh with the given points. Trigs is a vector of
@@ -34,11 +33,10 @@ public:
 	 * which have this point as a vertex. */
 	Mesh(std::vector<glm::vec3> points, std::vector<glm::ivec3> trigs);
 
-	//@Override
 	virtual bool initialize();
 
-	//@Override
-	virtual void draw(glm::mat4 model) const ;
+	
+	virtual void draw(glm::mat4 modelview);
 
 	virtual void takeDown();
 
@@ -77,6 +75,8 @@ public:
 				float topRadius, float botRadius, bool crosshatch = false);
 
 	static Mesh *newSphere(int stacks, int slices, float radius, bool crosshatch = false);
+
+	static Mesh *newSurfaceOfRotation(const std::vector<glm::vec2> &points, int slices, bool crosshatch = false);
 
 	static std::vector<glm::ivec3> generateTrigs(std::vector<glm::vec3> points,
 			int width, int height, bool endcaps, bool crosshatch);

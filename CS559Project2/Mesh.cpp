@@ -7,7 +7,7 @@
 #include <vector>
 #include "ErrorCheck.h"
 #include "Mesh.h"
-#include "shader.h"
+#include "Shader.h"
 #include "Vertex.h"
 #include <glm/glm.hpp>
 
@@ -16,15 +16,7 @@ using namespace glm;
 
 #define DEBUG
 
-//int main() {
-//	Mesh::newMars(10, 1, "mars_low_rez.txt");
-//	cout << "worked!" << endl;
-//	int i;
-//	cin >> i;
-//	return 0;
-//}
-
-Mesh *Mesh::newMars(float radius, float radScale, char *filename, bool crosshatch){
+Mesh *Mesh::newMars(float radius, float radScale, char *filename, bool crosshatch) {
 	ifstream inFile(filename);
 	if (inFile.is_open()) {
 		int width, height;
@@ -104,6 +96,8 @@ Mesh *Mesh::newSphere(int stacks, int slices, float radius, bool crosshatch)
 	int width = slices;
 	assert(width > 0);
 
+	
+
 	vector<vec3> points/*(height*width + 2)*/;
 	for(int i = 0; i< height; i++) {
 		for( int j = 0; j < width; j++) {
@@ -173,8 +167,26 @@ Mesh *Mesh::newCylinder(int stacks, int slices, float tall, float topRadius, flo
 	return new Mesh(points, trigs);
 }
 
+Mesh *Mesh::newSurfaceOfRotation(const vector<vec2> &points, int slices, bool crosshatch) {
+	vector<vec3> verts;
+	for (int c = 1; c < points.size()-1; c++) {
+		for (int d = 0; d < slices; d++) {
+			verts.push_back(
+				vec3(points[c].y * cos(2*M_PI * float(d)/slices), 
+					 points[c].x,
+					 points[c].y * sin(2*M_PI * float(d)/slices)));
+		}
+	}
+	verts.push_back(vec3(0.0f, points[0].x, 0.0f));
+	verts.push_back(vec3(0.0f, points[points.size()-1].x, 0.0f));
+
+	vector<ivec3> trigs = generateTrigs(verts, slices, points.size()-2, true, crosshatch);
+
+	return new Mesh(verts, trigs);
+}
+
 vector<ivec3> Mesh::generateTrigs(vector<vec3> points, int width, int height, bool endcaps, bool crosshatch) {
-	assert(points.size() >= width*height + (endcaps ? 2 : 0));
+	assert(int(points.size()) >= width*height + (endcaps ? 2 : 0));
 	vector<ivec3> trigs;
 	for (int c = 0; c < height-1; c++) {
 		for (int d = 0; d < width; d++) {
@@ -211,6 +223,9 @@ vector<ivec3> Mesh::generateTrigs(vector<vec3> points, int width, int height, bo
 }
 
 
+
+
+
 Mesh::Mesh(vector<vec3> ppoints, vector<ivec3> trigs) {
 	this->drawNormals = false;
 	this->vertex_array_handle = this->vertex_coordinate_handle = GLuint(-1);
@@ -218,13 +233,13 @@ Mesh::Mesh(vector<vec3> ppoints, vector<ivec3> trigs) {
 	this->points = vector<VertexPN>(ppoints.size());
 	this->trigs = trigs;
 
-	for (int c = 0; c < points.size(); c++) {
+	for (int c = 0; c < int(points.size()); c++) {
 		points[c].position = ppoints[c];
 		points[c].normal = vec3(0.0f);
 		points[c].light_position = vec3( 0, 5.0f, 0.0f);
 	}
 
-	for (int c = 0; c < trigs.size(); c++) {
+	for (int c = 0; c < int(trigs.size()); c++) {
 		vec3 vect1 = ppoints[trigs[c].y] - ppoints[trigs[c].z];
 		vec3 vect2 = ppoints[trigs[c].y] - ppoints[trigs[c].x];
 		vec3 planeNormal = cross(vect1, vect2);
@@ -233,11 +248,13 @@ Mesh::Mesh(vector<vec3> ppoints, vector<ivec3> trigs) {
 		points[trigs[c].y].normal += planeNormal;
 		points[trigs[c].z].normal += planeNormal;
 	}
-	for (int c = 0; c < points.size(); c++) {
+	for (int c = 0; c < int(points.size()); c++) {
+		if (points[c].normal == vec3(0.0f, 0.0f, 0.0f))
+			points[c].normal = vec3(0.0f, 1.0f, 0.0f);
 		points[c].normal = normalize(points[c].normal);
 	}
 
-	for (int c = 0; c < points.size(); c++) {
+	for (int c = 0; c < int(points.size()); c++) {
 		normPoints.push_back(points[c].position);
 		normPoints.push_back(points[c].position + vec3(0.1f)*points[c].normal);
 		normSegs.push_back(ivec2(2*c, 2*c+1));
@@ -268,16 +285,13 @@ bool Mesh::initialize() {
 		glBindVertexArray(0);
 	}
 
-	
-	if (!this->solidShader.Initialize("solid_shader.vert", "solid_shader.frag"))
-		return false;
-	if (!this->shader.Initialize("top_shader.vert", "top_shader.frag"))
-		return false;
+	this->solidShader = ShaderFlyweight::inst()->getShader(SHADER_SOLID);
+	this->shader = ShaderFlyweight::inst()->getShader(SHADER_ADS);
 
 	return true;
 }
 
-void Mesh::draw(mat4 model) const {
+void Mesh::draw(mat4 model) {
 	if (checkError("Mesh::Draw - on entry"))
 		return;
 
