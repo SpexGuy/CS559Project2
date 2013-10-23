@@ -94,7 +94,7 @@ Mesh *Mesh::newMars(float radius, float radScale,
 	return new Mesh(points, trigs);
 }
 
-Mesh *Mesh::newSphere(int stacks, int slices, bool crosshatch)
+Mesh *Mesh::newSphere(int stacks, int slices, float radius, bool crosshatch)
 {
 	//Assumes that the 2D has the same amount of slices for each stack
 	//Slices are the columns of the mesh
@@ -105,15 +105,14 @@ Mesh *Mesh::newSphere(int stacks, int slices, bool crosshatch)
 	assert(width > 0);
 
 	vector<vec3> points/*(height*width + 2)*/;
-	float r = 1.0f;
 	for(int i = 0; i< height; i++) {
 		for( int j = 0; j < width; j++) {
 			float theta = float(2*M_PI * float(j) / float(width));
 			float phi = float(M_PI * float(i+1) / float(height+1));
 
-			float x = r*sin(theta)*sin(phi);
-			float z = r*cos(theta)*sin(phi);
-			float y = r*cos(phi);
+			float x = radius*sin(theta)*sin(phi);
+			float z = radius*cos(theta)*sin(phi);
+			float y = radius*cos(phi);
 
 #ifdef DEBUG
 			if(i < 1 && j < 10)
@@ -127,15 +126,15 @@ Mesh *Mesh::newSphere(int stacks, int slices, bool crosshatch)
 			cout << "Triangles" <<endl;
 #endif
 	
-	points.push_back(vec3(0, r, 0));
-	points.push_back(vec3(0, -r, 0));
+	points.push_back(vec3(0, radius, 0));
+	points.push_back(vec3(0, -radius, 0));
 
 	vector<ivec3> trigs = generateTrigs(points, width, height, true, crosshatch);
 
 	return new Mesh(points, trigs);
 }
 
-Mesh *Mesh::newCylinder(int stacks, int slices, bool crosshatch)
+Mesh *Mesh::newCylinder(int stacks, int slices, float tall, float topRadius, float botRadius, bool crosshatch)
 {
 	//Assumes that the 2D has the same amount of slices for each stack
 	//Slices are the columns of the mesh
@@ -146,10 +145,11 @@ Mesh *Mesh::newCylinder(int stacks, int slices, bool crosshatch)
 	assert(width > 0);
 
 	vector<vec3> points/*(height*width + 2)*/;
+	float ratio = abs(topRadius-botRadius)/tall;
 
 	for(int i = 0; i< height; i++) {
 		for( int j = 0; j < width; j++) {
-			float r = 1.00f;
+			float r = ((float)i*ratio) + (float)botRadius;
 			float theta = float(2*M_PI * float(j) / float(width));
 
 			float z = r*sin(theta);

@@ -26,6 +26,7 @@
 #include "View.h"
 #include "Camera.h"
 #include "Graphics.h"
+#include "Rocket.h"
 
 using namespace std;
 using namespace glm;
@@ -41,7 +42,7 @@ public:
 	Mesh *mars;
 	Mesh *cylinder;
 	Mesh *sphere;
-
+	Rocket *rocket;
 
 	int period;
 	bool wireframe;
@@ -60,8 +61,9 @@ Globals::Globals() {
 	overlay = new ViewOverlay();
 	model = new Model();
 	mars = Mesh::newMars(1, 0.08f, "mars_low_rez.txt", true);
-	sphere = Mesh::newSphere(10,10, true);
-	cylinder = Mesh::newCylinder(10,10,true);
+	sphere = Mesh::newSphere(10,10, 1.0f, true);
+	cylinder = Mesh::newCylinder(10,10, 0.5f, 0.2f, 0.1f, true);
+	rocket = new Rocket();
 
 	view = new View(cam, model, overlay);
 	window = new SingleViewportWindow(view);
@@ -103,6 +105,8 @@ bool Globals::initialize() {
 		return false;
 	if (!sphere->initialize())
 		return false;
+	if (!rocket->initialize())
+		return false;
 
 	return true;
 }
@@ -112,6 +116,7 @@ void Globals::takeDown() {
 	mars->takeDown();
 	cylinder->takeDown();
 	sphere->takeDown();
+	rocket->takeDown();
 }
 
 Globals::~Globals() {
@@ -201,6 +206,10 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 	case 'c':
 		globals.model->clearElements();
 		globals.model->addElement(globals.cylinder);
+		break;
+	case 'r':
+		globals.model->clearElements();
+		globals.model->addElement(globals.rocket);
 		break;
 
 	case 'x':

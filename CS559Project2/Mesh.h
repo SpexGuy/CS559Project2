@@ -22,6 +22,9 @@ protected:
 	std::vector<glm::ivec3> trigs;
 	std::vector<glm::vec3> normPoints;
 	std::vector<glm::ivec2> normSegs;
+	//added
+	glm::mat4 m;
+
 public:
 	/** generates a mesh with the given points. Trigs is a vector of
 	 * triangles.  A triangle is a vec3 of indexes in <points>
@@ -35,7 +38,7 @@ public:
 	virtual bool initialize();
 
 	//@Override
-	virtual void draw(glm::mat4 modelview) const;
+	virtual void draw(glm::mat4 model) const ;
 
 	virtual void takeDown();
 
@@ -70,9 +73,10 @@ public:
 	static Mesh *newMars(float radius, float radScale,
 		std::vector<std::vector<float>> radii, bool crosshatch = false);
 
-	static Mesh *newCylinder(int stacks, int slices, bool crosshatch = false);
+	static Mesh *newCylinder(int stacks, int slices, float height, 
+				float topRadius, float botRadius, bool crosshatch = false);
 
-	static Mesh *newSphere(int stacks, int slices, bool crosshatch = false);
+	static Mesh *newSphere(int stacks, int slices, float radius, bool crosshatch = false);
 
 	static std::vector<glm::ivec3> generateTrigs(std::vector<glm::vec3> points,
 			int width, int height, bool endcaps, bool crosshatch);
