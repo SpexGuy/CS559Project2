@@ -83,6 +83,12 @@ public:
 				   const glm::mat4 &model)
 				const;
 
+	void drawPoints(const std::vector<int> &points,
+					const GLuint &vertexArrayHandle,
+					const Shader *s,
+					const glm::mat4 &model)
+				const;
+
 	/* generates a glViewport with the given parameters.
 	 * also sets the size to (width, heigth). */
 	void viewport(int x, int y, int width, int height);

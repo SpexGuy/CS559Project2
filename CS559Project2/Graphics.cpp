@@ -191,6 +191,30 @@ void Graphics::drawLines(const vector<ivec2> &segs, const GLuint &vertexArrayHan
 	glUseProgram(0);
 }
 
+void Graphics::drawPoints(const vector<int> &points, const GLuint &vertexArrayHandle,
+						 const Shader *s, const mat4 &model) const {
+
+	const float time = 0;
+								 
+	mat4 modelview = view * model;
+	vec3 light_pos = vec3(view * vec4(light,1.0f)); 
+	mat4 mvp = projection * modelview;
+	mat3 nm = inverse(transpose(mat3(modelview)));
+
+	s->use();
+	checkError("Graphics::draw - after use");
+	s->commonSetup(time, value_ptr(size), value_ptr(projection), value_ptr(modelview), value_ptr(mvp), value_ptr(nm), value_ptr(light), value_ptr(color));
+	checkError("Top::Draw - after common setup");
+
+	glBindVertexArray(vertexArrayHandle);
+	glDrawElements(GL_POINTS, points.size(), GL_UNSIGNED_INT , &points[0]);
+	glBindVertexArray(0);
+
+	checkError("Mesh::draw - after normals draw");
+	glUseProgram(0);
+}
+
+
 void Graphics::takeDown() {
 	glDeleteVertexArrays(1, &circleVH);
 	glDeleteBuffers(1, &circleCH);

@@ -225,41 +225,17 @@ Globals::~Globals() {
 	delete marsAnim;
 }
 
-//@Deprecated
-class WindowPK
-{
-public:
-	WindowPK()
-	{
-		this->time_last_pause_began = this->total_time_paused = 0;
-		this->normals = this->wireframe = this->paused = false;
-		this->slices = 20;
-		this->interval = 1000 / 120;
-		this->window_handle = -1;
-	}
-
-	float time_last_pause_began;
-	float total_time_paused;
-	bool paused , wireframe, normals;
-	int window_handle;
-	int interval;
-	int slices;
-	ivec2 size;
-	float window_aspect;
-	vector<string> instructions;
-};
-
-
 void CloseFunc() {
 	glutLeaveMainLoop();
 	globals.takeDown();
 }
 
-int lastX = 150;
-int lastY = 150;
 /** this function is adapted from a post by Steven Canfield
  * on StackOverflow.com:
- * http://stackoverflow.com/questions/728049/glutpassivemotionfunc-and-glutwarpmousepointer */
+ * http://stackoverflow.com/questions/728049/glutpassivemotionfunc-and-glutwarpmousepointer
+ */
+int lastX = 150;
+int lastY = 150;
 void PassiveMotionFunc(int x, int y) {
 	int deltaX = x - lastX;
 	int deltaY = y - lastY;
@@ -284,22 +260,21 @@ void PassiveMotionFunc(int x, int y) {
 }
 
 void KeyboardFunc(unsigned char c, int x, int y) {
-	//float current_time = float(glutGet(GLUT_ELAPSED_TIME)) / 1000.0f;
 	bool normals;
 
 	if (globals.editMode) {
 		switch(c) {
 		case '4':
-			globals.splineOverlay->moveHorizontal(-0.005);
+			globals.splineOverlay->moveHorizontal(-0.005f);
 			break;
 		case '6':
-			globals.splineOverlay->moveHorizontal(0.005);
+			globals.splineOverlay->moveHorizontal(0.005f);
 			break;
 		case '2':
-			globals.splineOverlay->moveVertical(-0.005);
+			globals.splineOverlay->moveVertical(-0.005f);
 			break;
 		case '8':
-			globals.splineOverlay->moveVertical(0.005);
+			globals.splineOverlay->moveVertical(0.005f);
 			break;
 		case '7':
 			globals.splineOverlay->addAngle(1);
@@ -308,10 +283,10 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 			globals.splineOverlay->addAngle(-1);
 			break;
 		case '1':
-			globals.splineOverlay->addSize(0.005);
+			globals.splineOverlay->addSize(0.005f);
 			break;
 		case '3':
-			globals.splineOverlay->addSize(-0.005);
+			globals.splineOverlay->addSize(-0.005f);
 			break;
 		case '5':
 			globals.splineOverlay->next();
