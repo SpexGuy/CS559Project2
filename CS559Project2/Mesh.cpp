@@ -169,7 +169,7 @@ Mesh *Mesh::newCylinder(int stacks, int slices, float tall, float topRadius, flo
 
 Mesh *Mesh::newSurfaceOfRotation(const vector<vec2> &points, int slices, bool crosshatch) {
 	vector<vec3> verts;
-	for (int c = 1; c < points.size()-1; c++) {
+	for (uint c = 1; c < points.size()-1; c++) {
 		for (int d = 0; d < slices; d++) {
 			verts.push_back(
 				vec3(points[c].y * cos(2*M_PI * float(d)/slices), 
@@ -272,6 +272,7 @@ bool Mesh::initialize() {
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
@@ -296,10 +297,6 @@ void Mesh::draw(mat4 model) {
 		return;
 
 	transform(model);
-
-	glEnable(GL_DEPTH_TEST);
-
-	model = rotate(model, 30.0f, vec3(0.0f, 1.0f, 0.0f));
 
 	Graphics::inst()->drawTriangles(trigs, vertex_array_handle, shader, model);
 

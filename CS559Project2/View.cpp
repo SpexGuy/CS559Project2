@@ -21,21 +21,12 @@ View::View(Camera *c, Model *m, ViewOverlay *o) {
 void View::render() {
 	this->setupCamera();
 	mat4 context = mat4(1.0f);
-	mat4 view = camera->generateViewMatrix();
-	Graphics::inst()->setView(view);
+
+	glEnable(GL_DEPTH_TEST);
 	model->draw(context);
 
-	//disable lighting and depth test for overlay
-	GLboolean lit = glIsEnabled(GL_LIGHTING);
-	if (lit) glDisable(GL_LIGHTING);
-	GLboolean dt = glIsEnabled(GL_DEPTH_TEST);
-	if (dt) glDisable(GL_DEPTH_TEST);
-
+	glDisable(GL_DEPTH_TEST);
 	overlay->draw();
-
-	//reset depth test and lighting
-	if (dt) glEnable(GL_DEPTH_TEST);
-	if (lit) glEnable(GL_LIGHTING);
 }
 
 void View::setupCamera() {
