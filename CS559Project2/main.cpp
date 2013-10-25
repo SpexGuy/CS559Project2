@@ -31,6 +31,7 @@
 #include "Rocket.h"
 #include "Function.h"
 #include "Animation.h"
+#include "PointMesh.h"
 
 using namespace std;
 using namespace glm;
@@ -54,6 +55,7 @@ public:
 	Mesh *mars;
 	Mesh *cylinder;
 	Mesh *sphere;
+	PointMesh *starfield;
 	Rocket *rocket;
 
 	Animation *marsAnim;
@@ -92,7 +94,6 @@ Globals::Globals() {
 	sphere = Mesh::newSphere(10,10, 1.0f, true);
 	cylinder = Mesh::newCylinder(10,10, 0.5f, 0.2f, 0.1f, true);
 	rocket = new Rocket();
-
 	light = new SpheroidLight();
 	light->setAngle(45);
 	light->setAxisAngle(45);
@@ -101,6 +102,8 @@ Globals::Globals() {
 	mars = Mesh::newMars(1, 0.04f, "mars_low_rez.txt", true);
 	sphere = Mesh::newSphere(10,10, 10.0f, true);
 	cylinder = Mesh::newCylinder(10,10, 10.0f,10.0f, true);
+	starfield = PointMesh::newStarField(10000, 2.0f);
+
 
 	const0 = new ConstantTimeFunction(0.0f);
 	const1 = new ConstantTimeFunction(1.0f);
@@ -111,6 +114,9 @@ Globals::Globals() {
 	model->addLight(light);
 	model->addElement(mars);
 	model->addAnimation(marsAnim);
+
+	//this pushes the starfield to the beginning of the model, ensuring that it is drawn behind everything else despite the depth buffer.
+	model->addLight(starfield);
 
 	view = new View(flyCam, model, baseOverlay);
 	window = new SingleViewportWindow(view);
@@ -159,6 +165,8 @@ bool Globals::initialize() {
 		return false;
 	if (!rocket->initialize())
 		return false;
+	if (!starfield->initialize())
+		return false;
 
 	editMode = true;
 	flyMode = true;
@@ -201,6 +209,7 @@ void Globals::takeDown() {
 	cylinder->takeDown();
 	sphere->takeDown();
 	rocket->takeDown();
+	starfield->takeDown();
 	Graphics::inst()->takeDown();
 	ShaderFlyweight::inst()->takeDown();
 }
@@ -217,6 +226,8 @@ Globals::~Globals() {
 	delete mars;
 	delete cylinder;
 	delete sphere;
+	delete starfield;
+	delete rocket;
 
 	delete const0;
 	delete const1;
@@ -225,41 +236,17 @@ Globals::~Globals() {
 	delete marsAnim;
 }
 
-//@Deprecated
-class WindowPK
-{
-public:
-	WindowPK()
-	{
-		this->time_last_pause_began = this->total_time_paused = 0;
-		this->normals = this->wireframe = this->paused = false;
-		this->slices = 20;
-		this->interval = 1000 / 120;
-		this->window_handle = -1;
-	}
-
-	float time_last_pause_began;
-	float total_time_paused;
-	bool paused , wireframe, normals;
-	int window_handle;
-	int interval;
-	int slices;
-	ivec2 size;
-	float window_aspect;
-	vector<string> instructions;
-};
-
-
 void CloseFunc() {
 	glutLeaveMainLoop();
 	globals.takeDown();
 }
 
-int lastX = 150;
-int lastY = 150;
 /** this function is adapted from a post by Steven Canfield
  * on StackOverflow.com:
- * http://stackoverflow.com/questions/728049/glutpassivemotionfunc-and-glutwarpmousepointer */
+ * http://stackoverflow.com/questions/728049/glutpassivemotionfunc-and-glutwarpmousepointer
+ */
+int lastX = 150;
+int lastY = 150;
 void PassiveMotionFunc(int x, int y) {
 	int deltaX = x - lastX;
 	int deltaY = y - lastY;
@@ -284,22 +271,21 @@ void PassiveMotionFunc(int x, int y) {
 }
 
 void KeyboardFunc(unsigned char c, int x, int y) {
-	//float current_time = float(glutGet(GLUT_ELAPSED_TIME)) / 1000.0f;
 	bool normals;
 
 	if (globals.editMode) {
 		switch(c) {
 		case '4':
-			globals.splineOverlay->moveHorizontal(-0.005);
+			globals.splineOverlay->moveHorizontal(-0.005f);
 			break;
 		case '6':
-			globals.splineOverlay->moveHorizontal(0.005);
+			globals.splineOverlay->moveHorizontal(0.005f);
 			break;
 		case '2':
-			globals.splineOverlay->moveVertical(-0.005);
+			globals.splineOverlay->moveVertical(-0.005f);
 			break;
 		case '8':
-			globals.splineOverlay->moveVertical(0.005);
+			globals.splineOverlay->moveVertical(0.005f);
 			break;
 		case '7':
 			globals.splineOverlay->addAngle(1);
@@ -308,10 +294,10 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 			globals.splineOverlay->addAngle(-1);
 			break;
 		case '1':
-			globals.splineOverlay->addSize(0.005);
+			globals.splineOverlay->addSize(0.005f);
 			break;
 		case '3':
-			globals.splineOverlay->addSize(-0.005);
+			globals.splineOverlay->addSize(-0.005f);
 			break;
 		case '5':
 			globals.splineOverlay->next();

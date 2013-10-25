@@ -25,7 +25,7 @@ bool Rocket::initialize()
 //tanslate rotate scale in that order
 
 	//Draws the head
-	head = Mesh::newSphere(stacks, slices, headradius,true);
+	head = Mesh::newSphere(stacks, slices, headradius, true);
 	if (!head->initialize())
 		return false;
 	head->position(vec3(0.0f));
@@ -65,7 +65,9 @@ bool Rocket::initialize()
 	tmp->scale(vec3(1.0f,cylinderHeight, 1.0f));
 	addElement(tmp);
 	*/
-	}
+
+	return true;
+}
 void Rocket::draw(mat4 model)
 {
 	transform(model);
@@ -81,6 +83,7 @@ void Rocket::draw(mat4 model)
 
 void Rocket::takeDown()
 {
+	head->takeDown();
 	for (
 		list<Drawable*>::const_iterator
 		iterator = getElements()->begin(),

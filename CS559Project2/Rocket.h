@@ -14,7 +14,7 @@ public:
 
 protected:
 	Mesh* head;
-	float stacks;
-	float slices;
+	int stacks;
+	int slices;
 
 };
