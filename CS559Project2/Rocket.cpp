@@ -8,19 +8,20 @@ using namespace std;
 
 Rocket::Rocket()
 {
-	 this->stacks = 20;
-	 this->slices = 20;
+	 this->stacks = 16;
+	 this->slices = 16;
 }
 
 bool Rocket::initialize()
 {
-	float headHeight = 5.0f;
-	float headradius = 3.0f;
-	float strutLength = 0.25f;
+	float headHeight = 2.0f;
+	float headradius = 1.0f;
+	float smallSphereRadius = headradius/4.0f;
+	float headToLeg = 0.25f;
 	float cylinderHeight = 1.25f;
 	float landingGearHeight = 3.0f;
-	float strutSmallR = 0.25f;
-	float strutBigR = 0.25f;
+	float strutInLeg = smallSphereRadius/4.0f;
+	float strutInHead = smallSphereRadius;
 
 //tanslate rotate scale in that order
 
@@ -30,41 +31,40 @@ bool Rocket::initialize()
 		return false;
 	head->position(vec3(0.0f));
 	head->scale(vec3(1.0f,headHeight,1.0f));
-
-	/*
+	addElement(head);
 	
 	//top sphere
-	Mesh* tmp = Mesh::newSphere(stacks, slices, 1.0f,true);
+	Mesh* tmp = Mesh::newSphere(stacks, slices, smallSphereRadius,true);
 	if (!tmp->initialize())
 		return false;
-	tmp->position(vec3(strutLength, 0.0f, -(headHeight/1.5f)));
+	tmp->position(vec3(headToLeg+smallSphereRadius+headradius, -(headHeight/1.5f), 0.0f));
 	addElement(tmp);
 
 	//mid cylinder
-	tmp = Mesh::newCylinder(stacks, slices, 1.0f, 1.0f, 1.0f, true);
+	tmp = Mesh::newCylinder(stacks, slices, smallSphereRadius, smallSphereRadius, true);
 	if (!tmp->initialize())
 		return false;
-	tmp->position(vec3(strutLength, -(headHeight/1.5f)-(cylinderHeight/2.0f), 0.0f));
-	tmp->scale(vec3(1.0f,cylinderHeight, 1.0f));
+	tmp->position(vec3(headToLeg+smallSphereRadius+headradius, (-headHeight/1.5f), 0.0f));
+	tmp->setRotation(vec3(0.0f,0.0f,1.0f), 180.0f);
 	addElement(tmp);
 
 	//bottom sphere
-	tmp = Mesh::newSphere(stacks, slices, 1.0f,true);
+	tmp = Mesh::newSphere(stacks, slices, smallSphereRadius,true);
 	if (!tmp->initialize())
 		return false;
-	tmp->position(vec3(strutLength, -(headHeight/1.5f)-(cylinderHeight), 0.0f));
-	tmp->scale(vec3(1.0f,cylinderHeight, 1.0f));
+	tmp->position(vec3(headToLeg+smallSphereRadius+headradius, (-headHeight/1.5f)-cylinderHeight + smallSphereRadius, 0.0f));
+	tmp->scale(vec3(1.0f,landingGearHeight, 1.0f));
 	addElement(tmp);
 
 	//strut
-	tmp = Mesh::newCylinder(stacks, slices, 1.0f, strutBigR, strutSmallR, true);
+	tmp = Mesh::newCylinder(stacks, slices, strutInLeg, strutInHead, true);
 	if (!tmp->initialize())
 		return false;
-	tmp->position(vec3(strutLength/2.0f, -(headHeight/1.5f)-(cylinderHeight/0.25f), 0.0f));
-	tmp->setRotation(vec3(1.0f,0.0f,0.0f), 90.0f);
-	tmp->scale(vec3(1.0f,cylinderHeight, 1.0f));
+	tmp->position(vec3(0, (-headHeight/1.5f)-(cylinderHeight/4.0f) + (strutInHead-strutInLeg)/2.0f, 0.0f));
+	tmp->scale(vec3(1.0f,headToLeg+smallSphereRadius+headradius,1.0f));
+	tmp->setRotation(vec3(0.0f,0.0f,1.0f), 90.0f);
 	addElement(tmp);
-	*/
+	
 	}
 void Rocket::draw(mat4 model)
 {
