@@ -128,7 +128,7 @@ Mesh *Mesh::newSphere(int stacks, int slices, float radius, bool crosshatch)
 	return new Mesh(points, trigs);
 }
 
-Mesh *Mesh::newCylinder(int stacks, int slices, float topRadius, float botRadius, bool crosshatch)
+Mesh *Mesh::newCylinder(int stacks, int slices, float tall, float topRadius, float botRadius, bool crosshatch)
 {
 	//Assumes that the 2D has the same amount of slices for each stack
 	//Slices are the columns of the mesh
@@ -139,12 +139,12 @@ Mesh *Mesh::newCylinder(int stacks, int slices, float topRadius, float botRadius
 	assert(width > 0);
 
 	vector<vec3> points/*(height*width + 2)*/;
-	float ratio = (topRadius-botRadius)/(float)height;
+	float ratio = abs(topRadius-botRadius)/tall;
 
 	for(int i = 0; i< height; i++) {
-		float r = ((float)i * ratio) + botRadius;
 		for( int j = 0; j < width; j++) {
-			float theta = float(2*M_PI * (float(j) / float(width)));
+			float r = ((float)i*ratio) + (float)botRadius;
+			float theta = float(2*M_PI * float(j) / float(width));
 
 			float z = r*sin(theta);
 			float x = r*cos(theta);
@@ -298,6 +298,9 @@ void Mesh::draw(mat4 model) {
 	transform(model);
 
 	glEnable(GL_DEPTH_TEST);
+
+	model = rotate(model, 30.0f, vec3(0.0f, 1.0f, 0.0f));
+
 	Graphics::inst()->drawTriangles(trigs, vertex_array_handle, shader, model);
 
 	if(drawNormals) {

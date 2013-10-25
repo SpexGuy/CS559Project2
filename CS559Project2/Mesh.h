@@ -71,7 +71,7 @@ public:
 	static Mesh *newMars(float radius, float radScale,
 		std::vector<std::vector<float>> radii, bool crosshatch = false);
 
-	static Mesh *newCylinder(int stacks, int slices, 
+	static Mesh *newCylinder(int stacks, int slices, float height, 
 				float topRadius, float botRadius, bool crosshatch = false);
 
 	static Mesh *newSphere(int stacks, int slices, float radius, bool crosshatch = false);
