@@ -92,7 +92,7 @@ Globals::Globals() {
 	model = new Model();
 	mars = Mesh::newMars(1, 0.08f, "mars_low_rez.txt", true);
 	sphere = Mesh::newSphere(10,10, 1.0f, true);
-	cylinder = Mesh::newCylinder(10,10, 0.5f, 0.2f, 0.1f, true);
+	cylinder = Mesh::newCylinder(10,10, 0.5f, 0.1f, true);
 	rocket = new Rocket();
 	light = new SpheroidLight();
 	light->setAngle(45);
@@ -305,26 +305,6 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 		}
 	}
 
-	if (globals.flyMode) {
-		switch(c) {
-		case 'e':
-			globals.flyCam->moveForward(0.05f);
-			break;
-		case 'd':
-			globals.flyCam->moveForward(-0.05f);
-			break;
-		case 'f':
-			globals.flyCam->moveRight(0.05f);
-			break;
-		case 's':
-			globals.flyCam->moveRight(-0.05f);
-			break;
-		case ' ':
-			globals.flyCam->moveUp(0.05f);
-			break;
-		}
-	}
-
 	switch (c)
 	{
 	case 'w':
@@ -361,7 +341,10 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 	case 'm':
 		globals.model->clearElements();
 		globals.model->addLight(globals.light);
+		globals.model->addElement(globals.starfield);
+
 		globals.model->addElement(globals.mars);
+
 		break;
 
 	case '.':
@@ -407,37 +390,60 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 
 void SpecialFunc(int c, int x, int y) {
 
-	if (globals.flyMode) {
-		if (c == GLUT_KEY_SHIFT_L) {
-			globals.flyCam->moveUp(-0.05f);
-		}
-	} else {
-		switch (c) {		
+	switch (c) {		
+		case GLUT_KEY_CTRL_R:
+			if (globals.flyMode) 
+			{
+				globals.flyCam->moveUp(-0.05f);
+			}
+			break;
+		case GLUT_KEY_CTRL_L:
+			if (globals.flyMode) 
+			{
+				globals.flyCam->moveUp(0.05f);
+			}
+			break;
 		case GLUT_KEY_LEFT:
-			globals.cam->addAngle(-1.0f);
+			if (globals.flyMode) 
+			{
+				globals.flyCam->moveRight(-0.05f);
+			} else {
+				globals.cam->addAngle(-1.0f);
+			}
 			break;
 		case GLUT_KEY_RIGHT:
-			globals.cam->addAngle(1.0f);
+			if (globals.flyMode) 
+			{
+				globals.flyCam->moveRight(0.05f);
+			} else {
+				globals.cam->addAngle(1.0f);
+			}
 			break;
 		case GLUT_KEY_UP:
-			globals.cam->addAxisAngle(-1.0f);
+			if (globals.flyMode) 
+			{
+				globals.flyCam->moveForward(0.05f);
+			} else {
+				globals.cam->addAxisAngle(-1.0f);
+			}
 			break;
 		case GLUT_KEY_DOWN:
-			globals.cam->addAxisAngle(1.0f);
+			if (globals.flyMode) 
+			{
+				globals.flyCam->moveForward(-0.05f);
+			} else {
+				globals.cam->addAxisAngle(1.0f);
+			}
 			break;
-		}
-	}
-
-	switch(c) {
-	case GLUT_KEY_F11:
-		globals.window->toggleFullscreen();
-		break;
-	case GLUT_KEY_PAGE_UP:
-		globals.proj->addFov(1.0f);
-		break;
-	case GLUT_KEY_PAGE_DOWN:
-		globals.proj->addFov(-1.0f);
-		break;
+		case GLUT_KEY_F11:
+			globals.window->toggleFullscreen();
+			break;
+		case GLUT_KEY_PAGE_UP:
+			globals.proj->addFov(1.0f);
+			break;
+		case GLUT_KEY_PAGE_DOWN:
+			globals.proj->addFov(-1.0f);
+			break;
 	}
 }
 

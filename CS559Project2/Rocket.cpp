@@ -14,13 +14,14 @@ Rocket::Rocket()
 
 bool Rocket::initialize()
 {
-	float headHeight = 5.0f;
-	float headradius = 3.0f;
-	float strutLength = 0.25f;
-	float cylinderHeight = 1.25f;
-	float landingGearHeight = 3.0f;
-	float strutSmallR = 0.25f;
-	float strutBigR = 0.25f;
+	float headHeight = 2.0f;
+	float headradius = 1.0f;
+	float headToLeg = headradius*2.0f;
+	float topOfLeg = -headHeight/1.625f;
+	float cylinderHeight = headHeight/1.25f;
+	float smallRadius = headradius/4.0f;
+	float structRadiusInLeg = smallRadius/2.0f;
+	float structRadiusInHead = smallRadius*1.25f;
 
 //tanslate rotate scale in that order
 
@@ -31,40 +32,39 @@ bool Rocket::initialize()
 	head->position(vec3(0.0f));
 	head->scale(vec3(1.0f,headHeight,1.0f));
 
-	/*
-	
 	//top sphere
-	Mesh* tmp = Mesh::newSphere(stacks, slices, 1.0f,true);
+	Mesh* tmp = Mesh::newSphere(stacks, slices, smallRadius, true);
 	if (!tmp->initialize())
 		return false;
-	tmp->position(vec3(strutLength, 0.0f, -(headHeight/1.5f)));
+	tmp->position(vec3(headToLeg, topOfLeg, 0.0f));
 	addElement(tmp);
 
 	//mid cylinder
-	tmp = Mesh::newCylinder(stacks, slices, 1.0f, 1.0f, 1.0f, true);
+	tmp = Mesh::newCylinder(stacks, slices, smallRadius, smallRadius, true);
 	if (!tmp->initialize())
 		return false;
-	tmp->position(vec3(strutLength, -(headHeight/1.5f)-(cylinderHeight/2.0f), 0.0f));
+	tmp->position(vec3(headToLeg, topOfLeg, 0.0f));
+	tmp->setRotation(vec3(1.0f,0.0f,0.0f), 180.0f);
 	tmp->scale(vec3(1.0f,cylinderHeight, 1.0f));
+
 	addElement(tmp);
 
 	//bottom sphere
-	tmp = Mesh::newSphere(stacks, slices, 1.0f,true);
+	tmp = Mesh::newSphere(stacks, slices, smallRadius,true);
 	if (!tmp->initialize())
 		return false;
-	tmp->position(vec3(strutLength, -(headHeight/1.5f)-(cylinderHeight), 0.0f));
+	tmp->position(vec3(headToLeg, topOfLeg-(cylinderHeight), 0.0f));
 	tmp->scale(vec3(1.0f,cylinderHeight, 1.0f));
 	addElement(tmp);
 
 	//strut
-	tmp = Mesh::newCylinder(stacks, slices, 1.0f, strutBigR, strutSmallR, true);
+	tmp = Mesh::newCylinder(stacks, slices, structRadiusInHead, structRadiusInLeg, true);
 	if (!tmp->initialize())
 		return false;
-	tmp->position(vec3(strutLength/2.0f, -(headHeight/1.5f)-(cylinderHeight/0.25f), 0.0f));
-	tmp->setRotation(vec3(1.0f,0.0f,0.0f), 90.0f);
-	tmp->scale(vec3(1.0f,cylinderHeight, 1.0f));
+	tmp->position(vec3(headToLeg, topOfLeg-(cylinderHeight/4.0f), 0.0f));
+	tmp->setRotation(vec3(0.0f,0.0f,1.0f), 90.0f);
+	tmp->scale(vec3(1.0f,headToLeg, 1.0f));
 	addElement(tmp);
-	*/
 
 	return true;
 }

@@ -128,7 +128,7 @@ Mesh *Mesh::newSphere(int stacks, int slices, float radius, bool crosshatch)
 	return new Mesh(points, trigs);
 }
 
-Mesh *Mesh::newCylinder(int stacks, int slices, float tall, float topRadius, float botRadius, bool crosshatch)
+Mesh *Mesh::newCylinder(int stacks, int slices, float topRadius, float botRadius, bool crosshatch)
 {
 	//Assumes that the 2D has the same amount of slices for each stack
 	//Slices are the columns of the mesh
@@ -139,7 +139,7 @@ Mesh *Mesh::newCylinder(int stacks, int slices, float tall, float topRadius, flo
 	assert(width > 0);
 
 	vector<vec3> points/*(height*width + 2)*/;
-	float ratio = abs(topRadius-botRadius)/tall;
+	float ratio = (topRadius-botRadius)/height;
 
 	for(int i = 0; i< height; i++) {
 		for( int j = 0; j < width; j++) {
