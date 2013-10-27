@@ -1,6 +1,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "PointMesh.h"
+#include "Vertex.h"
 
 using namespace std;
 using namespace glm;
@@ -17,8 +18,10 @@ bool PointMesh::initialize() {
 		return false;
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (GLvoid *) 0);
+//	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(VertexPC), (GLvoid *) sizeof(vec3));
 
 	glEnableVertexAttribArray(0);
+//	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
@@ -62,22 +65,23 @@ PointMesh *PointMesh::newStarField(int numPoints, float radius) {
 		float theta = float(2*M_PI * float(rand())/(float(RAND_MAX)));
 
 		points[c] = vec3(radius * sinphi * sin(theta),
-						 radius * cosphi,
-						 radius * sinphi * cos(theta));
+								  radius * cosphi,
+								  radius * sinphi * cos(theta));
+
 	}
 
 	return new StarField(points);
 }
 
 void StarField::draw(mat4 model) {
-	glDisable(GL_DEPTH_TEST);
-	mat4 oldProj = Graphics::inst()->getProjection();
-	ivec2 size = Graphics::inst()->getSize();
-	float aspect = float(size.x)/float(size.y);
-	Graphics::inst()->setProjection(
-		ortho(-1.0f, 1.0f, -1/aspect, 1/aspect, 3.0f, 10.0f));
-	//HACK: clips front stars by setting near plate to 3.0f (the radius of the camera)
+//	glDisable(GL_DEPTH_TEST);
+//	mat4 oldProj = Graphics::inst()->getProjection();
+//	ivec2 size = Graphics::inst()->getSize();
+//	float aspect = float(size.x)/float(size.y);
+//	Graphics::inst()->setProjection(
+//		ortho(-aspect, aspect, -1.0f, 1.0f, 3.0f, 100.0f));
+	//HACK: clips front stars by setting near plane to 3.0f (the radius of the camera)
 	PointMesh::draw(model);
-	Graphics::inst()->setProjection(oldProj);
-	glEnable(GL_DEPTH_TEST);
+//	Graphics::inst()->setProjection(oldProj);
+//	glEnable(GL_DEPTH_TEST);
 }

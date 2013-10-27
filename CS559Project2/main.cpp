@@ -36,11 +36,6 @@
 using namespace std;
 using namespace glm;
 
-class OverlayTest : public ViewOverlay {
-public:
-	mat4 draw();
-};
-
 class Globals {
 public:
 	Window *window;
@@ -57,6 +52,9 @@ public:
 	Mesh *sphere;
 	PointMesh *starfield;
 	Rocket *rocket;
+
+	Translation *rocketTranslate;
+	Rotation *rocketSpinner;
 
 	Animation *marsAnim;
 	Animation *rocketAnim;
@@ -87,6 +85,7 @@ public:
 Globals::Globals() {
 	period = 1000 / 120;
 	proj = new PerspectiveProjection(45.0f);
+	proj->setPlanes(0.01f, 100.0f);
 	cam = new SpheroidCamera(proj);
 	cam->setRadius(3);
 	flyCam = new FreeFlyCamera(proj);
@@ -94,35 +93,40 @@ Globals::Globals() {
 	flyCam->setAngle(180);
 	splineOverlay = new SplineEditorOverlay(5);
 	baseOverlay = new ViewOverlay();
+
 	model = new Model();
 	mars = Mesh::newMars(1, 0.08f, "mars_low_rez.txt", true);
 	sphere = Mesh::newSphere(10,10, 1.0f, true);
 	cylinder = Mesh::newCylinder(10,10, 0.5f, 0.1f, true);
 	rocket = new Rocket();
+	starfield = PointMesh::newStarField(10000, 8.0f);
+
+	//set up a decorator stack to make rocket move specially
+	rocketTranslate = new Translation(rocket);
+	rocketTranslate->position(vec3(3.0f, 0.0f, 0.0f));
+	rocketSpinner = new Rotation(rocketTranslate);
+
 	light = new SpheroidLight();
 	light->setAngle(45);
 	light->setAxisAngle(45);
 	light->setRadius(5);
 
-	mars = Mesh::newMars(1, 0.04f, "mars_low_rez.txt", true);
-	sphere = Mesh::newSphere(10,10, 10.0f, true);
-	cylinder = Mesh::newCylinder(10,10, 10.0f,10.0f, true);
-	starfield = PointMesh::newStarField(10000, 2.0f);
-
-
 	const0 = new ConstantTimeFunction(0.0f);
 	const1 = new ConstantTimeFunction(1.0f);
 	marsAngle = new LinearTimeFunction(6.0f/1000.0f, 0.0f);
 	marsAxis = new Vec3TimeFunction(const0, const1, const0);
+	//make rocket spin
 	marsAnim = new RotationAnimation(mars, marsAxis, marsAngle);
 
 	rocketAngle = new LinearTimeFunction(12.0f/1000.0f, 0.0f);
 	rocketAxis = new Vec3TimeFunction(const0, const1, const0);
-	rocketAnim = new RotationAnimation(rocket, rocketAxis, rocketAngle);
+	rocketAnim = new RotationAnimation(rocketSpinner, rocketAxis, rocketAngle);
 
 	model->addLight(light);
-	model->addElement(mars);
+	//rocketAngle is at the top level of rocket's decorator stack
+	model->addElement(rocketSpinner);
 	model->addAnimation(marsAnim);
+	model->addAnimation(rocketAnim);
 
 	//this pushes the starfield to the beginning of the model, ensuring that it is drawn behind everything else despite the depth buffer.
 	model->addLight(starfield);
@@ -237,6 +241,9 @@ Globals::~Globals() {
 	delete sphere;
 	delete starfield;
 	delete rocket;
+
+	delete rocketSpinner;
+	delete rocketTranslate;
 
 	delete const0;
 	delete const1;

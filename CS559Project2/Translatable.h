@@ -1,6 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 #include "Transformer.h"
+#include "Drawable.h"
 
 /**
  * An interface representing an object which can be translated
@@ -26,4 +27,15 @@ protected:
 	virtual void transform(glm::mat4 & context) const;
 private:
 	glm::vec3 pos;
+};
+
+
+class Translation : public TranslatableMixin, public Drawable {
+private:
+	Translation();
+protected:
+	Drawable *child;
+public:
+	Translation(Drawable *child) : child(child) {}
+	virtual void draw(glm::mat4 model);
 };

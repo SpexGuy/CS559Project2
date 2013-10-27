@@ -1,5 +1,6 @@
 #pragma once
 #include "Transformer.h"
+#include "Drawable.h"
 #include <glm/glm.hpp>
 
 /**
@@ -23,4 +24,14 @@ public:
 protected:
 	glm::vec3 scaleVec;
 	virtual void transform(glm::mat4 & context) const;
+};
+
+class Scale : public ScaleableMixin, public Drawable {
+private:
+	Scale();
+protected:
+	Drawable *child;
+public:
+	Scale(Drawable *child) : child(child) {}
+	virtual void draw(glm::mat4 model);
 };

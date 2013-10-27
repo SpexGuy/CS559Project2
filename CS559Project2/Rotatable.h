@@ -1,6 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 #include "Transformer.h"
+#include "Drawable.h"
 
 /**
  * An interface for something that can be rotated
@@ -13,6 +14,7 @@ public:
 /**
  * A mixin class to facilitate implementation of the Rotatable interface
  */
+//@Deprecated
 class RotatableMixin : public Rotatable {
 protected:
 	float angle;
@@ -23,6 +25,16 @@ public:
 	/* initializes angle to 0 and axis to (0, 1, 0) */
 	RotatableMixin();
 	virtual void setRotation(glm::vec3 & axis, float angle);
+};
+
+class Rotation : public RotatableMixin, public Drawable {
+private:
+	Rotation();
+protected:
+	Drawable *child;
+public:
+	Rotation(Drawable *child) : child(child) {}
+	virtual void draw(glm::mat4 model);
 };
 
 /**

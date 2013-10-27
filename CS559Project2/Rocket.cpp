@@ -8,8 +8,8 @@ using namespace std;
 
 Rocket::Rocket()
 {
-	 this->stacks = 20;
-	 this->slices = 20;
+	 this->stacks = 32;
+	 this->slices = 32;
 }
 
 bool Rocket::initialize()

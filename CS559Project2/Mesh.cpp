@@ -138,12 +138,12 @@ Mesh *Mesh::newCylinder(int stacks, int slices, float topRadius, float botRadius
 	int width = slices;
 	assert(width > 0);
 
-	vector<vec3> points/*(height*width + 2)*/;
+	vector<vec3> points;
 	float ratio = (topRadius-botRadius)/height;
 
-	for(int i = 0; i<= height; i++) {
-			float r = ((float)i*ratio) + (float)botRadius;
+	for(int i = 0; i <= height; i++) {
 		for( int j = 0; j < width; j++) {
+			float r = ((float)i*ratio) + (float)botRadius;
 			float theta = float(2*M_PI * float(j) / float(width));
 
 			float z = r*sin(theta);
@@ -158,11 +158,10 @@ Mesh *Mesh::newCylinder(int stacks, int slices, float topRadius, float botRadius
 		}
 	}
 #ifdef DEBUG
-			
 			cout << "Triangles" <<endl;
 #endif
 
-	vector<ivec3> trigs = generateTrigs(points, width, height+1, false, crosshatch);
+	vector<ivec3> trigs = generateTrigs(points, width, height + 1, false, crosshatch);
 
 	return new Mesh(points, trigs);
 }
@@ -236,7 +235,6 @@ Mesh::Mesh(vector<vec3> ppoints, vector<ivec3> trigs) {
 	for (int c = 0; c < int(points.size()); c++) {
 		points[c].position = ppoints[c];
 		points[c].normal = vec3(0.0f);
-		points[c].light_position = vec3( 0, 5.0f, 0.0f);
 	}
 
 	for (int c = 0; c < int(trigs.size()); c++) {

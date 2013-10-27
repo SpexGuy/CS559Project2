@@ -274,7 +274,8 @@ bool ShaderFlyweight::initialize() {
 
 Shader *ShaderFlyweight::loadShader(int name, char *vertFile, char *fragFile) {
 	Shader *s = new Shader();
-	s->initialize(vertFile, fragFile);
+	bool init = s->initialize(vertFile, fragFile);
+	assert(init);
 	loadedShaders[name] = s;
 	return s;
 }

@@ -23,3 +23,11 @@ void TranslatableMixin::position(vec3 pos) {
 vec3 TranslatableMixin::position() const {
 	return pos;
 }
+
+
+
+void Translation::draw(mat4 model) {
+	transform(model);
+	child->draw(model);
+}
+

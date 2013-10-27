@@ -19,3 +19,9 @@ void ScaleableMixin::scale(vec3 newScale) {
 void ScaleableMixin::transform(glm::mat4 & context) const {
 	context = glm::scale(context, this->scaleVec);
 }
+
+
+void Scale::draw(mat4 model) {
+	transform(model);
+	child->draw(model);
+}

@@ -23,6 +23,11 @@ void RotatableMixin::setRotation(vec3 &axis, float angle) {
 }
 
 
+void Rotation::draw(mat4 model) {
+	transform(model);
+	child->draw(model);
+}
+
 
 void SphericalRotationMixin::transform(mat4 &context) const {
 	context = glm::rotate(context, angle, vec3(0.0f, 1.0f, 0.0f));
