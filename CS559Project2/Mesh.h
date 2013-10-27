@@ -33,8 +33,9 @@ public:
 	 * which have this point as a vertex. */
 	Mesh(std::vector<glm::vec3> points, std::vector<glm::ivec3> trigs);
 
-	virtual bool initialize();
+	float getRadius();
 
+	virtual bool initialize();
 	
 	virtual void draw(glm::mat4 modelview);
 

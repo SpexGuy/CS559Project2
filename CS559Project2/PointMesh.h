@@ -11,7 +11,7 @@ private:
 protected:
 	GLuint vertex_coordinate_handle;
 	GLuint vertex_array_handle;
-	Shader *solidShader;
+	Shader *starShader;
 	std::vector<glm::vec3> points;
 	std::vector<int> indexMask;
 public:

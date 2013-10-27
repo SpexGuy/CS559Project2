@@ -16,5 +16,6 @@ protected:
 	Mesh* head;
 	int stacks;
 	int slices;
+	float radius;
 
 };

@@ -43,8 +43,8 @@ bool Rocket::initialize()
 	tmp = Mesh::newCylinder(stacks, slices, smallRadius, smallRadius, true);
 	if (!tmp->initialize())
 		return false;
-	tmp->position(vec3(headToLeg, topOfLeg, 0.0f));
-	tmp->setRotation(vec3(1.0f,0.0f,0.0f), 180.0f);
+	tmp->position(vec3(0.0f, topOfLeg, headToLeg));
+	tmp->setRotation(vec3(0.0f,0.0f,1.0f), 180.0f);
 	tmp->scale(vec3(1.0f,cylinderHeight, 1.0f));
 
 	addElement(tmp);
@@ -53,7 +53,7 @@ bool Rocket::initialize()
 	tmp = Mesh::newSphere(stacks, slices, smallRadius,true);
 	if (!tmp->initialize())
 		return false;
-	tmp->position(vec3(headToLeg, topOfLeg-(cylinderHeight), 0.0f));
+	tmp->position(vec3(headToLeg, topOfLeg-cylinderHeight, 0.0f));
 	tmp->scale(vec3(1.0f,cylinderHeight, 1.0f));
 	addElement(tmp);
 

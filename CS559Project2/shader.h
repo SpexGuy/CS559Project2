@@ -68,6 +68,8 @@ private:
 
 #define SHADER_SOLID 0
 #define SHADER_ADS 1
+#define SHADER_STAR 2
+
 class ShaderFlyweight {
 public:
 	/* ShaderFlyweight is a Singleton */

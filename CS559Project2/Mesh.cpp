@@ -141,9 +141,9 @@ Mesh *Mesh::newCylinder(int stacks, int slices, float topRadius, float botRadius
 	vector<vec3> points/*(height*width + 2)*/;
 	float ratio = (topRadius-botRadius)/height;
 
-	for(int i = 0; i< height; i++) {
-		for( int j = 0; j < width; j++) {
+	for(int i = 0; i<= height; i++) {
 			float r = ((float)i*ratio) + (float)botRadius;
+		for( int j = 0; j < width; j++) {
 			float theta = float(2*M_PI * float(j) / float(width));
 
 			float z = r*sin(theta);
@@ -162,7 +162,7 @@ Mesh *Mesh::newCylinder(int stacks, int slices, float topRadius, float botRadius
 			cout << "Triangles" <<endl;
 #endif
 
-	vector<ivec3> trigs = generateTrigs(points, width, height, false, crosshatch);
+	vector<ivec3> trigs = generateTrigs(points, width, height+1, false, crosshatch);
 
 	return new Mesh(points, trigs);
 }
@@ -267,11 +267,9 @@ bool Mesh::initialize() {
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPN), (GLvoid *) 0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPN), (GLvoid *) (1*sizeof(vec3)));
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPN), (GLvoid *) (2*sizeof(vec3)));
 
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
@@ -337,5 +335,4 @@ void Mesh::takeDown() {
 	this->normal_array_handle = this->normal_coordinate_handle = GLuint(-1);
 
 }
-
 

@@ -7,3 +7,16 @@ public:
 	glm::vec3 normal;
 	glm::vec3 light_position;
 };
+
+class VertexPC {
+public:
+	glm::vec3 position;
+	glm::vec4 color;
+};
+
+class VertexPCN {
+public:
+	glm::vec3 position;
+	glm::vec3 normal;
+	glm::vec4 color;
+};

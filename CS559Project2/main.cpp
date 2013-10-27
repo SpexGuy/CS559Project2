@@ -59,6 +59,11 @@ public:
 	Rocket *rocket;
 
 	Animation *marsAnim;
+	Animation *rocketAnim;
+
+	TimeFunction<float> *rocketAngle;
+	TimeFunction<vec3> *rocketAxis;
+
 	TimeFunction<float> *marsAngle;
 	TimeFunction<vec3> *marsAxis;
 	TimeFunction<float> *const0;
@@ -111,6 +116,10 @@ Globals::Globals() {
 	marsAxis = new Vec3TimeFunction(const0, const1, const0);
 	marsAnim = new RotationAnimation(mars, marsAxis, marsAngle);
 
+	rocketAngle = new LinearTimeFunction(12.0f/1000.0f, 0.0f);
+	rocketAxis = new Vec3TimeFunction(const0, const1, const0);
+	rocketAnim = new RotationAnimation(rocket, rocketAxis, rocketAngle);
+
 	model->addLight(light);
 	model->addElement(mars);
 	model->addAnimation(marsAnim);
@@ -144,7 +153,7 @@ bool Globals::initialize() {
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glEnable(GL_CULL_FACE);
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClearColor(0.01f, 0.01f, 0.01f, 1.0f);
 	
 
 
@@ -234,6 +243,10 @@ Globals::~Globals() {
 	delete marsAngle;
 	delete marsAxis;
 	delete marsAnim;
+
+	delete rocketAngle;
+	delete rocketAnim;
+	delete rocketAxis;
 }
 
 void CloseFunc() {
@@ -372,6 +385,8 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 	case 'r':
 		globals.model->clearElements();
 		globals.model->addElement(globals.rocket);
+		globals.model->addAnimation(globals.rocketAnim);
+
 		break;
 
 	case 'z':
@@ -390,7 +405,20 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 
 void SpecialFunc(int c, int x, int y) {
 
-	switch (c) {		
+	switch (c) {
+		case GLUT_KEY_F1:
+		{
+			globals.model->clearElements();
+			globals.model->addLight(globals.light);
+			globals.model->addElement(globals.mars);
+			globals.model->addAnimation(globals.marsAnim);
+
+			globals.model->addElement(globals.rocket);
+			globals.model->addAnimation(globals.rocketAnim);
+
+
+		}
+
 		case GLUT_KEY_CTRL_R:
 			if (globals.flyMode) 
 			{
