@@ -56,15 +56,14 @@ public:
 	Drawable *rocketBase;
 	Drawable *marsBase;
 
-	Animation *marsAnim;
-
 	TimeFunction<float> *const0;
 	TimeFunction<float> *const1;
 	TimeFunction<vec3> *yAxis;
 
 	TimeFunction<float> *rocketAngle;
-	TimeFunction<float> *marsAngle;
 	TimeFunction<float> *orbitAngle;
+	TimeFunction<float> *marsAngle;
+	TimeFunction<float> *marsAxisAngle;
 
 	int period;
 	bool wireframe;
@@ -107,18 +106,30 @@ Globals::Globals() {
 	orbitAngle = new LinearTimeFunction(16.0f/1000.0f, 0.0f);
 	rocketAngle = new LinearTimeFunction(-13.0f/1000.0f, 0.0f);
 
-	//set up a decorator stack to make rocket move specially
+	//setup decorator stack to make rocket move specially
 	rocketBase = rocket
+					//make rocket spin
 					->animateRotation(model, yAxis, orbitAngle)
+					//move rocket out to orbit
 					->translated(vec3(2.0f, 0.0f, 0.0f))
+					//make rocket face its direction of motion
 					->rotated(vec3(1.0f, 0.0f, 0.0f), -90.0f)
+					//make rocket spin on its axis
 					->animateRotation(model, yAxis, rocketAngle)
+					//scale rocket to manageable size
 					->scaled(vec3(0.07f, 0.1f, 0.07f));
 
-	marsAngle = new LinearTimeFunction(6.0f/1000.0f, 0.0f);
+	//mars must spin twice as fast since its axis is spinning in the opposite direction.
+	marsAngle = new LinearTimeFunction(12.0f/1000.0f, 0.0f);
+	marsAxisAngle = new LinearTimeFunction(-6.0f/1000.0f, 0.0f);
 
+	//setup decorator stack for mars
 	marsBase = mars
+					//make mars' axis spin
+					->animateRotation(model, yAxis, marsAxisAngle)
+					//tilt mars' axis off of y
 					->rotated(vec3(1.0f, 0.0f, 0.0f), 15.0f)
+					//make mars spin on its axis
 					->animateRotation(model, yAxis, marsAngle);
 
 	light = new SpheroidLight();
@@ -252,6 +263,7 @@ Globals::~Globals() {
 	delete yAxis;
 
 	delete marsAngle;
+	delete marsAxisAngle;
 	delete rocketAngle;
 	delete orbitAngle;
 }
