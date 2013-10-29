@@ -42,7 +42,7 @@ DrawableDecorator *Drawable::animateRotation(AnimationGroup *ag, TimeFunction<gl
 DrawableDecorator *DrawableDecorator::rotated(const vec3 &axis, const float &angle) {
 	Drawable *d = child->rotated(axis, angle);
 	if (d != child)
-		deleteNext = true;
+		isTos = false;
 	child = d;
 	return this;
 }
@@ -50,7 +50,7 @@ DrawableDecorator *DrawableDecorator::rotated(const vec3 &axis, const float &ang
 DrawableDecorator *DrawableDecorator::translated(const vec3 &position) {
 	Drawable *d = child->translated(position);
 	if (d != child)
-		deleteNext = true;
+		isTos = false;
 	child = d;
 	return this;
 }
@@ -58,7 +58,7 @@ DrawableDecorator *DrawableDecorator::translated(const vec3 &position) {
 DrawableDecorator *DrawableDecorator::scaled(const vec3 &scale) {
 	Drawable *d = child->scaled(scale);
 	if (d != child)
-		deleteNext = true;
+		isTos = false;
 	child = d;
 	return this;
 }
@@ -66,22 +66,30 @@ DrawableDecorator *DrawableDecorator::scaled(const vec3 &scale) {
 DrawableDecorator *DrawableDecorator::animateRotation(AnimationGroup *ag, TimeFunction<vec3> *axis, TimeFunction<float> *angle) {
 	Drawable *d = child->animateRotation(ag, axis, angle);
 	if (d != child)
-		deleteNext = true;
+		isTos = false;
 	child = d;
 	return this;
 }
 
 DrawableDecorator *DrawableDecorator::store(DrawableDecorator **bucket) {
-	if (deleteNext) {
-		((DrawableDecorator *)child)->store(bucket);
-	} else {
+	if (isTos) {
 		*bucket = this;
+	} else {
+		((DrawableDecorator *)child)->store(bucket);
 	}
 	return this;
 }
 
+bool DrawableDecorator::initialize() {
+	return child->initialize();
+}
+
+void DrawableDecorator::takeDown() {
+	child->takeDown();
+}
+
 DrawableDecorator::~DrawableDecorator() {
-	if (deleteNext)
+	if (child != NULL)
 		delete child;
 }
 
@@ -100,6 +108,32 @@ void DrawableGroup::draw(mat4 model) {
 		++iterator)
 	{
 		(*iterator)->draw(model);
+	}
+}
+
+bool DrawableGroup::initialize() {
+	for (
+		list<Drawable*>::const_iterator
+			iterator = elements.begin(),
+			end = elements.end();
+		iterator != end;
+		++iterator)
+	{
+		if (!(*iterator)->initialize())
+			return false;
+	}
+	return true;
+}
+
+void DrawableGroup::takeDown() {
+	for (
+		list<Drawable*>::const_iterator
+			iterator = elements.begin(),
+			end = elements.end();
+		iterator != end;
+		++iterator)
+	{
+		(*iterator)->takeDown();
 	}
 }
 

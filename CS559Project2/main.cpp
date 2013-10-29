@@ -1,18 +1,3 @@
-/*	A more sophisticated example of modern OpenGL
-	Perry Kivolowitz - UW - Madison - CS 559 demo
-
-	In this example program, I will build a solid
-	object comprised of two triangle fans. Note 
-	these are topologically triangle fans but the
-	OpenGL triangle fan functionality is not being
-	used. 
-
-	Created:	02/28/13
-	Updates:	03/05/13 - continued improvements
-				Added solid color shader for drawing normals
-				Switched to timer based redisplay.
-*/
-
 #include <iostream>
 #include <assert.h>
 #include <vector>
@@ -47,14 +32,14 @@ public:
 	SpheroidCamera *cam;
 	SpheroidLight *light;
 	Model *model;
-	Mesh *mars;
+	Mesh *marsMesh;
 	Mesh *cylinder;
 	Mesh *sphere;
 	PointMesh *starfield;
-	Rocket *rocket;
+	Rocket *rocketMesh;
 
-	Drawable *rocketBase;
-	Drawable *marsBase;
+	Drawable *rocket;
+	Drawable *mars;
 
 	TimeFunction<float> *const0;
 	TimeFunction<float> *const1;
@@ -93,10 +78,10 @@ Globals::Globals() {
 	baseOverlay = new ViewOverlay();
 
 	model = new Model();
-	mars = Mesh::newMars(1, 0.08f, "mars_low_rez.txt", true);
+	marsMesh = Mesh::newMars(1, 0.08f, "mars_low_rez.txt", true);
 	sphere = Mesh::newSphere(10,10, 1.0f, true);
 	cylinder = Mesh::newCylinder(10,10, 0.5f, 0.1f, true);
-	rocket = new Rocket();
+	rocketMesh = new Rocket();
 	starfield = PointMesh::newStarField(10000, 8.0f);
 
 	const0 = new ConstantTimeFunction(0.0f);
@@ -107,7 +92,11 @@ Globals::Globals() {
 	rocketAngle = new LinearTimeFunction(-13.0f/1000.0f, 0.0f);
 
 	//setup decorator stack to make rocket move specially
-	rocketBase = rocket
+	/* This DSL is inspired in part by the Java DSL for Apache's
+	 * Camel project.
+	 * http://camel.apache.org/java-dsl.html
+	 */
+	rocket = rocketMesh
 					//make rocket spin
 					->animateRotation(model, yAxis, orbitAngle)
 					//move rocket out to orbit
@@ -124,7 +113,7 @@ Globals::Globals() {
 	marsAxisAngle = new LinearTimeFunction(-6.0f/1000.0f, 0.0f);
 
 	//setup decorator stack for mars
-	marsBase = mars
+	mars = marsMesh
 					//make mars' axis spin
 					->animateRotation(model, yAxis, marsAxisAngle)
 					//tilt mars' axis off of y
@@ -138,9 +127,9 @@ Globals::Globals() {
 	light->setRadius(5);	
 
 	model->addLight(light);
-	//rocketBase is at the top level of rocket's decorator stack
-	model->addElement(rocketBase);
-	model->addElement(marsBase);
+	//the bases are at the top of decorator stacks.
+	model->addElement(rocket);
+	model->addElement(mars);
 	//this pushes the starfield to the beginning of the model, ensuring that it is drawn behind everything else despite the depth buffer.
 	model->addLight(starfield);
 
@@ -249,14 +238,12 @@ Globals::~Globals() {
 	delete view;
 	delete window;
 	
-	delete mars;
 	delete cylinder;
 	delete sphere;
 	delete starfield;
-	delete rocket;
 
-	delete rocketBase;
-	delete marsBase;
+	delete rocket;
+	delete mars;
 
 	delete const0;
 	delete const1;
@@ -346,8 +333,8 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 		break;
 
 	case 'n':
-		normals = !globals.mars->isDrawingNormals();
-		globals.mars->setDrawNormals(normals);
+		normals = !globals.marsMesh->isDrawingNormals();
+		globals.marsMesh->setDrawNormals(normals);
 		globals.cylinder->setDrawNormals(normals);
 		globals.sphere->setDrawNormals(normals);
 		break;
@@ -388,7 +375,7 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 		globals.enterEditMode();
 		newHead = Mesh::newSurfaceOfRotation(globals.splineOverlay->getSpline(30), 30, true);
 		newHead->initialize();
-		globals.rocket->replaceHead(newHead);
+		globals.rocketMesh->replaceHead(newHead);
 		break;
 
 	case 'a':
@@ -404,6 +391,7 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 		break;
 	case 'r':
 		globals.model->clearElements();
+		globals.model->addLight(globals.light);
 		globals.model->addElement(globals.rocket);
 
 		break;

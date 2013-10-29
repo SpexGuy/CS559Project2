@@ -12,13 +12,38 @@ class DrawableDecorator;
  */
 class Drawable {
 public:
-	virtual DrawableDecorator *rotated(const glm::vec3 &axis, const float &angle);
+	/* pushes a Rotation onto the decorator stack 
+	 * Returns a pointer to the base of the stack */
+	virtual DrawableDecorator *rotated(const glm::vec3 &axis,
+										const float &angle);
+	
+	/* pushes a Translation onto the decorator stack
+	 * Returns a pointer to the base of the stack */
 	virtual DrawableDecorator *translated(const glm::vec3 &position);
+	
+	/* pushes a Scale onto the decorator stack
+	 * Returns a pointer to the base of the stack */
 	virtual DrawableDecorator *scaled(const glm::vec3 &scale);
-	/* pushes a Rotation onto the decorator stack, then adds an animation to the given group */
-	virtual DrawableDecorator *animateRotation(AnimationGroup *ag, TimeFunction<glm::vec3> *axis, TimeFunction<float> *angle);
-	/* context is passed by value to avoid changes propagating up the call stack */
+	
+	/* pushes a Rotation onto the decorator stack, then adds
+	 * an animation to the given group
+	 * Returns a pointer to the base of the stack */
+	virtual DrawableDecorator *animateRotation(
+				AnimationGroup *ag,
+				TimeFunction<glm::vec3> *axis,
+				TimeFunction<float> *angle);
+	
+	/* initializes the object with GL.
+	 * Returns whether it was successful*/
+	virtual bool initialize() = 0;
+
+	/* Draws the object.  Context is passed by value to avoid
+	 * changes propagating up the call stack */
 	virtual void draw(glm::mat4 model) = 0;
+
+	/* frees any GL handles still active */
+	virtual void takeDown() = 0;
+
 	virtual ~Drawable() {}
 };
 
@@ -29,11 +54,11 @@ private:
 	DrawableDecorator(DrawableDecorator &copy);
 protected:
 	Drawable *child;
-	bool deleteNext;
+	bool isTos;
 	
 	DrawableDecorator(Drawable *child) :
 		child(child),
-		deleteNext(false)
+		isTos(true)
 	{}
 	
 public:
@@ -49,6 +74,10 @@ public:
 	/* stores the current top of the decorator stack in the bucket */
 	virtual DrawableDecorator *store(DrawableDecorator **bucket);
 
+	virtual bool initialize();
+	
+	virtual void takeDown();
+
 	inline Drawable *getChild() {
 		return child;
 	}
@@ -63,8 +92,12 @@ class DrawableGroup : public Drawable {
 public:
 	DrawableGroup();
 
+	virtual bool initialize();
+
 	/* draws all drawables in the list */
 	virtual void draw(glm::mat4 model);
+
+	virtual void takeDown();
 
 	/* adds a drawable to the front of the list */
 	void addLight(Drawable *light);
