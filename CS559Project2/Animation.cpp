@@ -54,6 +54,21 @@ void AnimationGroup::clearAnimations() {
 	elements.clear();
 }
 
+AnimationGroup::~AnimationGroup() {
+	for (
+		list<Animation *>::const_iterator
+			iterator = elements.begin(),
+			end = elements.end();
+		iterator != end;
+		++iterator)
+	{
+		delete *iterator;
+	}
+}
+
+
+
+
 void RotationAnimation::doUpdate(int time) {
 	obj->setRotation(axis->evaluate(time), angle->evaluate(time));
 }

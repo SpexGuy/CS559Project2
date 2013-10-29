@@ -17,16 +17,18 @@ void RotatableMixin::transform(glm::mat4 &context) const {
 	context = rotate(context, angle, axis);
 }
 
-void RotatableMixin::setRotation(vec3 &axis, float angle) {
+void RotatableMixin::setRotation(const vec3 &axis, const float &angle) {
 	this->axis = axis;
 	this->angle = angle;
 }
+
 
 
 void Rotation::draw(mat4 model) {
 	transform(model);
 	child->draw(model);
 }
+
 
 
 void SphericalRotationMixin::transform(mat4 &context) const {

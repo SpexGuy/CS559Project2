@@ -8,7 +8,7 @@
  */
 class Rotatable : public Transformer {
 public:
-	virtual void setRotation(glm::vec3 & axis, float angle) = 0;
+	virtual void setRotation(const glm::vec3 &axis, const float &angle) = 0;
 };
 
 /**
@@ -24,16 +24,15 @@ protected:
 public:
 	/* initializes angle to 0 and axis to (0, 1, 0) */
 	RotatableMixin();
-	virtual void setRotation(glm::vec3 & axis, float angle);
+	virtual void setRotation(const glm::vec3 &axis, const float &angle);
 };
 
-class Rotation : public RotatableMixin, public Drawable {
+class Rotation : public RotatableMixin, public DrawableDecorator {
 private:
 	Rotation();
-protected:
-	Drawable *child;
 public:
-	Rotation(Drawable *child) : child(child) {}
+	Rotation(Drawable *child) :
+		DrawableDecorator(child) {}
 	virtual void draw(glm::mat4 model);
 };
 

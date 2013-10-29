@@ -30,12 +30,11 @@ private:
 };
 
 
-class Translation : public TranslatableMixin, public Drawable {
+class Translation : public TranslatableMixin, public DrawableDecorator {
 private:
 	Translation();
-protected:
-	Drawable *child;
 public:
-	Translation(Drawable *child) : child(child) {}
+	Translation(Drawable *child) :
+		DrawableDecorator(child) {}
 	virtual void draw(glm::mat4 model);
 };

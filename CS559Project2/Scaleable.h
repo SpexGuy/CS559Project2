@@ -26,12 +26,11 @@ protected:
 	virtual void transform(glm::mat4 & context) const;
 };
 
-class Scale : public ScaleableMixin, public Drawable {
+class Scale : public ScaleableMixin, public DrawableDecorator {
 private:
 	Scale();
-protected:
-	Drawable *child;
 public:
-	Scale(Drawable *child) : child(child) {}
+	Scale(Drawable *child) :
+		DrawableDecorator(child) {}
 	virtual void draw(glm::mat4 model);
 };

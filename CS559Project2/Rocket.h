@@ -9,6 +9,7 @@ public:
 	Rocket();
 	virtual bool initialize();
 	virtual void draw(glm::mat4 model);
+	void replaceHead(Mesh *newHead);
 	void takeDown();
  	~Rocket();	
 

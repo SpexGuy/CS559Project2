@@ -15,6 +15,7 @@ public:
 	void update(int time);
 	void pause();
 	void play();
+	virtual ~Animation() {}
 
 	inline bool isPaused() { return paused; }
 };
@@ -23,6 +24,8 @@ public:
  * An Animation which aggregates Animations
  */
 class AnimationGroup : public Animation {
+private:
+	std::list<Animation *> elements;
 protected:
 	/* updates all animations in the list */
 	virtual void doUpdate(int time);
@@ -39,8 +42,7 @@ public:
 		return &elements;
 	}
 
-private:
-	std::list<Animation *> elements;
+	virtual ~AnimationGroup();
 };
 
 class RotationAnimation : public Animation {

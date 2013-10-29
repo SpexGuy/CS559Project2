@@ -20,8 +20,8 @@ bool Rocket::initialize()
 	float topOfLeg = -headHeight/1.625f;
 	float cylinderHeight = headHeight/1.25f;
 	float smallRadius = headradius/4.0f;
-	float structRadiusInLeg = smallRadius/2.0f;
-	float structRadiusInHead = smallRadius*1.25f;
+	float strutRadiusInLeg = smallRadius/2.0f;
+	float strutRadiusInHead = smallRadius*1.25f;
 
 //tanslate rotate scale in that order
 
@@ -58,7 +58,7 @@ bool Rocket::initialize()
 	addElement(tmp);
 
 	//strut
-	tmp = Mesh::newCylinder(stacks, slices, structRadiusInHead, structRadiusInLeg, true);
+	tmp = Mesh::newCylinder(stacks, slices, strutRadiusInHead, strutRadiusInLeg, true);
 	if (!tmp->initialize())
 		return false;
 	tmp->position(vec3(headToLeg, topOfLeg-(cylinderHeight/4.0f), 0.0f));
@@ -80,6 +80,13 @@ void Rocket::draw(mat4 model)
 
 	}
 }
+
+void Rocket::replaceHead(Mesh *newHead) {
+	head->takeDown();
+	delete head;
+	head = newHead;
+}
+
 
 void Rocket::takeDown()
 {

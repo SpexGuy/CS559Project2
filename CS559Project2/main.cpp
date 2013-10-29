@@ -53,19 +53,18 @@ public:
 	PointMesh *starfield;
 	Rocket *rocket;
 
-	Translation *rocketTranslate;
-	Rotation *rocketSpinner;
+	Drawable *rocketBase;
+	Drawable *marsBase;
 
 	Animation *marsAnim;
-	Animation *rocketAnim;
 
-	TimeFunction<float> *rocketAngle;
-	TimeFunction<vec3> *rocketAxis;
-
-	TimeFunction<float> *marsAngle;
-	TimeFunction<vec3> *marsAxis;
 	TimeFunction<float> *const0;
 	TimeFunction<float> *const1;
+	TimeFunction<vec3> *yAxis;
+
+	TimeFunction<float> *rocketAngle;
+	TimeFunction<float> *marsAngle;
+	TimeFunction<float> *orbitAngle;
 
 	int period;
 	bool wireframe;
@@ -101,33 +100,36 @@ Globals::Globals() {
 	rocket = new Rocket();
 	starfield = PointMesh::newStarField(10000, 8.0f);
 
+	const0 = new ConstantTimeFunction(0.0f);
+	const1 = new ConstantTimeFunction(1.0f);
+	yAxis = new Vec3TimeFunction(const0, const1, const0);
+
+	orbitAngle = new LinearTimeFunction(16.0f/1000.0f, 0.0f);
+	rocketAngle = new LinearTimeFunction(-13.0f/1000.0f, 0.0f);
+
 	//set up a decorator stack to make rocket move specially
-	rocketTranslate = new Translation(rocket);
-	rocketTranslate->position(vec3(3.0f, 0.0f, 0.0f));
-	rocketSpinner = new Rotation(rocketTranslate);
+	rocketBase = rocket
+					->animateRotation(model, yAxis, orbitAngle)
+					->translated(vec3(2.0f, 0.0f, 0.0f))
+					->rotated(vec3(1.0f, 0.0f, 0.0f), -90.0f)
+					->animateRotation(model, yAxis, rocketAngle)
+					->scaled(vec3(0.07f, 0.1f, 0.07f));
+
+	marsAngle = new LinearTimeFunction(6.0f/1000.0f, 0.0f);
+
+	marsBase = mars
+					->rotated(vec3(1.0f, 0.0f, 0.0f), 15.0f)
+					->animateRotation(model, yAxis, marsAngle);
 
 	light = new SpheroidLight();
 	light->setAngle(45);
 	light->setAxisAngle(45);
-	light->setRadius(5);
-
-	const0 = new ConstantTimeFunction(0.0f);
-	const1 = new ConstantTimeFunction(1.0f);
-	marsAngle = new LinearTimeFunction(6.0f/1000.0f, 0.0f);
-	marsAxis = new Vec3TimeFunction(const0, const1, const0);
-	//make rocket spin
-	marsAnim = new RotationAnimation(mars, marsAxis, marsAngle);
-
-	rocketAngle = new LinearTimeFunction(12.0f/1000.0f, 0.0f);
-	rocketAxis = new Vec3TimeFunction(const0, const1, const0);
-	rocketAnim = new RotationAnimation(rocketSpinner, rocketAxis, rocketAngle);
+	light->setRadius(5);	
 
 	model->addLight(light);
-	//rocketAngle is at the top level of rocket's decorator stack
-	model->addElement(rocketSpinner);
-	model->addAnimation(marsAnim);
-	model->addAnimation(rocketAnim);
-
+	//rocketBase is at the top level of rocket's decorator stack
+	model->addElement(rocketBase);
+	model->addElement(marsBase);
 	//this pushes the starfield to the beginning of the model, ensuring that it is drawn behind everything else despite the depth buffer.
 	model->addLight(starfield);
 
@@ -242,18 +244,16 @@ Globals::~Globals() {
 	delete starfield;
 	delete rocket;
 
-	delete rocketSpinner;
-	delete rocketTranslate;
+	delete rocketBase;
+	delete marsBase;
 
 	delete const0;
 	delete const1;
-	delete marsAngle;
-	delete marsAxis;
-	delete marsAnim;
+	delete yAxis;
 
+	delete marsAngle;
 	delete rocketAngle;
-	delete rocketAnim;
-	delete rocketAxis;
+	delete orbitAngle;
 }
 
 void CloseFunc() {
@@ -292,6 +292,7 @@ void PassiveMotionFunc(int x, int y) {
 
 void KeyboardFunc(unsigned char c, int x, int y) {
 	bool normals;
+	Mesh *newHead;
 
 	if (globals.editMode) {
 		switch(c) {
@@ -373,11 +374,11 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 
 	case '0':
 		globals.enterEditMode();
-		globals.sphere->takeDown();
-		delete globals.sphere;
-		globals.sphere = Mesh::newSurfaceOfRotation(globals.splineOverlay->getSpline(30), 30, true);
-		globals.sphere->initialize();
-		//no break here.
+		newHead = Mesh::newSurfaceOfRotation(globals.splineOverlay->getSpline(30), 30, true);
+		newHead->initialize();
+		globals.rocket->replaceHead(newHead);
+		break;
+
 	case 'a':
 		globals.model->clearElements();
 		globals.model->addLight(globals.light);
@@ -392,7 +393,6 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 	case 'r':
 		globals.model->clearElements();
 		globals.model->addElement(globals.rocket);
-		globals.model->addAnimation(globals.rocketAnim);
 
 		break;
 
@@ -418,10 +418,8 @@ void SpecialFunc(int c, int x, int y) {
 			globals.model->clearElements();
 			globals.model->addLight(globals.light);
 			globals.model->addElement(globals.mars);
-			globals.model->addAnimation(globals.marsAnim);
 
 			globals.model->addElement(globals.rocket);
-			globals.model->addAnimation(globals.rocketAnim);
 
 
 		}
