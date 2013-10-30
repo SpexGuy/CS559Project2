@@ -52,6 +52,7 @@ public:
 
 	TimeFunction<float> *rocketAngle;
 	TimeFunction<float> *orbitAngle;
+	TimeFunction<float> *chaseCamAngle;
 	TimeFunction<float> *marsAngle;
 	TimeFunction<float> *marsAxisAngle;
 
@@ -82,14 +83,8 @@ Globals::Globals() {
 	proj = new PerspectiveProjection(45.0f);
 	proj->setPlanes(0.01f, 100.0f);
 	
-	//camMars = new MarsCamera(marsRadius + marsRadScale*10.0f);
 	cam = new SpheroidCamera();
 	cam->setRadius(1.3f);
-	camMars = new CamRotation(cam);
-	((CamRotation *) camMars)->setRotation(vec3(0.0f, 0.0f, 1.0f), -90.0f);
-	camMars = new CamTranslation(camMars);
-	((CamTranslation *) camMars)->position(vec3(1.3f, 0.0f, 0.0f));
-	camMars = new CamRotation(camMars);
 	
 	flyCam = new FreeFlyCamera();
 	flyCam->setPosition(vec3(0.0f, 0.0f, 3.0f));
@@ -111,6 +106,7 @@ Globals::Globals() {
 	yAxis = new Vec3TimeFunction(const0, const1, const0);
 
 	orbitAngle = new LinearTimeFunction(16.0f/1000.0f, 0.0f);
+	chaseCamAngle = new LinearTimeFunction(-16.0f/1000.0f, 0.0f);
 	rocketAngle = new LinearTimeFunction(-13.0f/1000.0f, 0.0f);
 
 	//setup decorator stack to make rocket move specially
@@ -119,7 +115,7 @@ Globals::Globals() {
 	 * http://camel.apache.org/java-dsl.html
 	 */
 	rocket = rocketMesh
-					//make rocket spin
+					//make rocket orbt
 					->animateRotation(model, yAxis, orbitAngle)
 					//move rocket out to orbit
 					->translated(vec3((marsRadius + marsRadScale) * 1.5f, 0.0f, 0.0f))
@@ -132,6 +128,15 @@ Globals::Globals() {
 					//scale rocket to manageable size
 					->scaled(vec3(0.07f, 0.1f, 0.07f));
 
+	camMars = cam
+		//all rotations of the camera go BACKWARDS
+		->animateRotation(model, yAxis, chaseCamAngle)
+		//so do translations
+		->translated(vec3(-1.3, 0.0f, 0.0f))
+		//make the axis face out
+		->rotated(vec3(0.0f, 0.0f, 1.0f), 90.0f);
+
+	
 	//mars must spin twice as fast since its axis is spinning in the opposite direction.
 	marsAngle = new LinearTimeFunction(12.0f/1000.0f, 0.0f);
 	marsAxisAngle = new LinearTimeFunction(-6.0f/1000.0f, 0.0f);
@@ -145,8 +150,8 @@ Globals::Globals() {
 					//make mars spin on its axis
 					//->animateRotation(model, yAxis, marsAngle)
 					;
-	camMarsAni = new RotationAnimation((CamRotation *)camMars, yAxis, rocketAngle);
-	model->addAnimation(camMarsAni);
+//	camMarsAni = new RotationAnimation((CamRotation *)camMars, yAxis, rocketAngle);
+//	model->addAnimation(camMarsAni);
 
 	light = new SpheroidLight();
 
@@ -279,6 +284,7 @@ Globals::~Globals() {
 
 	delete marsAngle;
 	delete marsAxisAngle;
+	delete chaseCamAngle;
 	delete rocketAngle;
 	delete orbitAngle;
 }
