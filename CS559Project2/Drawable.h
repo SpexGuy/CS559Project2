@@ -33,6 +33,10 @@ public:
 				TimeFunction<glm::vec3> *axis,
 				TimeFunction<float> *angle);
 	
+	/* pushes a DisableDepthTest onto the decorator stack
+	 * Returns a pointer to the base of the stack */
+	virtual DrawableDecorator *disableDepthTest();
+
 	/* initializes the object with GL.
 	 * Returns whether it was successful*/
 	virtual bool initialize() = 0;
@@ -70,6 +74,8 @@ public:
 	virtual DrawableDecorator *scaled(const glm::vec3 &scale);
 	/* pushes a Rotation onto the decorator stack, then adds an animation to the given group */
 	virtual DrawableDecorator *animateRotation(AnimationGroup *ag, TimeFunction<glm::vec3> *axis, TimeFunction<float> *angle);
+	/* pushes a DisableDepthTest onto the decorator stack */
+	virtual DrawableDecorator *disableDepthTest();
 
 	/* stores the current top of the decorator stack in the bucket */
 	virtual DrawableDecorator *store(DrawableDecorator **bucket);
@@ -114,3 +120,12 @@ public:
 private:
 	std::list<Drawable*> elements;
 };
+
+class DisableDepthTest : public DrawableDecorator {
+public:
+	DisableDepthTest(Drawable *child) :
+		DrawableDecorator(child) {}
+	
+	virtual void draw(glm::mat4 model);
+};
+

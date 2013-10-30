@@ -148,17 +148,7 @@ void Graphics::drawLine2D(const mat4 &base, vec2 tlPoint, vec2 brPoint) const {
 void Graphics::drawTriangles(const vector<ivec3> &trigs, const GLuint &vertexArrayHandle,
 							 const Shader *s, const mat4 &model) const {
 
-	const float time = 0;
-								 
-	mat4 modelview = view * model;
-	vec3 light_pos = vec3(view * vec4(light,1.0f)); 
-	mat4 mvp = projection * modelview;
-	mat3 nm = inverse(transpose(mat3(modelview)));
-
-	s->use();
-	checkError("Graphics::draw - after use");
-	s->commonSetup(time, value_ptr(size), value_ptr(projection), value_ptr(modelview), value_ptr(mvp), value_ptr(nm), value_ptr(light_pos), value_ptr(color));
-	checkError("Graphics::draw - after common setup");
+	setupShader(s, model);
 
 	glBindVertexArray(vertexArrayHandle);
 	glDrawElements(GL_TRIANGLES , trigs.size()*3, GL_UNSIGNED_INT , &trigs[0]);
@@ -171,17 +161,7 @@ void Graphics::drawTriangles(const vector<ivec3> &trigs, const GLuint &vertexArr
 void Graphics::drawLines(const vector<ivec2> &segs, const GLuint &vertexArrayHandle,
 						 const Shader *s, const mat4 &model) const {
 
-	const float time = 0;
-								 
-	mat4 modelview = view * model;
-	vec3 light_pos = vec3(view * vec4(light,1.0f)); 
-	mat4 mvp = projection * modelview;
-	mat3 nm = inverse(transpose(mat3(modelview)));
-
-	s->use();
-	checkError("Graphics::draw - after use");
-	s->commonSetup(time, value_ptr(size), value_ptr(projection), value_ptr(modelview), value_ptr(mvp), value_ptr(nm), value_ptr(light), value_ptr(color));
-	checkError("Top::Draw - after common setup");
+	setupShader(s, model);
 
 	glBindVertexArray(vertexArrayHandle);
 	glDrawElements(GL_LINES , segs.size()*2, GL_UNSIGNED_INT , &segs[0]);
@@ -194,17 +174,7 @@ void Graphics::drawLines(const vector<ivec2> &segs, const GLuint &vertexArrayHan
 void Graphics::drawPoints(const vector<int> &points, const GLuint &vertexArrayHandle,
 						 const Shader *s, const mat4 &model) const {
 
-	const float time = 0;
-								 
-	mat4 modelview = view * model;
-	vec3 light_pos = vec3(view * vec4(light,1.0f)); 
-	mat4 mvp = projection * modelview;
-	mat3 nm = inverse(transpose(mat3(modelview)));
-
-	s->use();
-	checkError("Graphics::draw - after use");
-	s->commonSetup(time, value_ptr(size), value_ptr(projection), value_ptr(modelview), value_ptr(mvp), value_ptr(nm), value_ptr(light), value_ptr(color));
-	checkError("Top::Draw - after common setup");
+	setupShader(s, model);
 
 	glBindVertexArray(vertexArrayHandle);
 	glDrawElements(GL_POINTS, points.size(), GL_UNSIGNED_INT , &points[0]);
@@ -212,6 +182,36 @@ void Graphics::drawPoints(const vector<int> &points, const GLuint &vertexArrayHa
 
 	checkError("Mesh::draw - after normals draw");
 	glUseProgram(0);
+}
+
+void Graphics::setupShader(const Shader *s, const mat4 &model) const {
+
+	//TODO: fix this kludge
+	const float time = 0;
+	
+	mat4 modelview = view * model;
+	//truncModel is the model without translations
+	mat4 truncModel = modelview;
+	truncModel[0][3] = 0.0f;
+	truncModel[1][3] = 0.0f;
+	truncModel[2][3] = 0.0f;
+	truncModel[3][3] = 1.0f;
+	truncModel[3][2] = 0.0f;
+	truncModel[3][1] = 0.0f;
+	truncModel[3][0] = 0.0f;
+	vec3 light_pos = vec3(view * vec4(light,1.0f));
+	mat4 mvp = projection * modelview;
+	mat4 tmvp = projection * truncModel;
+	mat3 nm = inverse(transpose(mat3(modelview)));
+
+	s->use();
+	checkError("Graphics::draw - after use");
+	s->commonSetup(time, value_ptr(size), value_ptr(projection),
+		value_ptr(modelview), value_ptr(mvp), value_ptr(tmvp),
+		value_ptr(nm), value_ptr(light), value_ptr(color));
+	checkError("Top::Draw - after common setup");
+
+
 }
 
 

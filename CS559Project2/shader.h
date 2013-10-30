@@ -25,7 +25,7 @@ public:
 	void use() const;
 	virtual void customSetup() const;
 	void commonSetup(const float time, const GLint * size, const GLfloat * projection, const GLfloat * modelview, const GLfloat * mvp, 
-					const GLfloat * nm, const GLfloat * light, const GLfloat * color) const;
+					const GLfloat *tmvp, const GLfloat * nm, const GLfloat * light, const GLfloat * color) const;
 
 	std::stringstream getShaderLog(GLuint shader_id);
 
@@ -36,6 +36,7 @@ protected:
 	GLuint projection_matrix_handle;
 	GLuint normal_matrix_handle;
 	GLuint mvp_handle;
+	GLuint tmvp_handle;
 	GLuint size_handle;
 	GLuint time_handle;
 	GLuint light_handle;

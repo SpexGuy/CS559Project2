@@ -30,6 +30,10 @@ DrawableDecorator *Drawable::scaled(const vec3 &scale) {
 	return d;
 }
 
+DrawableDecorator *Drawable::disableDepthTest() {
+	return new DisableDepthTest(this);
+}
+
 DrawableDecorator *Drawable::animateRotation(AnimationGroup *ag, TimeFunction<glm::vec3> *axis, TimeFunction<float> *angle) {
 	Rotation *d = new Rotation(this);
 	ag->addAnimation(new RotationAnimation(d, axis, angle));
@@ -71,10 +75,19 @@ DrawableDecorator *DrawableDecorator::animateRotation(AnimationGroup *ag, TimeFu
 	return this;
 }
 
+DrawableDecorator *DrawableDecorator::disableDepthTest() {
+	Drawable *d = child->disableDepthTest();
+	if (d != child)
+		isTos = false;
+	child = d;
+	return this;
+}
+
 DrawableDecorator *DrawableDecorator::store(DrawableDecorator **bucket) {
 	if (isTos) {
 		*bucket = this;
 	} else {
+		//TODO: //replace DrawableDecorator Drawable
 		((DrawableDecorator *)child)->store(bucket);
 	}
 	return this;
@@ -151,4 +164,12 @@ void DrawableGroup::clearElements() {
 
 list<Drawable *> *DrawableGroup::getElements() {
 	return &elements;
+}
+
+
+
+void DisableDepthTest::draw(mat4 model) {
+	glDisable(GL_DEPTH_TEST);
+	child->draw(model);
+	glEnable(GL_DEPTH_TEST);
 }

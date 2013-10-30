@@ -35,9 +35,10 @@ public:
 	Mesh *marsMesh;
 	Mesh *cylinder;
 	Mesh *sphere;
-	PointMesh *starfield;
+	PointMesh *starfieldMesh;
 	Rocket *rocketMesh;
 
+	Drawable *starfield;
 	Drawable *rocket;
 	Drawable *mars;
 
@@ -82,7 +83,8 @@ Globals::Globals() {
 	sphere = Mesh::newSphere(10,10, 1.0f, true);
 	cylinder = Mesh::newCylinder(10,10, 0.5f, 0.1f, true);
 	rocketMesh = new Rocket();
-	starfield = PointMesh::newStarField(10000, 8.0f);
+	starfieldMesh = PointMesh::newStarField(10000, 8.0f);
+	starfield = starfieldMesh->disableDepthTest();
 
 	const0 = new ConstantTimeFunction(0.0f);
 	const1 = new ConstantTimeFunction(1.0f);
