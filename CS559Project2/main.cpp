@@ -36,10 +36,12 @@ public:
 	Mesh *marsMesh;
 	Mesh *cylinder;
 	Mesh *sphere;
-	PointMesh *starfield;
+	PointMesh *starfieldMesh;
 	Rocket *rocketMesh;
 
+	Drawable *starfield;
 	Drawable *rocket;
+	Drawable *centeredRocket;
 	Drawable *mars;
 
 	TimeFunction<float> *const0;
@@ -94,7 +96,8 @@ Globals::Globals() {
 	sphere = Mesh::newSphere(10,10, 1.0f, true);
 	cylinder = Mesh::newCylinder(10,10, 0.5f, 0.1f, true);
 	rocketMesh = new Rocket();
-	starfield = PointMesh::newStarField(10000, 8.0f);
+	starfieldMesh = PointMesh::newStarField(10000, 8.0f);
+	starfield = starfieldMesh->disableDepthTest();
 
 	const0 = new ConstantTimeFunction(0.0f);
 	const1 = new ConstantTimeFunction(1.0f);
@@ -117,6 +120,7 @@ Globals::Globals() {
 					->rotated(vec3(1.0f, 0.0f, 0.0f), -90.0f)
 					//make rocket spin on its axis
 					->animateRotation(model, yAxis, rocketAngle)
+						->store(centeredRocket)
 					//scale rocket to manageable size
 					->scaled(vec3(0.07f, 0.1f, 0.07f));
 
@@ -410,7 +414,7 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 	case 'r':
 		globals.model->clearElements();
 		globals.model->addLight(globals.light);
-		globals.model->addElement(globals.rocket);
+		globals.model->addElement(globals.centeredRocket);
 
 		break;
 

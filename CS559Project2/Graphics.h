@@ -43,6 +43,8 @@ private:
 		this->size = size;
 	}
 
+	void setupShader(const Shader *s, const glm::mat4 &model) const;
+
 public:
 	/* Graphics is a Singleton */
 	static Graphics *inst();
