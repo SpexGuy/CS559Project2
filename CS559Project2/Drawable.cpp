@@ -12,38 +12,43 @@ using namespace std;
 
 
 
-DrawableDecorator *Drawable::rotated(const vec3 &axis, const float &angle) {
+Drawable *Drawable::rotated(const vec3 &axis, const float &angle) {
 	Rotation *d = new Rotation(this);
 	d->setRotation(axis, angle);
 	return d;
 }
 
-DrawableDecorator *Drawable::translated(const vec3 &position) {
+Drawable *Drawable::translated(const vec3 &position) {
 	Translation *d = new Translation(this);
 	d->position(position);
 	return d;
 }
 
-DrawableDecorator *Drawable::scaled(const vec3 &scale) {
+Drawable *Drawable::scaled(const vec3 &scale) {
 	Scale *d = new Scale(this);
 	d->scale(scale);
 	return d;
 }
 
-DrawableDecorator *Drawable::disableDepthTest() {
+Drawable *Drawable::disableDepthTest() {
 	return new DisableDepthTest(this);
 }
 
-DrawableDecorator *Drawable::animateRotation(AnimationGroup *ag, TimeFunction<glm::vec3> *axis, TimeFunction<float> *angle) {
+Drawable *Drawable::animateRotation(AnimationGroup *ag, TimeFunction<glm::vec3> *axis, TimeFunction<float> *angle) {
 	Rotation *d = new Rotation(this);
 	ag->addAnimation(new RotationAnimation(d, axis, angle));
 	return d;
 }
 
+Drawable *Drawable::store(Drawable *&bucket) {
+	bucket = this;
+	return this;
+}
 
 
 
-DrawableDecorator *DrawableDecorator::rotated(const vec3 &axis, const float &angle) {
+
+Drawable *DrawableDecorator::rotated(const vec3 &axis, const float &angle) {
 	Drawable *d = child->rotated(axis, angle);
 	if (d != child)
 		isTos = false;
@@ -51,7 +56,7 @@ DrawableDecorator *DrawableDecorator::rotated(const vec3 &axis, const float &ang
 	return this;
 }
 
-DrawableDecorator *DrawableDecorator::translated(const vec3 &position) {
+Drawable *DrawableDecorator::translated(const vec3 &position) {
 	Drawable *d = child->translated(position);
 	if (d != child)
 		isTos = false;
@@ -59,7 +64,7 @@ DrawableDecorator *DrawableDecorator::translated(const vec3 &position) {
 	return this;
 }
 
-DrawableDecorator *DrawableDecorator::scaled(const vec3 &scale) {
+Drawable *DrawableDecorator::scaled(const vec3 &scale) {
 	Drawable *d = child->scaled(scale);
 	if (d != child)
 		isTos = false;
@@ -67,7 +72,7 @@ DrawableDecorator *DrawableDecorator::scaled(const vec3 &scale) {
 	return this;
 }
 
-DrawableDecorator *DrawableDecorator::animateRotation(AnimationGroup *ag, TimeFunction<vec3> *axis, TimeFunction<float> *angle) {
+Drawable *DrawableDecorator::animateRotation(AnimationGroup *ag, TimeFunction<vec3> *axis, TimeFunction<float> *angle) {
 	Drawable *d = child->animateRotation(ag, axis, angle);
 	if (d != child)
 		isTos = false;
@@ -75,7 +80,7 @@ DrawableDecorator *DrawableDecorator::animateRotation(AnimationGroup *ag, TimeFu
 	return this;
 }
 
-DrawableDecorator *DrawableDecorator::disableDepthTest() {
+Drawable *DrawableDecorator::disableDepthTest() {
 	Drawable *d = child->disableDepthTest();
 	if (d != child)
 		isTos = false;
@@ -83,12 +88,11 @@ DrawableDecorator *DrawableDecorator::disableDepthTest() {
 	return this;
 }
 
-DrawableDecorator *DrawableDecorator::store(DrawableDecorator **bucket) {
+Drawable *DrawableDecorator::store(Drawable *&bucket) {
 	if (isTos) {
-		*bucket = this;
+		bucket = this;
 	} else {
-		//TODO: //replace DrawableDecorator Drawable
-		((DrawableDecorator *)child)->store(bucket);
+		child->store(bucket);
 	}
 	return this;
 }

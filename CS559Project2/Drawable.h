@@ -14,28 +14,31 @@ class Drawable {
 public:
 	/* pushes a Rotation onto the decorator stack 
 	 * Returns a pointer to the base of the stack */
-	virtual DrawableDecorator *rotated(const glm::vec3 &axis,
+	virtual Drawable *rotated(const glm::vec3 &axis,
 										const float &angle);
 	
 	/* pushes a Translation onto the decorator stack
 	 * Returns a pointer to the base of the stack */
-	virtual DrawableDecorator *translated(const glm::vec3 &position);
+	virtual Drawable *translated(const glm::vec3 &position);
 	
 	/* pushes a Scale onto the decorator stack
 	 * Returns a pointer to the base of the stack */
-	virtual DrawableDecorator *scaled(const glm::vec3 &scale);
+	virtual Drawable *scaled(const glm::vec3 &scale);
 	
 	/* pushes a Rotation onto the decorator stack, then adds
 	 * an animation to the given group
 	 * Returns a pointer to the base of the stack */
-	virtual DrawableDecorator *animateRotation(
+	virtual Drawable *animateRotation(
 				AnimationGroup *ag,
 				TimeFunction<glm::vec3> *axis,
 				TimeFunction<float> *angle);
 	
 	/* pushes a DisableDepthTest onto the decorator stack
 	 * Returns a pointer to the base of the stack */
-	virtual DrawableDecorator *disableDepthTest();
+	virtual Drawable *disableDepthTest();
+
+	/* stores the current top of the decorator stack in the bucket */
+	virtual Drawable *store(Drawable *&bucket);
 
 	/* initializes the object with GL.
 	 * Returns whether it was successful*/
@@ -55,7 +58,7 @@ class DrawableDecorator : public Drawable {
 private:
 	DrawableDecorator();
 	/* copying a DrawableDecorator breaks the memory management scheme */
-	DrawableDecorator(DrawableDecorator &copy);
+	DrawableDecorator(Drawable &copy);
 protected:
 	Drawable *child;
 	bool isTos;
@@ -67,18 +70,18 @@ protected:
 	
 public:
 	/* pushes a Rotation onto the decorator stack */
-	virtual DrawableDecorator *rotated(const glm::vec3 &axis, const float &angle);
+	virtual Drawable *rotated(const glm::vec3 &axis, const float &angle);
 	/* pushes a Translation onto the decorator stack */
-	virtual DrawableDecorator *translated(const glm::vec3 &position);
+	virtual Drawable *translated(const glm::vec3 &position);
 	/* pushes a Scale onto the decorator stack */
-	virtual DrawableDecorator *scaled(const glm::vec3 &scale);
+	virtual Drawable *scaled(const glm::vec3 &scale);
 	/* pushes a Rotation onto the decorator stack, then adds an animation to the given group */
-	virtual DrawableDecorator *animateRotation(AnimationGroup *ag, TimeFunction<glm::vec3> *axis, TimeFunction<float> *angle);
+	virtual Drawable *animateRotation(AnimationGroup *ag, TimeFunction<glm::vec3> *axis, TimeFunction<float> *angle);
 	/* pushes a DisableDepthTest onto the decorator stack */
-	virtual DrawableDecorator *disableDepthTest();
+	virtual Drawable *disableDepthTest();
 
 	/* stores the current top of the decorator stack in the bucket */
-	virtual DrawableDecorator *store(DrawableDecorator **bucket);
+	virtual Drawable *store(Drawable *&bucket);
 
 	virtual bool initialize();
 	
