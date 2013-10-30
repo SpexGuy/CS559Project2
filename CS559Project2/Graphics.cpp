@@ -208,7 +208,7 @@ void Graphics::setupShader(const Shader *s, const mat4 &model) const {
 	checkError("Graphics::draw - after use");
 	s->commonSetup(time, value_ptr(size), value_ptr(projection),
 		value_ptr(modelview), value_ptr(mvp), value_ptr(tmvp),
-		value_ptr(nm), value_ptr(light), value_ptr(color));
+		value_ptr(nm), value_ptr(light_pos), value_ptr(color));
 	checkError("Top::Draw - after common setup");
 
 

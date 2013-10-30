@@ -2,14 +2,14 @@
 #include <math.h>
 #include <iostream>
 #include "Camera.h"
+#include "P2Cameras.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 using namespace glm;
 using namespace std;
 
-SpheroidCamera::SpheroidCamera(Projection *p) :
-	DynamicProjectionCamera(p) {
+SpheroidCamera::SpheroidCamera() {
 	radius = 1.0f;
 }
 

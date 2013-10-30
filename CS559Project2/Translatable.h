@@ -2,6 +2,7 @@
 #include <glm/glm.hpp>
 #include "Transformer.h"
 #include "Drawable.h"
+#include "Camera.h"
 
 /**
  * An interface representing an object which can be translated
@@ -37,4 +38,13 @@ public:
 	Translation(Drawable *child) :
 		DrawableDecorator(child) {}
 	virtual void draw(glm::mat4 model);
+};
+
+class CamTranslation : public TranslatableMixin, public CameraDecorator {
+private:
+	CamTranslation();
+public:
+	CamTranslation(Camera *next) :
+		CameraDecorator(next) {}
+	virtual glm::mat4 generateViewMatrix();
 };

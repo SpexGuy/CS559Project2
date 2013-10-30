@@ -31,6 +31,14 @@ void Rotation::draw(mat4 model) {
 
 
 
+mat4 CamRotation::generateViewMatrix() {
+	mat4 view = next->generateViewMatrix();
+	transform(view);
+	return view;
+}
+
+
+
 void SphericalRotationMixin::transform(mat4 &context) const {
 	context = glm::rotate(context, angle, vec3(0.0f, 1.0f, 0.0f));
 	//since the context has been rotated, (1, 0, 0) is now

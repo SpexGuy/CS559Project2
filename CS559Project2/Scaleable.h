@@ -1,6 +1,7 @@
 #pragma once
 #include "Transformer.h"
 #include "Drawable.h"
+#include "Camera.h"
 #include <glm/glm.hpp>
 
 /**
@@ -34,3 +35,13 @@ public:
 		DrawableDecorator(child) {}
 	virtual void draw(glm::mat4 model);
 };
+
+class CamScale : public ScaleableMixin, public CameraDecorator {
+private:
+	CamScale();
+public:
+	CamScale(Camera *next) :
+		CameraDecorator(next) {}
+	virtual glm::mat4 generateViewMatrix();
+};
+

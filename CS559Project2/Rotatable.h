@@ -2,6 +2,7 @@
 #include <glm/glm.hpp>
 #include "Transformer.h"
 #include "Drawable.h"
+#include "Camera.h"
 
 /**
  * An interface for something that can be rotated
@@ -34,6 +35,15 @@ public:
 	Rotation(Drawable *child) :
 		DrawableDecorator(child) {}
 	virtual void draw(glm::mat4 model);
+};
+
+class CamRotation : public RotatableMixin, public CameraDecorator {
+private:
+	CamRotation();
+public:
+	CamRotation(Camera *next) :
+		CameraDecorator(next) {}
+	virtual glm::mat4 generateViewMatrix();
 };
 
 /**
