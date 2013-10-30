@@ -68,8 +68,6 @@ float PerspectiveProjection::getFov() {
 	return fov;
 }
 
-
-
 DynamicProjectionCamera::DynamicProjectionCamera(Projection *proj) {
 	this->projection = proj;
 }

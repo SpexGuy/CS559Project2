@@ -14,6 +14,7 @@ Rocket::Rocket()
 
 bool Rocket::initialize()
 {
+	
 	float headHeight = 2.0f;
 	float headradius = 1.0f;
 	float headToLeg = headradius*2.0f;
@@ -77,7 +78,6 @@ void Rocket::draw(mat4 model)
 	{
 		model = glm::rotate(model, 90.0f, vec3(0.0f,1.0f,0.0f));
 		DrawableGroup::draw(model);
-
 	}
 }
 

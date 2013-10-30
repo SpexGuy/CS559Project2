@@ -66,9 +66,6 @@ AnimationGroup::~AnimationGroup() {
 	}
 }
 
-
-
-
 void RotationAnimation::doUpdate(int time) {
 	obj->setRotation(axis->evaluate(time), angle->evaluate(time));
 }

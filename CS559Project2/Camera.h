@@ -68,7 +68,7 @@ public:
 /**
  * A camera which is fixed to the surface of a sphere and points at its center
  */
-class SpheroidCamera : public DynamicProjectionCamera, public SphericalCoordinateMixin {
+class SpheroidCamera : public DynamicProjectionCamera, public SphericalCoordinateMixin{
 private:
 	SpheroidCamera();
 public:
@@ -88,6 +88,17 @@ public:
 	void moveRight(float offset);
 	void moveUp(float offset);
 	void setPosition(glm::vec3 position);
+
+	virtual glm::mat4 generateViewMatrix();
+};
+
+class MarsCamera : public DynamicProjectionCamera, public RotatableMixin {
+private:
+		MarsCamera();
+protected:
+	float radius;
+public:
+	MarsCamera(Projection *p, float radius) : DynamicProjectionCamera(p), radius(radius) {}
 
 	virtual glm::mat4 generateViewMatrix();
 };

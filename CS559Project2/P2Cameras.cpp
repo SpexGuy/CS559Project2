@@ -18,8 +18,8 @@ mat4 SpheroidCamera::generateViewMatrix() {
 		vec3(radius * sin(axisAngle * M_PI / 180.0f) * sin(angle * M_PI / 180.0f),
 			 radius * cos(axisAngle * M_PI / 180.0f),
 			 radius * sin(axisAngle * M_PI / 180.0f) * cos(angle * M_PI / 180.0f)),
-		vec3(0.0f, 0.0f, 0.0f),
-		vec3(0.0f, 1.0f, 0.0f)
+		vec3(0.0f,0.0f,0.0f),
+		vec3(0.0f,1.0f,0.0f)
 	);
 }
 
@@ -50,4 +50,14 @@ mat4 FreeFlyCamera::generateViewMatrix() {
 			 cos(axisAngle * M_PI / 180.0f),
 			 cos(angle * M_PI / 180.0f) * sin(axisAngle * M_PI / 180.0f)),
 		vec3(0.0f, 1.0f, 0.0f));
+}
+
+mat4 MarsCamera::generateViewMatrix()
+{
+	mat4 view =  lookAt(
+		vec3(radius, 0.0f,0.0f),
+		vec3(-radius, 0.0f,2.0f),
+		vec3(1.0f, 0.0f, 0.0f));
+
+	return glm::rotate(view, this->angle, this->axis);
 }

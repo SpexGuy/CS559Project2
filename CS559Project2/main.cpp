@@ -30,6 +30,7 @@ public:
 	PerspectiveProjection *proj;
 	FreeFlyCamera *flyCam;
 	SpheroidCamera *cam;
+	MarsCamera *camMars;
 	SpheroidLight *light;
 	Model *model;
 	Mesh *marsMesh;
@@ -50,6 +51,9 @@ public:
 	TimeFunction<float> *marsAngle;
 	TimeFunction<float> *marsAxisAngle;
 
+	RotationAnimation *camMarsAni;
+
+
 	int period;
 	bool wireframe;
 	bool editMode;
@@ -66,19 +70,27 @@ public:
 } globals;
 
 Globals::Globals() {
+
+	float marsRadius = 1.0f;
+	float marsRadScale = 0.04f;
+
+
 	period = 1000 / 120;
+
+
 	proj = new PerspectiveProjection(45.0f);
 	proj->setPlanes(0.01f, 100.0f);
+	camMars = new MarsCamera(proj, marsRadius + marsRadScale*10.0f);
 	cam = new SpheroidCamera(proj);
-	cam->setRadius(3);
+	cam->setRadius(1.3f);
 	flyCam = new FreeFlyCamera(proj);
 	flyCam->setPosition(vec3(0.0f, 0.0f, 3.0f));
-	flyCam->setAngle(180);
+	flyCam->setAngle(180.0f);
 	splineOverlay = new SplineEditorOverlay(5);
 	baseOverlay = new ViewOverlay();
 
 	model = new Model();
-	marsMesh = Mesh::newMars(1, 0.08f, "mars_low_rez.txt", true);
+	marsMesh = Mesh::newMars(marsRadius, marsRadScale, "mars_hi_rez.txt", true);
 	sphere = Mesh::newSphere(10,10, 1.0f, true);
 	cylinder = Mesh::newCylinder(10,10, 0.5f, 0.1f, true);
 	rocketMesh = new Rocket();
@@ -100,7 +112,7 @@ Globals::Globals() {
 					//make rocket spin
 					->animateRotation(model, yAxis, orbitAngle)
 					//move rocket out to orbit
-					->translated(vec3(2.0f, 0.0f, 0.0f))
+					->translated(vec3(marsRadScale * 1.5f, 0.0f, 0.0f))
 					//make rocket face its direction of motion
 					->rotated(vec3(1.0f, 0.0f, 0.0f), -90.0f)
 					//make rocket spin on its axis
@@ -115,15 +127,19 @@ Globals::Globals() {
 	//setup decorator stack for mars
 	mars = marsMesh
 					//make mars' axis spin
-					->animateRotation(model, yAxis, marsAxisAngle)
+					//->animateRotation(model, yAxis, marsAxisAngle)
 					//tilt mars' axis off of y
-					->rotated(vec3(1.0f, 0.0f, 0.0f), 15.0f)
+					//->rotated(vec3(1.0f, 0.0f, 0.0f), 15.0f)
 					//make mars spin on its axis
-					->animateRotation(model, yAxis, marsAngle);
+					//->animateRotation(model, yAxis, marsAngle)
+					;
+	camMarsAni = new RotationAnimation(camMars, yAxis, rocketAngle);
+	model->addAnimation(camMarsAni);
 
 	light = new SpheroidLight();
-	light->setAngle(45);
-	light->setAxisAngle(45);
+
+	light->setAngle(90);
+	light->setAxisAngle(90);
 	light->setRadius(5);	
 
 	model->addLight(light);
@@ -216,7 +232,7 @@ void Globals::exitFreeflyMode() {
 	if (!flyMode)
 		return;
 	flyMode = false;
-	view->setCamera(cam);
+	view->setCamera(camMars);
 }
 
 void Globals::takeDown() {
@@ -253,6 +269,8 @@ Globals::~Globals() {
 	delete marsAxisAngle;
 	delete rocketAngle;
 	delete orbitAngle;
+
+	delete camMars;
 }
 
 void CloseFunc() {
@@ -420,8 +438,6 @@ void SpecialFunc(int c, int x, int y) {
 			globals.model->addElement(globals.mars);
 
 			globals.model->addElement(globals.rocket);
-
-
 		}
 
 		case GLUT_KEY_CTRL_R:
