@@ -222,9 +222,6 @@ vector<ivec3> Mesh::generateTrigs(vector<vec3> points, int width, int height, bo
 }
 
 
-
-
-
 Mesh::Mesh(vector<vec3> ppoints, vector<ivec3> trigs) {
 	this->drawNormals = false;
 	this->vertex_array_handle = this->vertex_coordinate_handle = GLuint(-1);
@@ -235,6 +232,7 @@ Mesh::Mesh(vector<vec3> ppoints, vector<ivec3> trigs) {
 	for (int c = 0; c < int(points.size()); c++) {
 		points[c].position = ppoints[c];
 		points[c].normal = vec3(0.0f);
+		//points[c].texture
 	}
 
 	for (int c = 0; c < int(trigs.size()); c++) {
@@ -266,8 +264,10 @@ bool Mesh::initialize() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPN), (GLvoid *) 0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPN), (GLvoid *) (1*sizeof(vec3)));
 
+
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
+
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);

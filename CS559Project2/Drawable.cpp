@@ -170,8 +170,6 @@ list<Drawable *> *DrawableGroup::getElements() {
 	return &elements;
 }
 
-
-
 void DisableDepthTest::draw(mat4 model) {
 	glDisable(GL_DEPTH_TEST);
 	child->draw(model);

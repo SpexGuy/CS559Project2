@@ -33,8 +33,6 @@ public:
 	 * which have this point as a vertex. */
 	Mesh(std::vector<glm::vec3> points, std::vector<glm::ivec3> trigs);
 
-	float getRadius();
-
 	virtual bool initialize();
 	
 	virtual void draw(glm::mat4 modelview);
@@ -72,13 +70,25 @@ public:
 	static Mesh *newMars(float radius, float radScale,
 		std::vector<std::vector<float>> radii, bool crosshatch = false);
 
+	/** creates a cylinder mesh with a certain number of stacks and slices,
+	 *  a top radius and bottom radius. The origin of the cylinder is the 
+	 *  center of the top slice. 
+	 */
 	static Mesh *newCylinder(int stacks, int slices, 
 				float topRadius, float botRadius, bool crosshatch = false);
 
+	/** creates a sphere mesh with a certain number of stacks and slices,
+	 * along with a radius. The origin of the sphere is center of the sphere.
+	 */
 	static Mesh *newSphere(int stacks, int slices, float radius, bool crosshatch = false);
 
+	/** creates a surface of rotation mesh with a certain number of slices,
+	 * the stacks are that are is based off the points passed in.  
+	 */
 	static Mesh *newSurfaceOfRotation(const std::vector<glm::vec2> &points, int slices, bool crosshatch = false);
 
+	/** creates a vector of pairs of indices that coorespond to the vector of points to discribe triangles. 
+	 */
 	static std::vector<glm::ivec3> generateTrigs(std::vector<glm::vec3> points,
 			int width, int height, bool endcaps, bool crosshatch);
 };

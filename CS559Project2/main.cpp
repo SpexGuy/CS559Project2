@@ -17,6 +17,7 @@
 #include "Function.h"
 #include "Animation.h"
 #include "PointMesh.h"
+#include "Scene.h"
 
 using namespace std;
 using namespace glm;
@@ -31,8 +32,12 @@ public:
 	FreeFlyCamera *flyCam;
 	SpheroidCamera *cam;
 	MarsCamera *camMars;
+	SpheroidCamera *camRocket;
+	DynamicProjectionCamera *currentCamera;
+
 	SpheroidLight *light;
 	Model *model;
+	Model *modelRocket;
 	Mesh *marsMesh;
 	Mesh *cylinder;
 	Mesh *sphere;
@@ -55,6 +60,15 @@ public:
 
 	RotationAnimation *camMarsAni;
 
+	vector<DynamicProjectionCamera*> cameras;
+	vector<DynamicProjectionCamera*> camerasRocket;
+
+	vector<Scene*> Scenes;
+
+	Scene *beautyRocket;
+	Scene *marsScene;
+
+	int currentScene;
 
 	int period;
 	bool wireframe;
@@ -67,6 +81,7 @@ public:
 	void exitEditMode();
 	void enterFreeflyMode();
 	void exitFreeflyMode();
+	void changeCamera();
 	void takeDown();
 	virtual ~Globals();
 } globals;
@@ -76,15 +91,16 @@ Globals::Globals() {
 	float marsRadius = 1.0f;
 	float marsRadScale = 0.04f;
 
-
 	period = 1000 / 120;
-
 
 	proj = new PerspectiveProjection(45.0f);
 	proj->setPlanes(0.01f, 100.0f);
 	camMars = new MarsCamera(proj, marsRadius + marsRadScale*10.0f);
 	cam = new SpheroidCamera(proj);
-	cam->setRadius(1.3f);
+	cam->setRadius(marsRadius*3.0f);
+	camRocket = new SpheroidCamera(proj);
+	cam->setRadius(marsRadius*3.0f);
+
 	flyCam = new FreeFlyCamera(proj);
 	flyCam->setPosition(vec3(0.0f, 0.0f, 3.0f));
 	flyCam->setAngle(180.0f);
@@ -92,7 +108,8 @@ Globals::Globals() {
 	baseOverlay = new ViewOverlay();
 
 	model = new Model();
-	marsMesh = Mesh::newMars(marsRadius, marsRadScale, "mars_hi_rez.txt", true);
+	modelRocket = new Model();
+	marsMesh = Mesh::newMars(marsRadius, marsRadScale, "mars_low_rez.txt", true);
 	sphere = Mesh::newSphere(10,10, 1.0f, true);
 	cylinder = Mesh::newCylinder(10,10, 0.5f, 0.1f, true);
 	rocketMesh = new Rocket();
@@ -115,15 +132,15 @@ Globals::Globals() {
 					//make rocket spin
 					->animateRotation(model, yAxis, orbitAngle)
 					//move rocket out to orbit
-					->translated(vec3(marsRadScale * 1.5f, 0.0f, 0.0f))
+					->translated(vec3(marsRadius * 1.5f, 0.0f, 0.0f))
 					//make rocket face its direction of motion
 					->rotated(vec3(1.0f, 0.0f, 0.0f), -90.0f)
 					//make rocket spin on its axis
 					->animateRotation(model, yAxis, rocketAngle)
 						->store(centeredRocket)
 					//scale rocket to manageable size
-					->scaled(vec3(0.07f, 0.1f, 0.07f));
-
+					->scaled(vec3(0.07f, 0.1f, 0.07f))
+					;
 	//mars must spin twice as fast since its axis is spinning in the opposite direction.
 	marsAngle = new LinearTimeFunction(12.0f/1000.0f, 0.0f);
 	marsAxisAngle = new LinearTimeFunction(-6.0f/1000.0f, 0.0f);
@@ -135,10 +152,9 @@ Globals::Globals() {
 					//tilt mars' axis off of y
 					//->rotated(vec3(1.0f, 0.0f, 0.0f), 15.0f)
 					//make mars spin on its axis
-					//->animateRotation(model, yAxis, marsAngle)
-					;
-	camMarsAni = new RotationAnimation(camMars, yAxis, rocketAngle);
-	model->addAnimation(camMarsAni);
+					->animateRotation(model, yAxis, marsAngle);
+	//camMarsAni = new RotationAnimation(camMars, yAxis, rocketAngle);
+	//model->addAnimation(camMarsAni);
 
 	light = new SpheroidLight();
 
@@ -152,6 +168,9 @@ Globals::Globals() {
 	model->addElement(mars);
 	//this pushes the starfield to the beginning of the model, ensuring that it is drawn behind everything else despite the depth buffer.
 	model->addLight(starfield);
+
+	modelRocket->addLight(light);
+	modelRocket->addElement(centeredRocket);
 
 	view = new View(flyCam, model, baseOverlay);
 	window = new SingleViewportWindow(view);
@@ -181,8 +200,6 @@ bool Globals::initialize() {
 	glEnable(GL_CULL_FACE);
 	glClearColor(0.01f, 0.01f, 0.01f, 1.0f);
 	
-
-
 	if (glewInit() != GLEW_OK) {
 		cerr << "GLEW failed to initialize." << endl;
 		return false;
@@ -207,6 +224,18 @@ bool Globals::initialize() {
 	flyMode = true;
 	exitFreeflyMode();
 	exitEditMode();
+
+	cameras.push_back(camMars);
+	cameras.push_back(flyCam);
+	cameras.push_back(cam);
+
+	camerasRocket.push_back(camRocket);
+
+	marsScene = new Scene(cameras, model, baseOverlay);
+	beautyRocket = new Scene(camerasRocket, modelRocket, baseOverlay);
+	Scenes.push_back(marsScene);
+	Scenes.push_back(beautyRocket);
+	currentScene = 0;
 
 	return true;
 }
@@ -237,6 +266,32 @@ void Globals::exitFreeflyMode() {
 		return;
 	flyMode = false;
 	view->setCamera(camMars);
+}
+
+void Globals::changeCamera()
+{
+	if(Scenes[currentScene]->endOfCameraList())
+	{
+		Scenes[currentScene]->resetCameraIndex();
+		if(currentScene == Scenes.size()-1)
+		{
+			currentScene = 0;
+		}
+		else
+		{
+			currentScene++;
+		}
+	}
+	else
+	{
+		Scenes[currentScene]->changeCamera();
+	}
+	view->setCamera(Scenes[currentScene]->getCamera());
+	view->setOverlay(Scenes[currentScene]->getOverLay());
+	view->setModel(Scenes[currentScene]->getModel());
+
+	currentCamera = Scenes[currentScene]->getCamera();
+
 }
 
 void Globals::takeDown() {
@@ -299,7 +354,7 @@ void PassiveMotionFunc(int x, int y) {
 	int centerx = size.x/2;
 	int centery = size.y/2;
 
-	if( !globals.flyMode || (deltaX == 0 && deltaY == 0) ) return;
+	if( !globals.Scenes[0]->getCurrentCameraIndex() == 1 || (deltaX == 0 && deltaY == 0) ) return;
 
 	globals.flyCam->addAngle(-deltaX/10.0f);
 	globals.flyCam->addAxisAngle(deltaY/10.0f);
@@ -380,15 +435,6 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 		globals.light->addAxisAngle(1);
 		break;
 
-	case 'm':
-		globals.model->clearElements();
-		globals.model->addLight(globals.light);
-		globals.model->addElement(globals.starfield);
-
-		globals.model->addElement(globals.mars);
-
-		break;
-
 	case '.':
 		globals.exitEditMode();
 		break;
@@ -406,23 +452,11 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 		globals.model->addElement(globals.sphere);
 		break;
 
-	case 'c':
-		globals.model->clearElements();
-		globals.model->addLight(globals.light);
-		globals.model->addElement(globals.cylinder);
-		break;
 	case 'r':
 		globals.model->clearElements();
 		globals.model->addLight(globals.light);
 		globals.model->addElement(globals.centeredRocket);
 
-		break;
-
-	case 'z':
-		if (globals.flyMode)
-			globals.exitFreeflyMode();
-		else
-			globals.enterFreeflyMode();
 		break;
 
 	case 'x':
@@ -437,56 +471,28 @@ void SpecialFunc(int c, int x, int y) {
 	switch (c) {
 		case GLUT_KEY_F1:
 		{
-			globals.model->clearElements();
-			globals.model->addLight(globals.light);
-			globals.model->addElement(globals.mars);
-
-			globals.model->addElement(globals.rocket);
+			globals.changeCamera();
 		}
 
 		case GLUT_KEY_CTRL_R:
-			if (globals.flyMode) 
-			{
-				globals.flyCam->moveUp(-0.05f);
-			}
+			globals.currentCamera ->moveForward(1.0f);
 			break;
 		case GLUT_KEY_CTRL_L:
-			if (globals.flyMode) 
-			{
-				globals.flyCam->moveUp(0.05f);
-			}
+			globals.currentCamera ->moveForward(-1.0f);
 			break;
 		case GLUT_KEY_LEFT:
-			if (globals.flyMode) 
-			{
-				globals.flyCam->moveRight(-0.05f);
-			} else {
-				globals.cam->addAngle(-1.0f);
-			}
+			globals.currentCamera ->moveRight(-1.0f);
 			break;
 		case GLUT_KEY_RIGHT:
-			if (globals.flyMode) 
-			{
-				globals.flyCam->moveRight(0.05f);
-			} else {
-				globals.cam->addAngle(1.0f);
-			}
+			globals.currentCamera ->moveRight(1.0f);
+
 			break;
 		case GLUT_KEY_UP:
-			if (globals.flyMode) 
-			{
-				globals.flyCam->moveForward(0.05f);
-			} else {
-				globals.cam->addAxisAngle(-1.0f);
-			}
+			globals.currentCamera ->moveUp(1.0f);
+
 			break;
 		case GLUT_KEY_DOWN:
-			if (globals.flyMode) 
-			{
-				globals.flyCam->moveForward(-0.05f);
-			} else {
-				globals.cam->addAxisAngle(1.0f);
-			}
+			globals.currentCamera ->moveUp(-1.0f);
 			break;
 		case GLUT_KEY_F11:
 			globals.window->toggleFullscreen();

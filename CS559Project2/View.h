@@ -21,6 +21,10 @@ public:
 	inline void setCamera(Camera *c) {
 		this->camera = c;
 	}
+	inline void setModel(Model *m) {
+		this->model = m;
+	}
+
 private:
 	View(); //force use of constructor with arguments
 	void setupCamera();

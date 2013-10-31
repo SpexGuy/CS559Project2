@@ -7,12 +7,8 @@ public:
 	virtual R evaluate(P param) = 0;
 };
 
-
-
 template<typename R>
 class TimeFunction : public Function<int, R> {};
-
-
 
 class LinearTimeFunction : public TimeFunction<float> {
 private:

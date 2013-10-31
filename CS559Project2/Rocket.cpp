@@ -87,7 +87,6 @@ void Rocket::replaceHead(Mesh *newHead) {
 	head = newHead;
 }
 
-
 void Rocket::takeDown()
 {
 	head->takeDown();

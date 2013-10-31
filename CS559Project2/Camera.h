@@ -63,6 +63,11 @@ private:
 public:
 	DynamicProjectionCamera(Projection *proj);
 	virtual glm::mat4 generateProjectionMatrix();
+
+	void virtual moveForward(float offset) = 0;
+	void virtual moveRight(float offset) = 0;
+	void virtual moveUp(float offset) = 0;
+
 };
 
 /**
@@ -74,8 +79,14 @@ private:
 public:
 	SpheroidCamera(Projection *p);
 	virtual glm::mat4 generateViewMatrix();
+	void moveForward(float offset);
+	void moveRight(float offset);
+	void moveUp(float offset);
 };
 
+/**
+ * A camera that is bound to no point and has a movable postion
+ */
 class FreeFlyCamera : public DynamicProjectionCamera, public SphericalAngleMixin {
 private:
 	FreeFlyCamera();
@@ -87,11 +98,16 @@ public:
 	void moveForward(float offset);
 	void moveRight(float offset);
 	void moveUp(float offset);
+	
 	void setPosition(glm::vec3 position);
 
 	virtual glm::mat4 generateViewMatrix();
 };
 
+/**
+ * MarsCamera is a special camera that can be animated to rotate around
+ * a point at a certain radius 
+ */
 class MarsCamera : public DynamicProjectionCamera, public RotatableMixin {
 private:
 		MarsCamera();
@@ -99,6 +115,10 @@ protected:
 	float radius;
 public:
 	MarsCamera(Projection *p, float radius) : DynamicProjectionCamera(p), radius(radius) {}
+	
+	void moveForward(float offset);
+	void moveRight(float offset);
+	void moveUp(float offset);
 
 	virtual glm::mat4 generateViewMatrix();
 };

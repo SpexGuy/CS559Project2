@@ -23,8 +23,6 @@ void Projection::setPlanes(float hither, float yon) {
 	this->yon = yon;
 }
 
-
-
 OrthogonalProjection::OrthogonalProjection(float height) {
 	setHeight(height);
 }
@@ -42,8 +40,6 @@ mat4 OrthogonalProjection::generateProjectionMatrix() {
 		return ortho(-height, height, -height/aspect, height/aspect, hither, yon);
 	}
 }
-
-
 
 PerspectiveProjection::PerspectiveProjection(float fov) {
 	this->fov = fov;
@@ -75,3 +71,4 @@ DynamicProjectionCamera::DynamicProjectionCamera(Projection *proj) {
 mat4 DynamicProjectionCamera::generateProjectionMatrix() {
 	return projection->generateProjectionMatrix();
 }
+

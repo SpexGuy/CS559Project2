@@ -23,19 +23,35 @@ mat4 SpheroidCamera::generateViewMatrix() {
 	);
 }
 
+void SpheroidCamera::moveForward(float offset){
+	//empty method, camera is kept at constant radius
+}
+
+void SpheroidCamera::moveRight(float offset){
+	float turn = offset*1.0f;
+	this->addAngle(turn);
+}
+
+void SpheroidCamera::moveUp(float offset){
+	float turn = offset*1.0f;
+	this->addAxisAngle(-turn);
+}
 
 void FreeFlyCamera::moveForward(float offset) {
-	position.x += offset * sin(angle * M_PI / 180.0f);
-	position.z += offset * cos(angle * M_PI / 180.0f);
+	float trueOffset = offset * 0.05f;
+	position.x += trueOffset * sin(angle * ((float)M_PI) / 180.0f);
+	position.z += trueOffset * cos(angle * ((float)M_PI) / 180.0f);
 }
 
 void FreeFlyCamera::moveRight(float offset) {
-	position.x += offset * sin((angle-90) * M_PI / 180.0f);
-	position.z += offset * cos((angle-90) * M_PI / 180.0f);
+	float trueOffset = offset * 0.05f;
+	position.x += trueOffset * sin((angle-90.0f) * ((float)M_PI) / 180.0f);
+	position.z += trueOffset * cos((angle-90.0f) * ((float)M_PI) / 180.0f);
 }
 
 void FreeFlyCamera::moveUp(float offset) {
-	position.y += offset;
+	float trueOffset = offset * 0.05f;
+	position.y += trueOffset;
 }
 
 void FreeFlyCamera::setPosition(vec3 position) {
@@ -55,9 +71,21 @@ mat4 FreeFlyCamera::generateViewMatrix() {
 mat4 MarsCamera::generateViewMatrix()
 {
 	mat4 view =  lookAt(
-		vec3(radius, 0.0f,0.0f),
-		vec3(-radius, 0.0f,2.0f),
+		vec3(radius, 0.0f, 0.0f),
+		vec3(-radius, 0.0f, 2.0f),
 		vec3(1.0f, 0.0f, 0.0f));
 
 	return glm::rotate(view, this->angle, this->axis);
+}
+
+void MarsCamera::moveForward(float offset){
+	//empty method, camera is kept at constant radius
+}
+
+void MarsCamera::moveRight(float offset){
+	//TODO
+}
+
+void MarsCamera::moveUp(float offset){
+		//empty method, camera can only turn
 }
