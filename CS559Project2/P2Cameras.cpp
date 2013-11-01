@@ -37,6 +37,32 @@ void SpheroidCamera::moveUp(float offset){
 	this->addAxisAngle(-turn);
 }
 
+
+
+mat4 PointCamera::generateViewMatrix() {
+	return lookAt(
+		vec3(0.0f,0.0f,0.0f),
+		vec3(sin(axisAngle * M_PI / 180.0f) * sin(angle * M_PI / 180.0f),
+			 cos(axisAngle * M_PI / 180.0f),
+			 sin(axisAngle * M_PI / 180.0f) * cos(angle * M_PI / 180.0f)),
+		vec3(0.0f,1.0f,0.0f)
+	);
+}
+
+void PointCamera::moveForward(float offset){
+}
+
+void PointCamera::moveRight(float offset){
+	float turn = offset*1.0f;
+	this->addAngle(turn);
+}
+
+void PointCamera::moveUp(float offset){
+	float turn = offset*1.0f;
+	this->addAxisAngle(-turn);
+}
+
+
 void FreeFlyCamera::moveForward(float offset) {
 	float trueOffset = offset * 0.05f;
 	position.x += trueOffset * sin(angle * ((float)M_PI) / 180.0f);

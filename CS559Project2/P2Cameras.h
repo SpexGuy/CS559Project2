@@ -14,6 +14,14 @@ public:
 	void moveUp(float offset);
 };
 
+class PointCamera : public MoveableCamera, public SphericalAngleMixin {
+public:
+	virtual glm::mat4 generateViewMatrix();
+	void moveForward(float offset);
+	void moveRight(float offset);
+	void moveUp(float offset);
+};
+
 /**
  * A camera that is bound to no point and has a movable postion
  */
