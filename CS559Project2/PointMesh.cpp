@@ -33,7 +33,6 @@ bool PointMesh::initialize() {
 
 void PointMesh::draw(mat4 model) {
 	transform(model);
-	Graphics::inst()->setColor(WHITE);
 	Graphics::inst()->drawPoints(indexMask, vertex_array_handle, starShader, model);
 }
 

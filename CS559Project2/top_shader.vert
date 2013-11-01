@@ -6,9 +6,9 @@ layout (location = 1) in vec3 vertex_normal;
 uniform mat4 mvp;
 uniform mat4 modelview_matrix;
 uniform mat3 normal_matrix;
-//uniform vec3 light_position;
+uniform vec4 color;
 
-flat out vec3 color;
+flat out vec4 fragColor;
 out vec3 normal;
 out vec3 position;
 //flat out vec3 light;
@@ -18,9 +18,8 @@ out vec3 position;
 void main()
 {
 	//get the vertex color
-	color = vec3(1.0, 0.0, 0.0);
+	fragColor = color;
 	normal = normalize(normal_matrix * vertex_normal);
-	//light = light_position;
 	//color = normal is a cool shader.
 	//color = normal;
 

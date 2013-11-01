@@ -34,6 +34,10 @@ Drawable *Drawable::disableDepthTest() {
 	return new DisableDepthTest(this);
 }
 
+Drawable *Drawable::inColor(vec4 color) {
+	return new Color(this, color);
+}
+
 Drawable *Drawable::animateRotation(AnimationGroup *ag, TimeFunction<glm::vec3> *axis, TimeFunction<float> *angle) {
 	Rotation *d = new Rotation(this);
 	ag->addAnimation(new RotationAnimation(d, axis, angle));
@@ -82,6 +86,14 @@ Drawable *DrawableDecorator::animateRotation(AnimationGroup *ag, TimeFunction<ve
 
 Drawable *DrawableDecorator::disableDepthTest() {
 	Drawable *d = child->disableDepthTest();
+	if (d != child)
+		isTos = false;
+	child = d;
+	return this;
+}
+
+Drawable *DrawableDecorator::inColor(vec4 color) {
+	Drawable *d = child->inColor(color);
 	if (d != child)
 		isTos = false;
 	child = d;
@@ -174,4 +186,9 @@ void DisableDepthTest::draw(mat4 model) {
 	glDisable(GL_DEPTH_TEST);
 	child->draw(model);
 	glEnable(GL_DEPTH_TEST);
+}
+
+void Color::draw(mat4 model) {
+	Graphics::inst()->setColor(color);
+	child->draw(model);
 }

@@ -152,7 +152,8 @@ Globals::Globals() {
 						//store for use with spinning rocket view
 						->store(centeredRocket)
 					//scale rocket to manageable size
-					->scaled(vec3(0.07f, 0.1f, 0.07f));
+					->scaled(vec3(0.07f, 0.1f, 0.07f))
+					->inColor(BLUE);
 					
 	chaseCam = cam
 		//all rotations of the camera go BACKWARDS
@@ -168,6 +169,7 @@ Globals::Globals() {
 
 	//setup decorator stack for mars
 	mars = marsMesh
+					->inColor(RED)
 					//make mars' axis spin
 					->animateRotation(model, yAxis, marsAxisAngle)
 					//tilt mars' axis off of y
@@ -181,7 +183,7 @@ Globals::Globals() {
 
 	light->setAngle(90);
 	light->setAxisAngle(90);
-	light->setRadius(5);	
+	light->setRadius(15);	
 
 	model->addLight(light);
 	//the bases are at the top of decorator stacks.
@@ -296,14 +298,8 @@ void Globals::changeCamera()
 	if(Scenes[currentScene]->endOfCameraList())
 	{
 		Scenes[currentScene]->resetCameraIndex();
-		if(currentScene == Scenes.size()-1)
-		{
-			currentScene = 0;
-		}
-		else
-		{
-			currentScene++;
-		}
+		currentScene++;
+		currentScene %= Scenes.size();
 	}
 	else
 	{

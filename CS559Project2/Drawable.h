@@ -37,6 +37,10 @@ public:
 	 * Returns a pointer to the base of the stack */
 	virtual Drawable *disableDepthTest();
 
+	/* pushes a Color onto the decorator stack
+	 * Returns a pointer to the base of the stack */
+	virtual Drawable *inColor(glm::vec4 color);
+	
 	/* stores the current top of the decorator stack in the bucket */
 	virtual Drawable *store(Drawable *&bucket);
 
@@ -79,6 +83,8 @@ public:
 	virtual Drawable *animateRotation(AnimationGroup *ag, TimeFunction<glm::vec3> *axis, TimeFunction<float> *angle);
 	/* pushes a DisableDepthTest onto the decorator stack */
 	virtual Drawable *disableDepthTest();
+	/* pushes a Color onto the decorator stack */
+	virtual Drawable *inColor(glm::vec4 color);
 
 	/* stores the current top of the decorator stack in the bucket */
 	virtual Drawable *store(Drawable *&bucket);
@@ -132,3 +138,16 @@ public:
 	virtual void draw(glm::mat4 model);
 };
 
+class Color : public DrawableDecorator {
+private:
+	Color();
+protected:
+	glm::vec4 color;
+public:
+	Color(Drawable *next, const glm::vec4 &color) :
+		DrawableDecorator(next),
+		color(color)
+	{}
+	
+	virtual void draw(glm::mat4 model);
+};

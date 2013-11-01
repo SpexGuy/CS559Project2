@@ -2,7 +2,7 @@
 
 layout (location = 0) out vec4 FragColor;
 
-flat in vec3 color;
+flat in vec4 fragColor;
 in vec3 position;
 in vec3 normal;
 uniform vec3 light_position;
@@ -12,6 +12,7 @@ const float shininess = 120.0f;
 
 vec3 ads()
 {
+  vec3 color = vec3(fragColor);
   vec3 n = normal;
 
   if (!gl_FrontFacing)
