@@ -21,7 +21,16 @@ void ScaleableMixin::transform(glm::mat4 & context) const {
 }
 
 
+
 void Scale::draw(mat4 model) {
 	transform(model);
 	child->draw(model);
+}
+
+
+
+mat4 CamScale::generateViewMatrix() {
+	mat4 view = next->generateViewMatrix();
+	transform(view);
+	return view;
 }

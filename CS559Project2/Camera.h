@@ -1,7 +1,8 @@
 #pragma once
 #include <glm/glm.hpp>
-#include "Translatable.h"
-#include "Rotatable.h"
+#include "Function.h"
+
+class AnimationGroup;
 
 /** 
  * A camera represents a projection and a positon, and therefore
@@ -9,116 +10,71 @@
  */
 class Camera {
 public:
-	virtual glm::mat4 generateProjectionMatrix() = 0;
+	/* pushes a Rotation onto the decorator stack 
+	 * Returns a pointer to the base of the stack */
+	virtual Camera *rotated(const glm::vec3 &axis, const float &angle);
+	
+	/* pushes a Translation onto the decorator stack
+	 * Returns a pointer to the base of the stack */
+	virtual Camera *translated(const glm::vec3 &position);
+	
+	/* pushes a Scale onto the decorator stack
+	 * Returns a pointer to the base of the stack */
+	virtual Camera *scaled(const glm::vec3 &scale);
+
+	/* pushes a Rotation onto the decorator stack, then adds
+	 * an animation to the given group
+	 * Returns a pointer to the base of the stack */
+	virtual Camera *animateRotation(AnimationGroup *ag, TimeFunction<glm::vec3> *axis, TimeFunction<float> *angle);
+
+	/* stores the current top of the decorator stack in the bucket */
+	virtual Camera *store(Camera *&bucket);
+	
 	virtual glm::mat4 generateViewMatrix() = 0;
+	virtual ~Camera() {}
 };
 
-/**
- * A Projection is responsible for generating a projection matrix.
- */
-class Projection {
-protected:
-	float hither, yon;
-public:
-	Projection();
-	virtual glm::mat4 generateProjectionMatrix() = 0;
-	void setPlanes(float hither, float yon);
-};
-
-class OrthogonalProjection : public Projection {
+class CameraDecorator : public Camera {
 private:
-	OrthogonalProjection();
+	CameraDecorator();
 protected:
-	float height;
+	Camera *next;
+	bool isTos;
 public:
-	OrthogonalProjection(float height);
-	virtual glm::mat4 generateProjectionMatrix();
-	/* sets the minimum radius of display for the orthogonal projection. */
-	void setHeight(float height);
-};
+	CameraDecorator(Camera *next) :
+		next(next),
+		isTos(true)
+	{}
+		/* pushes a Rotation onto the decorator stack 
+	 * Returns a pointer to the base of the stack */
+	virtual Camera *rotated(const glm::vec3 &axis, const float &angle);
+	
+	/* pushes a Translation onto the decorator stack
+	 * Returns a pointer to the base of the stack */
+	virtual Camera *translated(const glm::vec3 &position);
+	
+	/* pushes a Scale onto the decorator stack
+	 * Returns a pointer to the base of the stack */
+	virtual Camera *scaled(const glm::vec3 &scale);
 
-class PerspectiveProjection : public Projection {
-private:
-	PerspectiveProjection();
-protected:
-	float fov;
-public:
-	PerspectiveProjection(float fov);
-	virtual glm::mat4 generateProjectionMatrix();
-	/* sets the vertical fov angle.
-	 * fov will be put into the range [10, 80] */
-	virtual void setFov(float fov);
-	void addFov(float fov);
-	float getFov();
+	/* pushes a Rotation onto the decorator stack, then adds
+	 * an animation to the given group
+	 * Returns a pointer to the base of the stack */
+	virtual Camera *animateRotation(AnimationGroup *ag, TimeFunction<glm::vec3> *axis, TimeFunction<float> *angle);
+
+	/* stores the current top of the decorator stack in the bucket */
+	virtual Camera *store(Camera *&bucket);
+	
+	virtual ~CameraDecorator();
 };
 
 /**
  * A camera which uses a Projection to generate the projection matrix
  */
-class DynamicProjectionCamera : public Camera {
-protected:
-	Projection *projection;
-private:
-	DynamicProjectionCamera();
+class MoveableCamera : public Camera {
 public:
-	DynamicProjectionCamera(Projection *proj);
-	virtual glm::mat4 generateProjectionMatrix();
-
 	void virtual moveForward(float offset) = 0;
 	void virtual moveRight(float offset) = 0;
 	void virtual moveUp(float offset) = 0;
 
-};
-
-/**
- * A camera which is fixed to the surface of a sphere and points at its center
- */
-class SpheroidCamera : public DynamicProjectionCamera, public SphericalCoordinateMixin{
-private:
-	SpheroidCamera();
-public:
-	SpheroidCamera(Projection *p);
-	virtual glm::mat4 generateViewMatrix();
-	void moveForward(float offset);
-	void moveRight(float offset);
-	void moveUp(float offset);
-};
-
-/**
- * A camera that is bound to no point and has a movable postion
- */
-class FreeFlyCamera : public DynamicProjectionCamera, public SphericalAngleMixin {
-private:
-	FreeFlyCamera();
-protected:
-	glm::vec3 position;
-public:
-	FreeFlyCamera(Projection *p) : DynamicProjectionCamera(p) {}
-
-	void moveForward(float offset);
-	void moveRight(float offset);
-	void moveUp(float offset);
-	
-	void setPosition(glm::vec3 position);
-
-	virtual glm::mat4 generateViewMatrix();
-};
-
-/**
- * MarsCamera is a special camera that can be animated to rotate around
- * a point at a certain radius 
- */
-class MarsCamera : public DynamicProjectionCamera, public RotatableMixin {
-private:
-		MarsCamera();
-protected:
-	float radius;
-public:
-	MarsCamera(Projection *p, float radius) : DynamicProjectionCamera(p), radius(radius) {}
-	
-	void moveForward(float offset);
-	void moveRight(float offset);
-	void moveUp(float offset);
-
-	virtual glm::mat4 generateViewMatrix();
 };

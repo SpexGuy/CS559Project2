@@ -3,7 +3,7 @@
 using namespace std;
 using namespace glm;
 
-Scene::Scene(vector<DynamicProjectionCamera*> cameras, Model *model, ViewOverlay *overlay)
+Scene::Scene(vector<MoveableCamera*> cameras, Model *model, ViewOverlay *overlay)
 {
 	this->cameras = cameras;
 	this->model = model;
@@ -18,7 +18,7 @@ void Scene::changeCamera()
 	else
 		selectCam++;
 
-	DynamicProjectionCamera *c = cameras[selectCam];
+	MoveableCamera *c = cameras[selectCam];
 }
 
 Model* Scene::getModel()
@@ -31,7 +31,7 @@ ViewOverlay* Scene::getOverLay()
 	return overlay;
 }
 
-DynamicProjectionCamera* Scene::getCamera()
+MoveableCamera* Scene::getCamera()
 {
 	return cameras[selectCam];
 }

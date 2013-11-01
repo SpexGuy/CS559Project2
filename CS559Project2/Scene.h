@@ -1,4 +1,5 @@
 #pragma once
+#include "P2Cameras.h"
 #include "Camera.h"
 #include "Model.h"
 #include "View.h"
@@ -6,12 +7,12 @@
 class Scene
 {
 public:
-	Scene(std::vector<DynamicProjectionCamera*> cameras, Model* model, ViewOverlay* overlay);
+	Scene(std::vector<MoveableCamera*> cameras, Model* model, ViewOverlay* overlay);
 	void changeCamera();
 
 	Model* getModel();
 	ViewOverlay* getOverLay();
-	DynamicProjectionCamera* getCamera();
+	MoveableCamera* getCamera();
 	bool endOfCameraList();
 	int getCurrentCameraIndex();
 	void resetCameraIndex();
@@ -19,7 +20,7 @@ public:
 	~Scene();
 
 protected:
-	 std::vector<DynamicProjectionCamera*> cameras;
+	 std::vector<MoveableCamera*> cameras;
 	 Model* model;
 	 ViewOverlay* overlay;
 	 int selectCam;

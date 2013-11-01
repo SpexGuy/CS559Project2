@@ -1,5 +1,6 @@
 #pragma once
 #include "Camera.h"
+#include "Projection.h"
 #include "Model.h"
 #include "Graphics.h"
 
@@ -10,11 +11,25 @@ class ViewOverlay;
  * to render a Model.
  */
 class View {
+private:
+	View(); //force use of constructor with arguments
+	void setupCamera();
+protected:
+	ViewOverlay *overlay;
+	Projection *proj;
+	Camera *camera;
+	Model *model;
 public:
-	View(Camera *camera, Model *model, ViewOverlay *o);
+	View(Projection *p, Camera *camera, Model *model, ViewOverlay *o);
+	
 	virtual void render();
-	Camera *getCamera();
-	Model *getModel();
+	
+	inline Camera *getCamera() {
+		return camera;
+	}
+	inline Model *getModel() {
+		return model;
+	}
 	inline void setOverlay(ViewOverlay *o) {
 		this->overlay = o;
 	}
@@ -24,14 +39,6 @@ public:
 	inline void setModel(Model *m) {
 		this->model = m;
 	}
-
-private:
-	View(); //force use of constructor with arguments
-	void setupCamera();
-protected:
-	ViewOverlay *overlay;
-	Camera *camera;
-	Model *model;
 };
 
 /** An abstract representation of a 2D overlay to be drawn on a view */

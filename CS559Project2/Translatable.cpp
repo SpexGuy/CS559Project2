@@ -31,3 +31,10 @@ void Translation::draw(mat4 model) {
 	child->draw(model);
 }
 
+
+
+mat4 CamTranslation::generateViewMatrix() {
+	mat4 view = next->generateViewMatrix();
+	transform(view);
+	return view;
+}

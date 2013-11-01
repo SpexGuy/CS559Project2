@@ -10,6 +10,8 @@
 #include "Window.h"
 #include "View.h"
 #include "Camera.h"
+#include "P2Cameras.h"
+#include "Projection.h"
 #include "SpheroidLight.h"
 #include "SplineEditor.h"
 #include "Graphics.h"
@@ -33,8 +35,9 @@ public:
 	SpheroidCamera *cam;
 	MarsCamera *camMars;
 	SpheroidCamera *camRocket;
-	DynamicProjectionCamera *currentCamera;
+	MoveableCamera *currentCamera;
 
+	Camera *chaseCam;
 	SpheroidLight *light;
 	Model *model;
 	Model *modelRocket;
@@ -55,13 +58,14 @@ public:
 
 	TimeFunction<float> *rocketAngle;
 	TimeFunction<float> *orbitAngle;
+	TimeFunction<float> *chaseCamAngle;
 	TimeFunction<float> *marsAngle;
 	TimeFunction<float> *marsAxisAngle;
 
 	RotationAnimation *camMarsAni;
 
-	vector<DynamicProjectionCamera*> cameras;
-	vector<DynamicProjectionCamera*> camerasRocket;
+	vector<MoveableCamera*> cameras;
+	vector<MoveableCamera*> camerasRocket;
 
 	vector<Scene*> Scenes;
 
@@ -95,20 +99,26 @@ Globals::Globals() {
 
 	proj = new PerspectiveProjection(45.0f);
 	proj->setPlanes(0.01f, 100.0f);
-	camMars = new MarsCamera(proj, marsRadius + marsRadScale*10.0f);
-	cam = new SpheroidCamera(proj);
+
+	camMars = new MarsCamera(marsRadius + marsRadScale*10.0f);
+	cam = new SpheroidCamera();
 	cam->setRadius(marsRadius*3.0f);
-	camRocket = new SpheroidCamera(proj);
+	camRocket = new SpheroidCamera();
 	cam->setRadius(marsRadius*3.0f);
 
-	flyCam = new FreeFlyCamera(proj);
+	cam = new SpheroidCamera();
+	cam->setRadius(1.3f);
+	
+	flyCam = new FreeFlyCamera();
 	flyCam->setPosition(vec3(0.0f, 0.0f, 3.0f));
 	flyCam->setAngle(180.0f);
+	
 	splineOverlay = new SplineEditorOverlay(5);
 	baseOverlay = new ViewOverlay();
 
 	model = new Model();
 	modelRocket = new Model();
+
 	marsMesh = Mesh::newMars(marsRadius, marsRadScale, "mars_low_rez.txt", true);
 	sphere = Mesh::newSphere(10,10, 1.0f, true);
 	cylinder = Mesh::newCylinder(10,10, 0.5f, 0.1f, true);
@@ -121,6 +131,7 @@ Globals::Globals() {
 	yAxis = new Vec3TimeFunction(const0, const1, const0);
 
 	orbitAngle = new LinearTimeFunction(16.0f/1000.0f, 0.0f);
+	chaseCamAngle = new LinearTimeFunction(-16.0f/1000.0f, 0.0f);
 	rocketAngle = new LinearTimeFunction(-13.0f/1000.0f, 0.0f);
 
 	//setup decorator stack to make rocket move specially
@@ -129,18 +140,28 @@ Globals::Globals() {
 	 * http://camel.apache.org/java-dsl.html
 	 */
 	rocket = rocketMesh
-					//make rocket spin
+					//make rocket orbt
 					->animateRotation(model, yAxis, orbitAngle)
 					//move rocket out to orbit
 					->translated(vec3(marsRadius * 1.5f, 0.0f, 0.0f))
+					->translated(vec3((marsRadius + marsRadScale) * 1.5f, 0.0f, 0.0f))
 					//make rocket face its direction of motion
 					->rotated(vec3(1.0f, 0.0f, 0.0f), -90.0f)
 					//make rocket spin on its axis
 					->animateRotation(model, yAxis, rocketAngle)
+						//store for use with spinning rocket view
 						->store(centeredRocket)
 					//scale rocket to manageable size
-					->scaled(vec3(0.07f, 0.1f, 0.07f))
-					;
+					->scaled(vec3(0.07f, 0.1f, 0.07f));
+					
+	chaseCam = cam
+		//all rotations of the camera go BACKWARDS
+		->animateRotation(model, yAxis, chaseCamAngle)
+		//so do translations
+		->translated(vec3(-1.3, 0.0f, 0.0f))
+		//make the axis face out
+		->rotated(vec3(0.0f, 0.0f, 1.0f), 90.0f);
+
 	//mars must spin twice as fast since its axis is spinning in the opposite direction.
 	marsAngle = new LinearTimeFunction(12.0f/1000.0f, 0.0f);
 	marsAxisAngle = new LinearTimeFunction(-6.0f/1000.0f, 0.0f);
@@ -155,6 +176,10 @@ Globals::Globals() {
 					->animateRotation(model, yAxis, marsAngle);
 	//camMarsAni = new RotationAnimation(camMars, yAxis, rocketAngle);
 	//model->addAnimation(camMarsAni);
+					//->animateRotation(model, yAxis, marsAngle)
+					;
+//	camMarsAni = new RotationAnimation((CamRotation *)camMars, yAxis, rocketAngle);
+//	model->addAnimation(camMarsAni);
 
 	light = new SpheroidLight();
 
@@ -172,7 +197,7 @@ Globals::Globals() {
 	modelRocket->addLight(light);
 	modelRocket->addElement(centeredRocket);
 
-	view = new View(flyCam, model, baseOverlay);
+	view = new View(proj, flyCam, model, baseOverlay);
 	window = new SingleViewportWindow(view);
 	wireframe = false;
 }
@@ -306,9 +331,9 @@ void Globals::takeDown() {
 
 Globals::~Globals() {
 	delete proj;
-	delete cam;
 	delete flyCam;
 	delete splineOverlay;
+	delete camMars;
 	delete model;
 	delete view;
 	delete window;
@@ -326,10 +351,9 @@ Globals::~Globals() {
 
 	delete marsAngle;
 	delete marsAxisAngle;
+	delete chaseCamAngle;
 	delete rocketAngle;
 	delete orbitAngle;
-
-	delete camMars;
 }
 
 void CloseFunc() {

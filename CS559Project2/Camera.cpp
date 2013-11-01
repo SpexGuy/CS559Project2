@@ -1,74 +1,84 @@
-#ifndef _USE_MATH_DEFINES
-#define _USE_MATH_DEFINES
-#endif
-#include <math.h>
 #include "Camera.h"
-#include "Graphics.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "Rotatable.h"
+#include "Translatable.h"
+#include "Scaleable.h"
+#include "Animation.h"
 
 using namespace glm;
 
-Projection::Projection() {
-	hither = 1.0f;
-	yon = 10.0f;
+Camera *Camera::rotated(const vec3 &axis, const float &angle) {
+	CamRotation *rot = new CamRotation(this);
+	rot->setRotation(axis, angle);
+	return rot;
 }
 
-void Projection::setPlanes(float hither, float yon) {
-	if (hither <= 0)
-		hither = 0.0000001f;
-	if (hither >= yon)
-		yon = hither + 0.0000001f;
-	this->hither = hither;
-	this->yon = yon;
+Camera *Camera::translated(const vec3 &position) {
+	CamTranslation *trans = new CamTranslation(this);
+	trans->position(position);
+	return trans;
 }
 
-OrthogonalProjection::OrthogonalProjection(float height) {
-	setHeight(height);
+Camera *Camera::scaled(const vec3 &scale) {
+	CamScale *sc = new CamScale(this);
+	sc->scale(scale);
+	return sc;
 }
 
-void OrthogonalProjection::setHeight(float height) {
-	this->height = height;
+Camera *Camera::animateRotation(AnimationGroup *ag, TimeFunction<vec3> *axis, TimeFunction<float> *angle) {
+	CamRotation *rot = new CamRotation(this);
+	RotationAnimation *anim = new RotationAnimation(rot, axis, angle);
+	ag->addAnimation(anim);
+	return rot;
 }
 
-mat4 OrthogonalProjection::generateProjectionMatrix() {
-	ivec2 size = Graphics::inst()->getSize();
-	float aspect = float(size.x)/float(size.y);
-	if (size.x > size.y) {
-		return ortho(-aspect*height, aspect*height, -height, height, hither, yon);
+Camera *Camera::store(Camera *&bucket) {
+	bucket = this;
+	return this;
+}
+
+Camera *CameraDecorator::rotated(const vec3 &axis, const float &angle) {
+	Camera *d = next->rotated(axis, angle);
+	if (d != next)
+		isTos = false;
+	next = d;
+	return this;
+}
+
+Camera *CameraDecorator::translated(const vec3 &position) {
+	Camera *d = next->translated(position);
+	if (d != next)
+		isTos = false;
+	next = d;
+	return this;
+}
+
+Camera *CameraDecorator::scaled(const vec3 &scale) {
+	Camera *d = next->scaled(scale);
+	if (d != next)
+		isTos = false;
+	next = d;
+	return this;
+}
+
+Camera *CameraDecorator::animateRotation(AnimationGroup *ag, TimeFunction<vec3> *axis, TimeFunction<float> *angle) {
+	Camera *d = next->animateRotation(ag, axis, angle);
+	if (d != next)
+		isTos = false;
+	next = d;
+	return this;
+}
+
+Camera *CameraDecorator::store(Camera *&bucket) {
+	if (isTos) {
+		bucket = this;
 	} else {
-		return ortho(-height, height, -height/aspect, height/aspect, hither, yon);
+		next->store(bucket);
 	}
+	return this;
 }
 
-PerspectiveProjection::PerspectiveProjection(float fov) {
-	this->fov = fov;
-}
-
-mat4 PerspectiveProjection::generateProjectionMatrix() {
-	ivec2 size = Graphics::inst()->getSize();
-	return perspective(fov, float(size.x)/float(size.y), hither, yon);
-}
-
-void PerspectiveProjection::addFov(float addition) {
-	setFov(fov + addition);
-}
-void PerspectiveProjection::setFov(float fov) {
-	if (fov > 80)
-		fov = 80;
-	else if (fov < 10)
-		fov = 10;
-	this->fov = fov;
-}
-float PerspectiveProjection::getFov() {
-	return fov;
-}
-
-DynamicProjectionCamera::DynamicProjectionCamera(Projection *proj) {
-	this->projection = proj;
-}
-
-mat4 DynamicProjectionCamera::generateProjectionMatrix() {
-	return projection->generateProjectionMatrix();
+CameraDecorator::~CameraDecorator() {
+	if (next != NULL)
+		delete next;
 }
 

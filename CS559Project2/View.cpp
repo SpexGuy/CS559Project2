@@ -12,7 +12,8 @@ using namespace glm;
 using namespace std;
 
 
-View::View(Camera *c, Model *m, ViewOverlay *o) {
+View::View(Projection *p, Camera *c, Model *m, ViewOverlay *o) {
+	proj = p;
 	camera = c;
 	model = m;
 	overlay = o;
@@ -30,17 +31,10 @@ void View::render() {
 }
 
 void View::setupCamera() {
-	Graphics::inst()->setProjection(camera->generateProjectionMatrix());
+	Graphics::inst()->setProjection(proj->generateProjectionMatrix());
 	Graphics::inst()->setView(camera->generateViewMatrix());
 }
 
-Camera *View::getCamera() {
-	return camera;
-}
-
-Model *View::getModel() {
-	return model;
-}
 
 
 ViewOverlay::ViewOverlay() {
