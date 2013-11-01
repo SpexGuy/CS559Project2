@@ -82,3 +82,15 @@ CameraDecorator::~CameraDecorator() {
 		delete next;
 }
 
+void CameraDecorator::moveForward(float offset){
+	next->moveForward(offset);
+}
+
+void CameraDecorator::moveRight(float offset){
+	next->moveRight(offset);
+}
+
+void CameraDecorator::moveUp(float offset){
+	next->moveUp(offset);
+}
+

@@ -35,7 +35,7 @@ public:
 	SpheroidCamera *cam;
 	MarsCamera *camMars;
 	SpheroidCamera *camRocket;
-	MoveableCamera *currentCamera;
+	Camera *currentCamera;
 
 	Camera *chaseCam;
 	SpheroidLight *light;
@@ -62,10 +62,13 @@ public:
 	TimeFunction<float> *marsAngle;
 	TimeFunction<float> *marsAxisAngle;
 
-	vector<MoveableCamera*> cameras;
-	vector<MoveableCamera*> camerasRocket;
+	Animation* camMarsAni;
+
+	vector<Camera*> cameras;
+	vector<Camera*> camerasRocket;
 
 	vector<Scene*> Scenes;
+
 
 	Scene *beautyRocket;
 	Scene *marsScene;
@@ -97,7 +100,14 @@ Globals::Globals() {
 	proj = new PerspectiveProjection(45.0f);
 	proj->setPlanes(0.01f, 100.0f);
 
-	camMars = new MarsCamera(marsRadius + marsRadScale*10.0f);
+	/*SpheroidCamera * tmp = new SpheroidCamera();
+	tmp->setRadius(1.0f);
+
+	camMars = tmp->translated(vec3(-(marsRadScale*1.08f + marsRadius), 0.0f,0.0f))
+		->rotated(vec3(0.0f,0.0f,1.0f), 90.0f)
+		->rotated(vec3(0.0f,1.0f,0.0f), 180.0f);*/
+	
+	camMars = new MarsCamera(marsRadScale*5.0f + marsRadius);
 	cam = new SpheroidCamera();
 	cam->setRadius(marsRadius*3.0f);
 	camRocket = new SpheroidCamera();
@@ -167,7 +177,9 @@ Globals::Globals() {
 					->rotated(vec3(1.0f, 0.0f, 0.0f), 15.0f)
 					//make mars spin on its axis
 					->animateRotation(model, yAxis, marsAngle);
-
+	
+	//cam ->animateRotation(model, yAxis, rocketAngle);
+					
 	light = new SpheroidLight();
 
 	light->setAngle(90);
@@ -240,7 +252,7 @@ bool Globals::initialize() {
 	cameras.push_back(camMars);
 	cameras.push_back(flyCam);
 	cameras.push_back(cam);
-
+	//cameras.push_back(chaseCam);
 	camerasRocket.push_back(camRocket);
 
 	marsScene = new Scene(cameras, model, baseOverlay);

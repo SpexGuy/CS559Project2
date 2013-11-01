@@ -3,7 +3,7 @@
 using namespace std;
 using namespace glm;
 
-Scene::Scene(vector<MoveableCamera*> cameras, Model *model, ViewOverlay *overlay)
+Scene::Scene(vector<Camera*> cameras, Model *model, ViewOverlay *overlay)
 {
 	this->cameras = cameras;
 	this->model = model;
@@ -18,7 +18,7 @@ void Scene::changeCamera()
 	else
 		selectCam++;
 
-	MoveableCamera *c = cameras[selectCam];
+	Camera *c = cameras[selectCam];
 }
 
 Model* Scene::getModel()
@@ -31,7 +31,7 @@ ViewOverlay* Scene::getOverLay()
 	return overlay;
 }
 
-MoveableCamera* Scene::getCamera()
+Camera* Scene::getCamera()
 {
 	return cameras[selectCam];
 }
@@ -49,4 +49,8 @@ int Scene::getCurrentCameraIndex()
 void Scene::resetCameraIndex()
 {
 	selectCam =0;
+}
+void Scene::setOverlay(ViewOverlay *overlay)
+{
+	this->overlay = overlay;		
 }

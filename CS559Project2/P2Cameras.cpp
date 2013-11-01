@@ -100,7 +100,6 @@ mat4 MarsCamera::generateViewMatrix()
 		vec3(radius, 0.0f, 0.0f),
 		vec3(-radius, 0.0f, 2.0f),
 		vec3(1.0f, 0.0f, 0.0f));
-
 	return glm::rotate(view, this->angle, this->axis);
 }
 
@@ -109,9 +108,9 @@ void MarsCamera::moveForward(float offset){
 }
 
 void MarsCamera::moveRight(float offset){
-	//TODO
+
 }
 
 void MarsCamera::moveUp(float offset){
-		//empty method, camera can only turn
+	
 }

@@ -7,12 +7,13 @@
 class Scene
 {
 public:
-	Scene(std::vector<MoveableCamera*> cameras, Model* model, ViewOverlay* overlay);
+	Scene(std::vector<Camera*> cameras, Model* model, ViewOverlay* overlay);
 	void changeCamera();
 
 	Model* getModel();
 	ViewOverlay* getOverLay();
-	MoveableCamera* getCamera();
+	Camera* getCamera();
+	void setOverlay(ViewOverlay*);
 	bool endOfCameraList();
 	int getCurrentCameraIndex();
 	void resetCameraIndex();
@@ -20,7 +21,7 @@ public:
 	~Scene();
 
 protected:
-	 std::vector<MoveableCamera*> cameras;
+	 std::vector<Camera*> cameras;
 	 Model* model;
 	 ViewOverlay* overlay;
 	 int selectCam;

@@ -31,6 +31,11 @@ public:
 	virtual Camera *store(Camera *&bucket);
 	
 	virtual glm::mat4 generateViewMatrix() = 0;
+
+	void virtual moveForward(float offset) = 0;
+	void virtual moveRight(float offset) = 0;
+	void virtual moveUp(float offset) = 0;
+
 	virtual ~Camera() {}
 };
 
@@ -64,6 +69,11 @@ public:
 
 	/* stores the current top of the decorator stack in the bucket */
 	virtual Camera *store(Camera *&bucket);
+
+	/*Inherited methods*/
+	void moveForward(float offset);
+	void moveRight(float offset);
+	void moveUp(float offset);
 	
 	virtual ~CameraDecorator();
 };
