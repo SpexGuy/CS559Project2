@@ -33,7 +33,7 @@ void Rotation::draw(mat4 model) {
 
 mat4 CamRotation::generateViewMatrix() {
 	mat4 view = next->generateViewMatrix();
-	transform(view);
+	view = glm::rotate(view, -angle, axis);
 	return view;
 }
 

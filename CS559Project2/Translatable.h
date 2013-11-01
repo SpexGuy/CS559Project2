@@ -18,16 +18,15 @@ public:
  * A mixin to facilitate implementation of the Translatable interface
  */
 class TranslatableMixin : public Translatable {
+protected:
+	virtual void transform(glm::mat4 & context) const;
+	glm::vec3 pos;
 public:
 	/* initializes the position to (0, 0, 0) */
 	TranslatableMixin();
 	virtual void translate(const glm::vec3 & offset);
 	virtual glm::vec3 position() const;
 	virtual void position(glm::vec3 pos);
-protected:
-	virtual void transform(glm::mat4 & context) const;
-private:
-	glm::vec3 pos;
 };
 
 

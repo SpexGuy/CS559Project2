@@ -31,6 +31,6 @@ void Scale::draw(mat4 model) {
 
 mat4 CamScale::generateViewMatrix() {
 	mat4 view = next->generateViewMatrix();
-	transform(view);
+	view = glm::scale(view, vec3(1.0f/scaleVec.x, 1.0f/scaleVec.y, 1.0f/scaleVec.z));
 	return view;
 }

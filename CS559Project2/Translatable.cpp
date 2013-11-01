@@ -35,6 +35,6 @@ void Translation::draw(mat4 model) {
 
 mat4 CamTranslation::generateViewMatrix() {
 	mat4 view = next->generateViewMatrix();
-	transform(view);
+	view = glm::translate(view, -pos);
 	return view;
 }
