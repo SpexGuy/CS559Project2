@@ -37,8 +37,6 @@ void SpheroidCamera::moveUp(float offset){
 	this->addAxisAngle(-turn);
 }
 
-
-
 mat4 PointCamera::generateViewMatrix() {
 	return lookAt(
 		vec3(0.0f,0.0f,0.0f),
@@ -53,12 +51,12 @@ void PointCamera::moveForward(float offset){
 }
 
 void PointCamera::moveRight(float offset){
-	float turn = offset*1.0f;
-	this->addAngle(turn);
+	float turn = offset*0.5f;
+	this->addAngle(-turn);
 }
 
 void PointCamera::moveUp(float offset){
-	float turn = offset*1.0f;
+	float turn = offset*0.5f;
 	this->addAxisAngle(-turn);
 }
 

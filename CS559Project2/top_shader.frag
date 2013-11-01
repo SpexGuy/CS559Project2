@@ -23,7 +23,7 @@ vec3 ads()
   float s_dot_n = max(dot(s, n), 0.0);
 
   //return color * s_dot_n + (s_dot_n > 0 ? color * pow(max(dot(r, v), 0.0), shininess) : vec3(0.0));
-  return color * s_dot_n;
+  return color * s_dot_n + color*vec3(0.04f,0.04f,0.04f);
 }
 
 void main() {

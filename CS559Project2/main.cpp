@@ -33,12 +33,13 @@ public:
 	PerspectiveProjection *proj;
 	FreeFlyCamera *flyCam;
 	SpheroidCamera *cam;
-	MarsCamera *camMars;
+	Camera *camMars;
 	SpheroidCamera *camRocket;
 	Camera *currentCamera;
 
 	Camera *chaseCam;
 	SpheroidLight *light;
+	SpheroidLight *camLight;
 	Model *model;
 	Model *modelRocket;
 	Mesh *marsMesh;
@@ -100,26 +101,6 @@ Globals::Globals() {
 	proj = new PerspectiveProjection(45.0f);
 	proj->setPlanes(0.01f, 100.0f);
 
-	/*SpheroidCamera * tmp = new SpheroidCamera();
-	tmp->setRadius(1.0f);
-
-	camMars = tmp->translated(vec3(-(marsRadScale*1.08f + marsRadius), 0.0f,0.0f))
-		->rotated(vec3(0.0f,0.0f,1.0f), 90.0f)
-		->rotated(vec3(0.0f,1.0f,0.0f), 180.0f);*/
-	
-	camMars = new MarsCamera(marsRadScale*5.0f + marsRadius);
-	cam = new SpheroidCamera();
-	cam->setRadius(marsRadius*3.0f);
-	camRocket = new SpheroidCamera();
-	cam->setRadius(marsRadius*3.0f);
-
-	flyCam = new FreeFlyCamera();
-	flyCam->setPosition(vec3(0.0f, 0.0f, 3.0f));
-	flyCam->setAngle(180.0f);
-	
-	splineOverlay = new SplineEditorOverlay(5);
-	baseOverlay = new ViewOverlay();
-
 	model = new Model();
 	modelRocket = new Model();
 
@@ -138,6 +119,22 @@ Globals::Globals() {
 	chaseCamAngle = new LinearTimeFunction(-16.0f/1000.0f, 0.0f);
 	rocketAngle = new LinearTimeFunction(-13.0f/1000.0f, 0.0f);
 
+	camMars = (new PointCamera())
+		->animateRotation(model, yAxis, orbitAngle)
+		->translated(vec3(marsRadScale*5.0f + marsRadius,0.0f,0.0f))
+		->rotated(vec3(0.0f,0.0f,1.0f),-90.0f);
+	cam = new SpheroidCamera();
+	cam->setRadius(marsRadius*3.0f);
+	camRocket = new SpheroidCamera();
+	cam->setRadius(marsRadius*3.0f);
+
+	flyCam = new FreeFlyCamera();
+	flyCam->setPosition(vec3(0.0f, 0.0f, 3.0f));
+	flyCam->setAngle(180.0f);
+	
+	splineOverlay = new SplineEditorOverlay(5);
+	baseOverlay = new ViewOverlay();
+	
 	//setup decorator stack to make rocket move specially
 	/* This DSL is inspired in part by the Java DSL for Apache's
 	 * Camel project.
