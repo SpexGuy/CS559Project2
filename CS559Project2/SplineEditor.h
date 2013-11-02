@@ -4,11 +4,11 @@
 
 class SplinePoint;
 
-class SplineEditorOverlay : public ViewOverlay {
+class SplineEditor : public Drawable {
 private:
-	SplineEditorOverlay();
-	void drawSplinePoint(const glm::mat4 &base, int index);
-	void drawSpline(const glm::mat4 &base);
+	SplineEditor();
+	void drawSplinePoint(const glm::mat4 &model, int index);
+	void drawSpline(const glm::mat4 &model);
 	SplinePoint *currentPoint();
 	bool isEdgeSelected();
 protected:
@@ -16,15 +16,17 @@ protected:
 	std::vector<SplinePoint *> points;
 	virtual void setupCamera() const;
 public:
-	SplineEditorOverlay(int numPoints);
+	SplineEditor(int numPoints);
 	std::vector<glm::vec2> getSpline(int resolution);
 	void next();
 	void moveVertical(float offset);
 	void moveHorizontal(float offset);
 	void addSize(float offset);
 	void addAngle(float offset);
-	virtual glm::mat4 draw();
-	~SplineEditorOverlay();
+	virtual bool initialize();
+	virtual void draw(const glm::mat4 &model);
+	virtual void takeDown();
+	virtual ~SplineEditor();
 };
 
 class SplinePoint {

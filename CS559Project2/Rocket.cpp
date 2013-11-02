@@ -12,21 +12,20 @@ using namespace std;
 
 Rocket::Rocket()
 {
-	 this->stacks = 32;
+	 this->stacks = 31;
 	 this->slices = 32;
 }
 
 bool Rocket::initialize()
 {
-	
+	editMode = false;
+
 	float headToLeg = HEAD_RADIUS*2.0f;
 	float topOfLeg = -HEAD_HEIGHT/1.625f;
 	float cylinderHeight = HEAD_HEIGHT/1.25f;
 	float smallRadius = HEAD_RADIUS/4.0f;
 	float strutRadiusInLeg = smallRadius/2.0f;
 	float strutRadiusInHead = smallRadius*1.25f;
-
-//tanslate rotate scale in that order
 
 	//Draws the head
 	head = Mesh::newSphere(stacks, slices, HEAD_RADIUS, true)
@@ -56,7 +55,7 @@ bool Rocket::initialize()
 				->scaled(vec3(1.0f,cylinderHeight, 1.0f))
 				->resetColor()->resetMaterial()
 				->inColor(vec4(1.0f, 1.0f, 0.0f, 1.0f))
-				->inMaterial(1.0f, 0.0f, 0.0f, 1.0f);
+				->inMaterial(1.0f, vec4(0.0f), 1.0f);
 	if (!tmp->initialize())
 		return false;
 	addElement(tmp);
@@ -70,6 +69,18 @@ bool Rocket::initialize()
 	if (!tmp->initialize())
 		return false;
 
+	over = new SplineEditor(5);
+	spline = over
+		->resetColor()
+		->disableDepthTest()
+		->billboard(vec3(0.0f, 1.0f, 0.0f))
+		->scaled(vec3(0.07f, 0.1f, 0.07f))
+		->scaled(vec3(0.3))
+		->translated(vec3(0.0f, -HEAD_HEIGHT, 0.0f))
+		->scaled(vec3(4.0f))
+		->rotated(vec3(0.0f, 0.0f, 1.0f), 90.0f)
+;
+
 	return true;
 }
 void Rocket::draw(const mat4 &model)
@@ -82,6 +93,9 @@ void Rocket::draw(const mat4 &model)
 	{
 		m = glm::rotate(m, 90.0f, vec3(0.0f,1.0f,0.0f));
 		DrawableGroup::draw(m);
+	}
+	if (editMode) {
+		spline->draw(m);
 	}
 }
 
@@ -108,6 +122,7 @@ void Rocket::takeDown()
 Rocket::~Rocket()
 {
 	delete head;
+	delete spline;
 	list<Drawable *> *elements = getElements();
 	while (elements->size() > 0) {
 		delete elements->back();

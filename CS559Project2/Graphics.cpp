@@ -192,13 +192,9 @@ void Graphics::setupShader(const Shader *s, const mat4 &model) const {
 	mat4 modelview = view * model;
 	//truncModel is the model without translations
 	mat4 truncModel = modelview;
-	truncModel[0][3] = 0.0f;
-	truncModel[1][3] = 0.0f;
-	truncModel[2][3] = 0.0f;
-	truncModel[3][3] = 1.0f;
-	truncModel[3][2] = 0.0f;
-	truncModel[3][1] = 0.0f;
 	truncModel[3][0] = 0.0f;
+	truncModel[3][1] = 0.0f;
+	truncModel[3][2] = 0.0f;
 	vec3 light_pos = vec3(view * vec4(light,1.0f));
 	mat4 mvp = projection * modelview;
 	mat4 tmvp = projection * truncModel;
@@ -209,7 +205,8 @@ void Graphics::setupShader(const Shader *s, const mat4 &model) const {
 	s->commonSetup(time, value_ptr(size), value_ptr(projection),
 		value_ptr(modelview), value_ptr(mvp), value_ptr(tmvp),
 		value_ptr(nm), value_ptr(light_pos), value_ptr(color),
-		value_ptr(vec3(a)), value_ptr(vec3(d)), value_ptr(vec3(this->s)), shiny);
+		value_ptr(vec3(ambient)), value_ptr(vec3(1-ambient)),
+		value_ptr(specularColor), shininess);
 	checkError("Top::Draw - after common setup");
 
 

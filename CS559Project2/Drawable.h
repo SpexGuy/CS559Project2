@@ -25,6 +25,10 @@ public:
 	 * Returns a pointer to the base of the stack */
 	virtual Drawable *scaled(const glm::vec3 &scale);
 	
+	/* pushes a BillboardTransform onto the decorator stack
+	 * Returns a pointer to the base of the stack */
+	virtual Drawable *billboard(const glm::vec3 &axis);
+
 	/* pushes a Rotation onto the decorator stack, then adds
 	 * an animation to the given group
 	 * Returns a pointer to the base of the stack */
@@ -43,7 +47,7 @@ public:
 	
 	/* pushes a Material onto the decorator stack
 	 * Returns a pointer to the base of the stack */
-	virtual Drawable *inMaterial(float a, float d, float s, float shiny);
+	virtual Drawable *inMaterial(const float &ambient, const glm::vec4 &specular, const float &shininess);
 	
 	/* pushes a ColorReset onto the decorator stack
 	 * Returns a pointer to the base of the stack */
@@ -90,6 +94,8 @@ public:
 	virtual Drawable *translated(const glm::vec3 &position);
 	/* pushes a Scale onto the decorator stack */
 	virtual Drawable *scaled(const glm::vec3 &scale);
+	/* pushes a BillboardTransform onto the decorator stack */
+	virtual Drawable *billboard(const glm::vec3 &axis);
 	/* pushes a Rotation onto the decorator stack, then adds an animation to the given group */
 	virtual Drawable *animateRotation(AnimationGroup *ag, TimeFunction<glm::vec3> *axis, TimeFunction<float> *angle);
 	/* pushes a DisableDepthTest onto the decorator stack */
@@ -97,7 +103,7 @@ public:
 	/* pushes a Color onto the decorator stack */
 	virtual Drawable *inColor(glm::vec4 color);
 	/* pushes a Material onto the decorator stack */
-	virtual Drawable *inMaterial(float a, float d, float s, float shiny);
+	virtual Drawable *inMaterial(const float &ambient, const glm::vec4 &specular, const float &shininess);
 	/* pushes a ColorReset onto the decorator stack */
 	virtual Drawable *resetColor();
 	/* pushes a MaterialReset onto the decorator stack */
@@ -174,14 +180,14 @@ class Material : public DrawableDecorator {
 private:
 	Material();
 protected:
-	float a, d, s, shiny;
+	float ambient, shininess;
+	glm::vec4 specularColor;
 public:
-	Material(Drawable *next, const float &a, const float &d, const float &s, const float &shiny) :
+	Material(Drawable *next, const float &ambient, const glm::vec4 &specularColor, const float &shininess) :
 		DrawableDecorator(next),
-		a(a),
-		d(d),
-		s(s),
-		shiny(shiny)
+		ambient(ambient),
+		shininess(shininess),
+		specularColor(specularColor)
 	{}
 	
 	virtual void draw(const glm::mat4 &model);
@@ -206,6 +212,20 @@ public:
 		DrawableDecorator(next)
 	{}
 	
+	virtual void draw(const glm::mat4 &model);
+};
+
+class BillboardTransform : public DrawableDecorator {
+private:
+	BillboardTransform();
+protected:
+	glm::vec3 axis;
+public:
+	BillboardTransform(Drawable *next, const glm::vec3 &axis) :
+		DrawableDecorator(next),
+		axis(glm::normalize(axis))
+	{}
+
 	virtual void draw(const glm::mat4 &model);
 };
 

@@ -5,15 +5,16 @@ layout (location = 0) in vec3 vertex_position;
 uniform mat4 tmvp;
 flat out vec4 fragColor;
 
-/** this function is adapted from http://www.ozone3d.net/blogs/lab/20110427/glsl-random-generator/
- * on StackOverflow.com:
- * http://www.ozone3d.net/blogs/lab/20110427/glsl-random-generator/
+/**
+ * this function is adapted from http://www.ozone3d.net/blogs/lab/20110427/glsl-random-generator/
  */
 float rand(vec3 n)
 {
   return 0.5 + 0.5 * 
      fract(sin(dot(n.xyz, vec3(12.9898, 78.233, 5.989)))* 43758.5453);
 }
+
+
 void main()
 {
 	gl_Position = tmvp * vec4(vertex_position, 1.0);

@@ -30,7 +30,6 @@ public:
 	Window *window;
 	View *view;
 	ViewOverlay *baseOverlay;
-	SplineEditorOverlay *splineOverlay;
 	PerspectiveProjection *proj;
 	FreeFlyCamera *flyCam;
 	SpheroidCamera *cam;
@@ -76,7 +75,6 @@ public:
 
 	int period;
 	bool wireframe;
-	bool editMode;
 	bool flyMode;
 
 	Globals();
@@ -146,7 +144,6 @@ bool Globals::initialize() {
 	flyCam->setPosition(vec3(0.0f, 0.0f, 3.0f));
 	flyCam->setAngle(180.0f);
 	
-	splineOverlay = new SplineEditorOverlay(5);
 	baseOverlay = new ViewOverlay();
 	
 	//setup decorator stack to make rocket move specially
@@ -168,10 +165,10 @@ bool Globals::initialize() {
 					//scale rocket to manageable size
 					->scaled(vec3(0.07f, 0.1f, 0.07f))
 					->inColor(BLUE)
-					->inMaterial(0.1f, 0.9f, 1.0f, 40.0f);
-				
+					->inMaterial(0.1f, vec4(1.0f), 40.0f);
+
 	BoundedSpheroidCamera* bsc = new BoundedSpheroidCamera();
-	chaseCam = bsc
+	chaseCam = bsc					
 		//all rotations of the camera go BACKWARDS
 		->animateRotation(model, yAxis, orbitAngle)
 		//so do translations
@@ -189,11 +186,11 @@ bool Globals::initialize() {
 					//make mars' axis spin
 					->animateRotation(model, yAxis, marsAxisAngle)
 					//tilt mars' axis off of y
-					//->rotated(vec3(1.0f, 0.0f, 0.0f), 15.0f)
+					->rotated(vec3(1.0f, 0.0f, 0.0f), 15.0f)
 					//make mars spin on its axis
-					//->animateRotation(model, yAxis, marsAngle)
+					->animateRotation(model, yAxis, marsAngle)
 					->inColor(MARS)
-					->inMaterial(0.1f, 0.9f, 0.0f, 1.0f);
+					->inMaterial(0.1f, vec4(0.0f), 1.0f);
 	
 	light = new SpheroidLight();
 
@@ -262,24 +259,23 @@ bool Globals::initialize() {
 	if (!starfield->initialize())
 		return false;
 
-	editMode = true;
 	exitEditMode();
 
 	return true;
 }
 
 void Globals::enterEditMode() {
-	if (editMode)
+	if (globals.rocketMesh->getEditMode())
 		return;
-	editMode = true;
-	view->setOverlay(splineOverlay);
+	globals.rocketMesh->setEditMode(true);
+	//view->setOverlay(splineOverlay);
 }
 
 void Globals::exitEditMode() {
-	if (!editMode)
+	if (!globals.rocketMesh->getEditMode())
 		return;
-	editMode = false;
-	view->setOverlay(baseOverlay);
+	globals.rocketMesh->setEditMode(false);
+	//view->setOverlay(baseOverlay);
 }
 
 void Globals::changeCamera()
@@ -315,7 +311,6 @@ void Globals::takeDown() {
 Globals::~Globals() {
 	delete proj;
 	delete flyCam;
-	delete splineOverlay;
 	delete camMars;
 	delete model;
 	delete view;
@@ -378,34 +373,34 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 	bool normals;
 	Drawable *newHead;
 
-	if (globals.editMode) {
+	if (globals.rocketMesh->getEditMode()) {
 		switch(c) {
-		case '4':
-			globals.splineOverlay->moveHorizontal(-0.005f);
-			break;
-		case '6':
-			globals.splineOverlay->moveHorizontal(0.005f);
-			break;
 		case '2':
-			globals.splineOverlay->moveVertical(-0.005f);
+			globals.rocketMesh->getEditor()->moveHorizontal(-0.005f);
 			break;
 		case '8':
-			globals.splineOverlay->moveVertical(0.005f);
+			globals.rocketMesh->getEditor()->moveHorizontal(0.005f);
+			break;
+		case '6':
+			globals.rocketMesh->getEditor()->moveVertical(-0.005f);
+			break;
+		case '4':
+			globals.rocketMesh->getEditor()->moveVertical(0.005f);
 			break;
 		case '7':
-			globals.splineOverlay->addAngle(1);
+			globals.rocketMesh->getEditor()->addAngle(1);
 			break;
 		case '9':
-			globals.splineOverlay->addAngle(-1);
+			globals.rocketMesh->getEditor()->addAngle(-1);
 			break;
 		case '1':
-			globals.splineOverlay->addSize(0.005f);
+			globals.rocketMesh->getEditor()->addSize(0.005f);
 			break;
 		case '3':
-			globals.splineOverlay->addSize(-0.005f);
+			globals.rocketMesh->getEditor()->addSize(-0.005f);
 			break;
 		case '5':
-			globals.splineOverlay->next();
+			globals.rocketMesh->getEditor()->next();
 			break;
 		}
 	}
@@ -454,7 +449,7 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 
 	case '0':
 		globals.enterEditMode();
-		newHead = Mesh::newSurfaceOfRotation(globals.splineOverlay->getSpline(30), 30, true)
+		newHead = Mesh::newSurfaceOfRotation(globals.rocketMesh->getEditor()->getSpline(30), 30, true)
 					->translated(vec3(0.0f, -2.0f, 0.0f))
 					->scaled(vec3(4.0f, 4.0f, 4.0f));
 		newHead->initialize();

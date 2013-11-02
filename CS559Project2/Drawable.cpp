@@ -30,6 +30,10 @@ Drawable *Drawable::scaled(const vec3 &scale) {
 	return d;
 }
 
+Drawable *Drawable::billboard(const vec3 &axis) {
+	return new BillboardTransform(this, axis);
+}
+
 Drawable *Drawable::disableDepthTest() {
 	return new DisableDepthTest(this);
 }
@@ -38,8 +42,8 @@ Drawable *Drawable::inColor(vec4 color) {
 	return new Color(this, color);
 }
 
-Drawable *Drawable::inMaterial(float a, float d, float s, float shiny) {
-	return new Material(this, a, d, s, shiny);
+Drawable *Drawable::inMaterial(const float &a, const vec4 &s, const float &shiny) {
+	return new Material(this, a, s, shiny);
 }
 
 Drawable *Drawable::resetColor() {
@@ -88,6 +92,14 @@ Drawable *DrawableDecorator::scaled(const vec3 &scale) {
 	return this;
 }
 
+Drawable *DrawableDecorator::billboard(const vec3 &axis) {
+	Drawable *d = child->billboard(axis);
+	if (d != child)
+		isTos = false;
+	child = d;
+	return this;
+}
+
 Drawable *DrawableDecorator::animateRotation(AnimationGroup *ag, TimeFunction<vec3> *axis, TimeFunction<float> *angle) {
 	Drawable *d = child->animateRotation(ag, axis, angle);
 	if (d != child)
@@ -112,8 +124,8 @@ Drawable *DrawableDecorator::inColor(vec4 color) {
 	return this;
 }
 
-Drawable *DrawableDecorator::inMaterial(float a, float d, float s, float shiny) {
-	Drawable *dec = child->inMaterial(a, d, s, shiny);
+Drawable *DrawableDecorator::inMaterial(const float &a, const vec4 &s, const float &shiny) {
+	Drawable *dec = child->inMaterial(a, s, shiny);
 	if (dec != child)
 		isTos = false;
 	child = dec;
@@ -230,7 +242,7 @@ void Color::draw(const mat4 &model) {
 }
 
 void Material::draw(const mat4 &model) {
-	Graphics::inst()->setMaterial(a, d, s, shiny);
+	Graphics::inst()->setMaterial(ambient, specularColor, shininess);
 	child->draw(model);
 }
 
@@ -242,9 +254,34 @@ void ColorReset::draw(const mat4 &model) {
 
 void MaterialReset::draw(const mat4 &model) {
 	float a = Graphics::inst()->getAmbient();
-	float d = Graphics::inst()->getDiffuse();
-	float s = Graphics::inst()->getSpecular();
+	vec4 spec = Graphics::inst()->getSpecularColor();
 	float shiny = Graphics::inst()->getShininess();
 	child->draw(model);
-	Graphics::inst()->setMaterial(a, d, s, shiny);
+	Graphics::inst()->setMaterial(a, spec, shiny);
+}
+
+/** this algorithm is adapted from
+ * http://nehe.gamedev.net/article/billboarding_how_to/18011/#5
+ */
+void BillboardTransform::draw(const mat4 &model) {
+	//convert everything to modelspace
+	vec4 cameraPos = inverse(Graphics::inst()->getView()) * vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	vec4 pos = model * vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	vec3 axis = normalize(vec3(model * vec4(this->axis, 0.0f)));
+	
+	//calculate the look vector
+	vec3 look = normalize(vec3(cameraPos-pos));
+	vec3 right = cross(vec3(axis), look);
+	if (right != vec3(0.0f))
+		right = normalize(right);
+	look = cross(right, axis);
+
+	//build a transformation matrix
+	mat4 transform;
+	transform[0] = vec4(right.x, axis.x, look.x, pos.x);
+	transform[1] = vec4(right.y, axis.y, look.y, pos.y);
+	transform[2] = vec4(right.z, axis.z, look.z, pos.z);
+	transform[3] = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	transform = transpose(transform);
+	child->draw(transform);
 }

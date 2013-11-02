@@ -22,7 +22,8 @@ private:
 	glm::ivec2 size;
 	glm::vec3 light;
 	glm::vec4 color;
-	float a, d, s, shiny;
+	glm::vec4 specularColor;
+	float ambient, diffuse, shininess;
 
 	Shader *solidShader;
 
@@ -116,12 +117,11 @@ public:
 	inline void setColor(const glm::vec4 &color) {
 		this->color = color;
 	}
-	inline void setMaterial(const float &a, const float &d, const float &s, const float &shiny) {
-		assert(a+d <= 1);
-		this->a = a;
-		this->d = d;
-		this->s = s;
-		this->shiny = shiny;
+	inline void setMaterial(const float &a, const glm::vec4 &s, const float &shiny) {
+		assert(a <= 1);
+		this->ambient = a;
+		this->specularColor = s;
+		this->shininess = shiny;
 	}
 
 	inline glm::mat4 getProjection() const {
@@ -140,15 +140,15 @@ public:
 		return color;
 	}
 	inline float getAmbient() const {
-		return a;
+		return ambient;
 	}
 	inline float getDiffuse() const {
-		return d;
+		return 1-ambient;
 	}
-	inline float getSpecular() const {
-		return s;
+	inline glm::vec4 getSpecularColor() const {
+		return specularColor;
 	}
 	inline float getShininess() const {
-		return shiny;
+		return shininess;
 	}
 };

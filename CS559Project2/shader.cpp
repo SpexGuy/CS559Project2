@@ -71,7 +71,7 @@ void Shader::commonSetup(const float time, const GLint * size, const GLfloat * p
 		glUniform3fv(this->diffuse_handle, 1, diffuse);
 	this->GLReturnedError("Top::Draw - after diffuse_handle");
 	if (this->specular_handle != BAD_GL_VALUE)
-		glUniform3fv(this->specular_handle, 1, specular);
+		glUniform4fv(this->specular_handle, 1, specular);
 	this->GLReturnedError("Top::Draw - after specular_handle");
 	if (this->shiny_handle != BAD_GL_VALUE)
 		glUniform1f(this->shiny_handle, shiny);
@@ -141,7 +141,7 @@ bool Shader::initialize(char * vertex_shader_file, char * fragment_shader_file)
 	this->color_handle = glGetUniformLocation(this->program_id, (const GLchar *) "color");
 	this->ambient_handle = glGetUniformLocation(this->program_id, (const GLchar *) "ambientScale");
 	this->diffuse_handle = glGetUniformLocation(this->program_id, (const GLchar *) "diffuseScale");
-	this->specular_handle = glGetUniformLocation(this->program_id, (const GLchar *) "specularScale");
+	this->specular_handle = glGetUniformLocation(this->program_id, (const GLchar *) "specularColor");
 	this->shiny_handle = glGetUniformLocation(this->program_id, (const GLchar *) "shininess");
 
 	glUseProgram(0);

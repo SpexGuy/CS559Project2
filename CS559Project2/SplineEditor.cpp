@@ -20,7 +20,7 @@ vec2 getPoint(SplinePoint *before, SplinePoint *after, float t) {
 }
 
 
-SplineEditorOverlay::SplineEditorOverlay(int numPoints) : points(numPoints) {
+SplineEditor::SplineEditor(int numPoints) : points(numPoints) {
 	assert(numPoints >= 2);
 	currentIndex = 0;
 	points[0] = new SplinePoint(vec2(0, 0), 90, 0.1f);
@@ -30,27 +30,29 @@ SplineEditorOverlay::SplineEditorOverlay(int numPoints) : points(numPoints) {
 	points[numPoints - 1] = new SplinePoint(vec2(1, 0), -90, 0.1f);
 }
 
-mat4 SplineEditorOverlay::draw() {
-	setupCamera();
-	mat4 base(1.0f);
-	Graphics *g = Graphics::inst();
-//	g->setColor(BLUE);
-//	g->drawRect2D(base, 0, 0, 1, 1.0f/4);
-	for (unsigned int c = 0; c < points.size(); c++) {
-		drawSplinePoint(base, c);
-	}
-	drawSpline(base);
-	return base;
+bool SplineEditor::initialize() {
+	return true;
 }
 
-void SplineEditorOverlay::drawSplinePoint(const mat4 &base, int index) {
+void SplineEditor::draw(const mat4 &model) {
+	for (unsigned int c = 0; c < points.size(); c++) {
+		drawSplinePoint(model, c);
+	}
+	drawSpline(model);
+}
+
+void SplineEditor::takeDown() {
+}
+
+void SplineEditor::drawSplinePoint(const mat4 &base, int index) {
 	Graphics *g = Graphics::inst();
 	SplinePoint *p = points[index];
 	if (index == currentIndex)
 		g->setColor(YELLOW);
 	else
 		g->setColor(RED);
-	g->drawCircle2D(base, p->position.x, p->position.y, 0.01f);
+	mat4 pos = translate(base, vec3(p->position.x, p->position.y, 0.0f));
+	g->drawCircle2D(pos, 0, 0, 0.01f);
 	vec2 before = p->getBeforePoint();
 	vec2 after = p->getAfterPoint();
 	vec2 offset(0.005f, 0.005f);
@@ -59,7 +61,7 @@ void SplineEditorOverlay::drawSplinePoint(const mat4 &base, int index) {
 	g->drawLine2D(base, before, after);
 }
 
-void SplineEditorOverlay::drawSpline(const mat4 &base) {
+void SplineEditor::drawSpline(const mat4 &base) {
 	Graphics::inst()->setColor(GREEN);
 	int numPoints = 20;
 	vec2 lastPoint;
@@ -75,7 +77,7 @@ void SplineEditorOverlay::drawSpline(const mat4 &base) {
 	}
 }
 
-void SplineEditorOverlay::setupCamera() const {
+void SplineEditor::setupCamera() const {
 	//ivec2 size = Graphics::inst()->getSize();
 	//Graphics::inst()->setProjection(
 	//	ortho(0.0f, 1.0f, 0.0f, float(size.y)/size.x, 0.0f, 1.0f));
@@ -83,20 +85,20 @@ void SplineEditorOverlay::setupCamera() const {
 	//	lookAt(vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f)));
 }
 
-SplinePoint *SplineEditorOverlay::currentPoint() {
+SplinePoint *SplineEditor::currentPoint() {
 	return points[currentIndex];
 }
 
-bool SplineEditorOverlay::isEdgeSelected() {
+bool SplineEditor::isEdgeSelected() {
 	return currentIndex == 0 || currentIndex == points.size()-1;
 }
 
-void SplineEditorOverlay::next() {
+void SplineEditor::next() {
 	currentIndex++;
 	currentIndex %= points.size();
 }
 
-void SplineEditorOverlay::moveVertical(float offset) {
+void SplineEditor::moveVertical(float offset) {
 	if (isEdgeSelected())
 		return;
 	SplinePoint *p = currentPoint();
@@ -106,7 +108,7 @@ void SplineEditorOverlay::moveVertical(float offset) {
 	else if (p->position.y < 0)
 		p->position.y = 0;
 }
-void SplineEditorOverlay::moveHorizontal(float offset) {
+void SplineEditor::moveHorizontal(float offset) {
 	if (isEdgeSelected())
 		return;
 	SplinePoint *p = currentPoint();
@@ -116,7 +118,7 @@ void SplineEditorOverlay::moveHorizontal(float offset) {
 	else if (p->position.x < 0)
 		p->position.x = 0;
 }
-void SplineEditorOverlay::addSize(float offset) {
+void SplineEditor::addSize(float offset) {
 	SplinePoint *p = currentPoint();
 	p->distance += offset;
 	if (p->distance > 0.5)
@@ -124,7 +126,7 @@ void SplineEditorOverlay::addSize(float offset) {
 	else if (p->distance < 0)
 		p->distance = 0;
 }
-void SplineEditorOverlay::addAngle(float offset) {
+void SplineEditor::addAngle(float offset) {
 	if (isEdgeSelected())
 		return;
 	SplinePoint *p = currentPoint();
@@ -132,7 +134,7 @@ void SplineEditorOverlay::addAngle(float offset) {
 	p->angle = fmod(p->angle, 360.0f);
 }
 
-vector<vec2> SplineEditorOverlay::getSpline(int resolution) {
+vector<vec2> SplineEditor::getSpline(int resolution) {
 	vector<vec2> spline;
 	for (uint c = 0; c < points.size()-1; c++) {
 		for (int d = 0; d < resolution; d++) {
@@ -145,7 +147,7 @@ vector<vec2> SplineEditorOverlay::getSpline(int resolution) {
 
 
 
-SplineEditorOverlay::~SplineEditorOverlay() {
+SplineEditor::~SplineEditor() {
 	while(points.size() > 0) {
 		delete points[points.size()-1];
 		points.pop_back();
