@@ -64,8 +64,6 @@ public:
 	TimeFunction<float> *marsAngle;
 	TimeFunction<float> *marsAxisAngle;
 
-	Animation* camMarsAni;
-
 	vector<Camera*> cameras;
 	vector<Camera*> camerasRocket;
 
@@ -107,6 +105,9 @@ bool Globals::initialize() {
 
 	float marsRadius = 1.0f;
 	float marsRadScale = 0.03f;
+	float rocketScale = marsRadius * 0.3f;
+	float distaceRocketMars = marsRadius + 5.0f*marsRadScale;
+
 	period = 1000 / 120;
 
 	proj = new PerspectiveProjection(45.0f);
@@ -119,7 +120,7 @@ bool Globals::initialize() {
 	sphere = Mesh::newSphere(10,10, 1.0f, true);
 	cylinder = Mesh::newCylinder(10,10, 0.5f, 0.1f, true);
 	rocketMesh = new Rocket();
-	rocketMesh->scale(vec3(marsRadius*0.3));
+	rocketMesh->scale(vec3(rocketScale));
 	starfieldMesh = PointMesh::newStarField(5000, 8.0f);
 	starfield = starfieldMesh->disableDepthTest();
 
@@ -131,14 +132,18 @@ bool Globals::initialize() {
 	chaseCamAngle = new LinearTimeFunction(-16.0f/1000.0f, 0.0f);
 	rocketAngle = new LinearTimeFunction(-13.0f/1000.0f, 0.0f);
 
-	camMars = (new PointCamera())
+	camMars = ((new PointCamera()))
 		->animateRotation(model, yAxis, orbitAngle)
-		->translated(vec3(marsRadScale*5.0f + marsRadius,0.0f,0.0f))
+		->translated(vec3(distaceRocketMars - marsRadScale,0.0f,0.0f))
 		->rotated(vec3(0.0f,0.0f,1.0f),-90.0f);
+	camMars->moveUp(-90.0f);
+	camMars->moveRight(180.0f);
+
 	cam = new SpheroidCamera();
 	cam->setRadius(marsRadius*3.0f);
+
 	camRocket = new SpheroidCamera();
-	camRocket->setRadius(marsRadius*0.3f);
+	camRocket->setRadius(rocketScale);
 
 	flyCam = new FreeFlyCamera();
 	flyCam->setPosition(vec3(0.0f, 0.0f, 3.0f));
@@ -156,7 +161,7 @@ bool Globals::initialize() {
 					//make rocket orbt
 					->animateRotation(model, yAxis, orbitAngle)
 					//move rocket out to orbit
-					->translated(vec3((marsRadius + marsRadScale) * 1.5f, 0.0f, 0.0f))
+					->translated(vec3(distaceRocketMars, 0.0f, 0.0f))
 					//make rocket face its direction of motion
 					->rotated(vec3(1.0f, 0.0f, 0.0f), -90.0f)
 					//make rocket spin on its axis
@@ -167,12 +172,13 @@ bool Globals::initialize() {
 					->scaled(vec3(0.07f, 0.1f, 0.07f))
 					->inColor(BLUE)
 					->inMaterial(0.1f, 0.9f, 1.0f, 40.0f);
-					
-	chaseCam = cam
+				
+	BoundedSpheroidCamera* bsc = new BoundedSpheroidCamera();
+	chaseCam = bsc
 		//all rotations of the camera go BACKWARDS
 		->animateRotation(model, yAxis, orbitAngle)
 		//so do translations
-		->translated(vec3(1.3, 0.0f, 0.0f))
+		->translated(vec3(distaceRocketMars, 0.0f, 0.0f))
 		//make the axis face out
 		->rotated(vec3(0.0f, 0.0f, 1.0f), -90.0f);
 
@@ -185,10 +191,10 @@ bool Globals::initialize() {
 					//make mars' axis spin
 					->animateRotation(model, yAxis, marsAxisAngle)
 					//tilt mars' axis off of y
-					->rotated(vec3(1.0f, 0.0f, 0.0f), 15.0f)
+					//->rotated(vec3(1.0f, 0.0f, 0.0f), 15.0f)
 					//make mars spin on its axis
-					->animateRotation(model, yAxis, marsAngle)
-					->inColor(RED)
+					//->animateRotation(model, yAxis, marsAngle)
+					->inColor(MARS)
 					->inMaterial(0.1f, 0.9f, 0.0f, 1.0f);
 	
 	light = new SpheroidLight();
@@ -304,7 +310,7 @@ void Globals::changeCamera()
 	else
 	{
 		Scenes[currentScene]->changeCamera();
-	}
+	} 
 	view->setCamera(Scenes[currentScene]->getCamera());
 	view->setOverlay(Scenes[currentScene]->getOverLay());
 	view->setModel(Scenes[currentScene]->getModel());
@@ -371,17 +377,18 @@ void PassiveMotionFunc(int x, int y) {
 	ivec2 size = Graphics::inst()->getSize();
 	int centerx = size.x/2;
 	int centery = size.y/2;
-
-	if( !globals.Scenes[0]->getCurrentCameraIndex() == 1 || (deltaX == 0 && deltaY == 0) ) return;
+	
+	if(!globals.Scenes[0]->getCurrentCameraIndex() == 1 || (deltaX == 0 && deltaY == 0) ) return;
 
 	globals.flyCam->addAngle(-deltaX/10.0f);
 	globals.flyCam->addAxisAngle(deltaY/10.0f);
 
-	if( x <= 10 || (y) <= 10 || x >= size.x-10 || y >= size.y-10) {
+	if(x <= 10 || (y) <= 10 || x >= size.x-10 || y >= size.y-10) {
 		lastX = centerx;
 		lastY = centery;
 		glutWarpPointer( lastX, lastY );
 	}
+	
 }
 
 void KeyboardFunc(unsigned char c, int x, int y) {
@@ -422,6 +429,13 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 
 	switch (c)
 	{
+	case 'r':
+		globals.flyCam->setPosition(vec3(0.0f, 0.0f, 3.0f));
+		globals.flyCam->setAngle(180.0f);
+		globals.flyCam->setAxisAngle(90.0f);
+
+		break;
+
 	case 'w':
 		globals.wireframe = !globals.wireframe;
 		glPolygonMode(GL_FRONT_AND_BACK, globals.wireframe ? GL_LINE : GL_FILL);
@@ -466,19 +480,6 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 		globals.rocketMesh->replaceHead(newHead);
 		break;
 
-	case 'a':
-		globals.model->clearElements();
-		globals.model->addLight(globals.light);
-		globals.model->addElement(globals.sphere);
-		break;
-
-	case 'r':
-		globals.model->clearElements();
-		globals.model->addLight(globals.light);
-		globals.model->addElement(globals.centeredRocket);
-
-		break;
-
 	case 'x':
 	case 27:
 		glutLeaveMainLoop();
@@ -493,6 +494,7 @@ void SpecialFunc(int c, int x, int y) {
 		{
 			globals.changeCamera();
 		}
+		break;
 
 		case GLUT_KEY_CTRL_R:
 			globals.currentCamera ->moveForward(1.0f);

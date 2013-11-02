@@ -51,8 +51,8 @@ void PointCamera::moveForward(float offset){
 }
 
 void PointCamera::moveRight(float offset){
-	float turn = offset*0.5f;
-	this->addAngle(-turn);
+	float turn = offset;
+	this->addAngle(turn);
 }
 
 void PointCamera::moveUp(float offset){
@@ -111,4 +111,31 @@ void MarsCamera::moveRight(float offset){
 
 void MarsCamera::moveUp(float offset){
 	
+}
+
+
+void BoundedSpheroidCamera::moveForward(float offset){
+}
+
+BoundedSpheroidCamera::BoundedSpheroidCamera(){
+	this->bound = bound;
+}
+
+void BoundedSpheroidCamera::moveRight(float offset){
+	float turn = offset;
+	bound = 90.0f;
+	if((angle+turn) > -bound && (angle+ turn)< bound)
+	{
+		this->addAngle(turn);
+	}
+}
+
+void BoundedSpheroidCamera::moveUp(float offset){
+	float turn = - offset;
+	bound = 25.0f;
+	float a = angle;
+	if((axisAngle +turn) > -180.0f && (axisAngle+ turn)< bound+90.0f)
+	{
+		this->addAxisAngle(turn);
+	}
 }

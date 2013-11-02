@@ -14,6 +14,21 @@ public:
 	void moveUp(float offset);
 };
 
+class BoundedSpheroidCamera : public SpheroidCamera
+{
+public:
+	BoundedSpheroidCamera();
+
+	void moveForward(float offset);
+	void moveRight(float offset);
+	void moveUp(float offset);
+
+private:
+	float bound;
+	float pi;
+	float theta;
+};
+
 class PointCamera : public MoveableCamera, public SphericalAngleMixin {
 public:
 	virtual glm::mat4 generateViewMatrix();
@@ -34,6 +49,8 @@ public:
 	void moveForward(float offset);
 	void moveRight(float offset);
 	void moveUp(float offset);
+
+	void reset();
 	
 	void setPosition(glm::vec3 position);
 

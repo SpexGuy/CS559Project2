@@ -10,6 +10,7 @@
 #define BLUE   vec4(0.0f, 0.0f, 1.0f, 1.0f)
 #define BLACK  vec4(0.0f, 0.0f, 0.0f, 1.0f)
 #define WHITE  vec4(1.0f, 1.0f, 1.0f, 1.0f)
+#define MARS   vec4(1.0f, 0.2f, 0.2f, 1.0f)
 
 /**
  * The Graphics class encapsulates all logic related to drawing 3D shapes
