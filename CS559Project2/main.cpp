@@ -26,6 +26,7 @@ using namespace glm;
 
 class Globals {
 public:
+	char *inFile;
 	Window *window;
 	View *view;
 	ViewOverlay *baseOverlay;
@@ -92,7 +93,17 @@ public:
 	virtual ~Globals();
 } globals;
 
-Globals::Globals() {
+Globals::Globals() {}
+
+void windowReshape(int x, int y);
+void windowClose();
+void windowDisplay();
+void KeyboardFunc(unsigned char c, int x, int y);
+void SpecialFunc(int c, int x, int y);
+void TimerFunc(int value);
+void PassiveMotionFunc(int x, int y);
+
+bool Globals::initialize() {
 
 	float marsRadius = 1.0f;
 	float marsRadScale = 0.03f;
@@ -104,10 +115,11 @@ Globals::Globals() {
 	model = new Model();
 	modelRocket = new Model();
 
-	marsMesh = Mesh::newMars(marsRadius, marsRadScale, "mars_hi_rez.txt", true);
+	marsMesh = Mesh::newMars(marsRadius, marsRadScale, inFile, true);
 	sphere = Mesh::newSphere(10,10, 1.0f, true);
 	cylinder = Mesh::newCylinder(10,10, 0.5f, 0.1f, true);
 	rocketMesh = new Rocket();
+	rocketMesh->scale(vec3(marsRadius*0.3));
 	starfieldMesh = PointMesh::newStarField(5000, 8.0f);
 	starfield = starfieldMesh->disableDepthTest();
 
@@ -126,7 +138,7 @@ Globals::Globals() {
 	cam = new SpheroidCamera();
 	cam->setRadius(marsRadius*3.0f);
 	camRocket = new SpheroidCamera();
-	cam->setRadius(marsRadius*3.0f);
+	camRocket->setRadius(marsRadius*0.3f);
 
 	flyCam = new FreeFlyCamera();
 	flyCam->setPosition(vec3(0.0f, 0.0f, 3.0f));
@@ -198,17 +210,6 @@ Globals::Globals() {
 	view = new View(proj, flyCam, model, baseOverlay);
 	window = new SingleViewportWindow(view);
 	wireframe = false;
-}
-
-void windowReshape(int x, int y);
-void windowClose();
-void windowDisplay();
-void KeyboardFunc(unsigned char c, int x, int y);
-void SpecialFunc(int c, int x, int y);
-void TimerFunc(int value);
-void PassiveMotionFunc(int x, int y);
-
-bool Globals::initialize() {
 	if (!window->initialize("Mars"))
 		return false;
 	glutReshapeFunc(windowReshape);
@@ -251,7 +252,7 @@ bool Globals::initialize() {
 	cameras.push_back(camMars);
 	cameras.push_back(flyCam);
 	cameras.push_back(cam);
-	//cameras.push_back(chaseCam);
+	cameras.push_back(chaseCam);
 	camerasRocket.push_back(camRocket);
 
 	marsScene = new Scene(cameras, model, baseOverlay);
@@ -260,7 +261,6 @@ bool Globals::initialize() {
 	Scenes.push_back(beautyRocket);
 	currentScene = 0;
 	currentCamera = Scenes[0]->getCamera();
-
 
 	return true;
 }
@@ -548,6 +548,15 @@ void windowDisplay() {
 
 int main(int argc, char * argv[]) {
 	glutInit(&argc, argv);
+	if( argc < 2 )
+	{
+		cerr << "Error: Command Line arguments not valid" << endl;
+		return -1;
+	}
+	else
+	{
+		globals.inFile = argv[1];
+	}
 	glutInitWindowSize(1024, 512);
 	glutInitWindowPosition(0, 0);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH);
