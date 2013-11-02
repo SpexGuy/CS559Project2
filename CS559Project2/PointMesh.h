@@ -21,7 +21,7 @@ public:
 	virtual bool initialize();
 
 	//@Override
-	virtual void draw(glm::mat4 model);
+	virtual void draw(const glm::mat4 &model);
 
 	virtual void takeDown();
 
@@ -39,5 +39,5 @@ public:
 	StarField(std::vector<glm::vec3> points) : PointMesh(points) {}
 
 	//@Override
-	virtual void draw(glm::mat4 model);
+	virtual void draw(const glm::mat4 &model);
 };

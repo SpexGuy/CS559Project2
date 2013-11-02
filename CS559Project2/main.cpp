@@ -104,11 +104,11 @@ Globals::Globals() {
 	model = new Model();
 	modelRocket = new Model();
 
-	marsMesh = Mesh::newMars(marsRadius, marsRadScale, "mars_low_rez.txt", true);
+	marsMesh = Mesh::newMars(marsRadius, marsRadScale, "mars_hi_rez.txt", true);
 	sphere = Mesh::newSphere(10,10, 1.0f, true);
 	cylinder = Mesh::newCylinder(10,10, 0.5f, 0.1f, true);
 	rocketMesh = new Rocket();
-	starfieldMesh = PointMesh::newStarField(10000, 8.0f);
+	starfieldMesh = PointMesh::newStarField(5000, 8.0f);
 	starfield = starfieldMesh->disableDepthTest();
 
 	const0 = new ConstantTimeFunction(0.0f);
@@ -153,7 +153,8 @@ Globals::Globals() {
 						->store(centeredRocket)
 					//scale rocket to manageable size
 					->scaled(vec3(0.07f, 0.1f, 0.07f))
-					->inColor(BLUE);
+					->inColor(BLUE)
+					->inMaterial(0.1f, 0.9f, 1.0f, 40.0f);
 					
 	chaseCam = cam
 		//all rotations of the camera go BACKWARDS
@@ -169,16 +170,15 @@ Globals::Globals() {
 
 	//setup decorator stack for mars
 	mars = marsMesh
-					->inColor(RED)
 					//make mars' axis spin
 					->animateRotation(model, yAxis, marsAxisAngle)
 					//tilt mars' axis off of y
 					->rotated(vec3(1.0f, 0.0f, 0.0f), 15.0f)
 					//make mars spin on its axis
-					->animateRotation(model, yAxis, marsAngle);
+					->animateRotation(model, yAxis, marsAngle)
+					->inColor(RED)
+					->inMaterial(0.1f, 0.9f, 0.0f, 1.0f);
 	
-	//cam ->animateRotation(model, yAxis, rocketAngle);
-					
 	light = new SpheroidLight();
 
 	light->setAngle(90);
@@ -386,7 +386,7 @@ void PassiveMotionFunc(int x, int y) {
 
 void KeyboardFunc(unsigned char c, int x, int y) {
 	bool normals;
-	Mesh *newHead;
+	Drawable *newHead;
 
 	if (globals.editMode) {
 		switch(c) {
@@ -459,7 +459,9 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 
 	case '0':
 		globals.enterEditMode();
-		newHead = Mesh::newSurfaceOfRotation(globals.splineOverlay->getSpline(30), 30, true);
+		newHead = Mesh::newSurfaceOfRotation(globals.splineOverlay->getSpline(30), 30, true)
+					->translated(vec3(0.0f, -2.0f, 0.0f))
+					->scaled(vec3(4.0f, 4.0f, 4.0f));
 		newHead->initialize();
 		globals.rocketMesh->replaceHead(newHead);
 		break;

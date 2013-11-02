@@ -34,8 +34,8 @@ mat4 SplineEditorOverlay::draw() {
 	setupCamera();
 	mat4 base(1.0f);
 	Graphics *g = Graphics::inst();
-	g->setColor(BLUE);
-	g->drawRect2D(base, 0, 0, 1, 1.0f/4);
+//	g->setColor(BLUE);
+//	g->drawRect2D(base, 0, 0, 1, 1.0f/4);
 	for (unsigned int c = 0; c < points.size(); c++) {
 		drawSplinePoint(base, c);
 	}
@@ -76,11 +76,11 @@ void SplineEditorOverlay::drawSpline(const mat4 &base) {
 }
 
 void SplineEditorOverlay::setupCamera() const {
-	ivec2 size = Graphics::inst()->getSize();
-	Graphics::inst()->setProjection(
-		ortho(0.0f, 1.0f, 0.0f, float(size.y)/size.x, 0.0f, 1.0f));
-	Graphics::inst()->setView(
-		lookAt(vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f)));
+	//ivec2 size = Graphics::inst()->getSize();
+	//Graphics::inst()->setProjection(
+	//	ortho(0.0f, 1.0f, 0.0f, float(size.y)/size.x, 0.0f, 1.0f));
+	//Graphics::inst()->setView(
+	//	lookAt(vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f)));
 }
 
 SplinePoint *SplineEditorOverlay::currentPoint() {

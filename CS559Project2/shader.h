@@ -24,8 +24,9 @@ class Shader
 public:
 	void use() const;
 	virtual void customSetup() const;
-	void commonSetup(const float time, const GLint * size, const GLfloat * projection, const GLfloat * modelview, const GLfloat * mvp, 
-					const GLfloat *tmvp, const GLfloat * nm, const GLfloat * light, const GLfloat * color) const;
+	void commonSetup(const float time, const GLint *size, const GLfloat *projection, const GLfloat *modelview, const GLfloat *mvp, 
+					const GLfloat *tmvp, const GLfloat *nm, const GLfloat *light, const GLfloat *color,
+					const GLfloat *ambient, const GLfloat *diffuse, const GLfloat *specular, const float shiny) const;
 
 	std::stringstream getShaderLog(GLuint shader_id);
 
@@ -41,6 +42,10 @@ protected:
 	GLuint time_handle;
 	GLuint light_handle;
 	GLuint color_handle;
+	GLuint ambient_handle;
+	GLuint diffuse_handle;
+	GLuint specular_handle;
+	GLuint shiny_handle;
 
 	GLuint vertex_shader_id;
 	GLuint fragment_shader_id;

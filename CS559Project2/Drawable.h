@@ -41,6 +41,18 @@ public:
 	 * Returns a pointer to the base of the stack */
 	virtual Drawable *inColor(glm::vec4 color);
 	
+	/* pushes a Material onto the decorator stack
+	 * Returns a pointer to the base of the stack */
+	virtual Drawable *inMaterial(float a, float d, float s, float shiny);
+	
+	/* pushes a ColorReset onto the decorator stack
+	 * Returns a pointer to the base of the stack */
+	virtual Drawable *resetColor();
+
+	/* pushes a MaterialReset onto the decorator stack
+	 * Returns a pointer to the base of the stack */
+	virtual Drawable *resetMaterial();
+
 	/* stores the current top of the decorator stack in the bucket */
 	virtual Drawable *store(Drawable *&bucket);
 
@@ -48,9 +60,8 @@ public:
 	 * Returns whether it was successful*/
 	virtual bool initialize() = 0;
 
-	/* Draws the object.  Context is passed by value to avoid
-	 * changes propagating up the call stack */
-	virtual void draw(glm::mat4 model) = 0;
+	/* Draws the object. */
+	virtual void draw(const glm::mat4 &model) = 0;
 
 	/* frees any GL handles still active */
 	virtual void takeDown() = 0;
@@ -85,6 +96,13 @@ public:
 	virtual Drawable *disableDepthTest();
 	/* pushes a Color onto the decorator stack */
 	virtual Drawable *inColor(glm::vec4 color);
+	/* pushes a Material onto the decorator stack */
+	virtual Drawable *inMaterial(float a, float d, float s, float shiny);
+	/* pushes a ColorReset onto the decorator stack */
+	virtual Drawable *resetColor();
+	/* pushes a MaterialReset onto the decorator stack */
+	virtual Drawable *resetMaterial();
+	
 
 	/* stores the current top of the decorator stack in the bucket */
 	virtual Drawable *store(Drawable *&bucket);
@@ -110,7 +128,7 @@ public:
 	virtual bool initialize();
 
 	/* draws all drawables in the list */
-	virtual void draw(glm::mat4 model);
+	virtual void draw(const glm::mat4 &model);
 
 	virtual void takeDown();
 
@@ -135,7 +153,7 @@ public:
 	DisableDepthTest(Drawable *child) :
 		DrawableDecorator(child) {}
 	
-	virtual void draw(glm::mat4 model);
+	virtual void draw(const glm::mat4 &model);
 };
 
 class Color : public DrawableDecorator {
@@ -149,5 +167,45 @@ public:
 		color(color)
 	{}
 	
-	virtual void draw(glm::mat4 model);
+	virtual void draw(const glm::mat4 &model);
 };
+
+class Material : public DrawableDecorator {
+private:
+	Material();
+protected:
+	float a, d, s, shiny;
+public:
+	Material(Drawable *next, const float &a, const float &d, const float &s, const float &shiny) :
+		DrawableDecorator(next),
+		a(a),
+		d(d),
+		s(s),
+		shiny(shiny)
+	{}
+	
+	virtual void draw(const glm::mat4 &model);
+};
+
+class ColorReset : public DrawableDecorator {
+private:
+	ColorReset();
+public:
+	ColorReset(Drawable *next) :
+		DrawableDecorator(next)
+	{}
+	
+	virtual void draw(const glm::mat4 &model);
+};
+
+class MaterialReset : public DrawableDecorator {
+private:
+	MaterialReset();
+public:
+	MaterialReset(Drawable *next) :
+		DrawableDecorator(next)
+	{}
+	
+	virtual void draw(const glm::mat4 &model);
+};
+

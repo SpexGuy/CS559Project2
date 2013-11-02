@@ -10,7 +10,8 @@ void TransformableMixin::transform(mat4 & context) const {
 	ScaleableMixin::transform(context);
 }
 
-void TransformableGroup::draw(mat4 model) {
-	transform(model);
-	DrawableGroup::draw(model);
+void TransformableGroup::draw(const mat4 &model) {
+	mat4 m = model;
+	transform(m);
+	DrawableGroup::draw(m);
 }

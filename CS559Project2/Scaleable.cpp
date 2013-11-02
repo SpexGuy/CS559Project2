@@ -22,9 +22,10 @@ void ScaleableMixin::transform(glm::mat4 & context) const {
 
 
 
-void Scale::draw(mat4 model) {
-	transform(model);
-	child->draw(model);
+void Scale::draw(const mat4 &model) {
+	mat4 m = model;
+	transform(m);
+	child->draw(m);
 }
 
 

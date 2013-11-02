@@ -288,16 +288,17 @@ bool Mesh::initialize() {
 	return true;
 }
 
-void Mesh::draw(mat4 model) {
+void Mesh::draw(const mat4 &model) {
 	if (checkError("Mesh::Draw - on entry"))
 		return;
 
-	transform(model);
+	mat4 m = model;
+	transform(m);
 
-	Graphics::inst()->drawTriangles(trigs, vertex_array_handle, shader, model);
+	Graphics::inst()->drawTriangles(trigs, vertex_array_handle, shader, m);
 
 	if(drawNormals) {
-		Graphics::inst()->drawLines(normSegs, normal_array_handle, solidShader, model);
+		Graphics::inst()->drawLines(normSegs, normal_array_handle, solidShader, m);
 		if (checkError("Mesh::draw - on exit"))
 			return;
 	}

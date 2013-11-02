@@ -31,9 +31,10 @@ bool PointMesh::initialize() {
 	return true;
 }
 
-void PointMesh::draw(mat4 model) {
-	transform(model);
-	Graphics::inst()->drawPoints(indexMask, vertex_array_handle, starShader, model);
+void PointMesh::draw(const mat4 &model) {
+	mat4 m = model;
+	transform(m);
+	Graphics::inst()->drawPoints(indexMask, vertex_array_handle, starShader, m);
 }
 
 void PointMesh::takeDown() {
@@ -72,7 +73,7 @@ PointMesh *PointMesh::newStarField(int numPoints, float radius) {
 	return new StarField(points);
 }
 
-void StarField::draw(mat4 model) {
+void StarField::draw(const mat4 &model) {
 //	glDisable(GL_DEPTH_TEST);
 //	mat4 oldProj = Graphics::inst()->getProjection();
 //	ivec2 size = Graphics::inst()->getSize();

@@ -33,7 +33,7 @@ private:
 public:
 	Scale(Drawable *child) :
 		DrawableDecorator(child) {}
-	virtual void draw(glm::mat4 model);
+	virtual void draw(const glm::mat4 &model);
 };
 
 class CamScale : public ScaleableMixin, public CameraDecorator {

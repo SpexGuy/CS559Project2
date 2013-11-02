@@ -26,9 +26,10 @@ vec3 TranslatableMixin::position() const {
 
 
 
-void Translation::draw(mat4 model) {
-	transform(model);
-	child->draw(model);
+void Translation::draw(const mat4 &model) {
+	mat4 m = model;
+	transform(m);
+	child->draw(m);
 }
 
 

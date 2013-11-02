@@ -1,13 +1,5 @@
-/*	Perry Kivolowitz - University of Wisconsin - Madison 
-	Computer Sciences Department
-
-	A sample hello world like program demonstrating modern
-	OpenGL techniques. 
-
-	Created:	2/25/13
-	Updates:
-*/
-
+/* This class was based on an example by Perry Kivolowitz.
+ */
 #include "Shader.h"
 #include <assert.h>
 
@@ -27,6 +19,10 @@ Shader::Shader()
 	this->size_handle = BAD_GL_VALUE;
 	this->light_handle = BAD_GL_VALUE;
 	this->color_handle = BAD_GL_VALUE;
+	this->ambient_handle = BAD_GL_VALUE;
+	this->diffuse_handle = BAD_GL_VALUE;
+	this->specular_handle = BAD_GL_VALUE;
+	this->shiny_handle = BAD_GL_VALUE;
 
 }
 
@@ -38,7 +34,8 @@ Shader::Shader()
 */
 
 void Shader::commonSetup(const float time, const GLint * size, const GLfloat * projection, const GLfloat * modelview,
-						 const GLfloat * mvp, const GLfloat *tmvp, const GLfloat * nm, const GLfloat * light, const GLfloat * color) const
+						 const GLfloat * mvp, const GLfloat *tmvp, const GLfloat * nm, const GLfloat * light, const GLfloat * color,
+						 const GLfloat *ambient, const GLfloat *diffuse, const GLfloat *specular, const float shiny) const
 {
 	if (this->time_handle != BAD_GL_VALUE)
 		glUniform1f(this->time_handle, time);
@@ -67,6 +64,18 @@ void Shader::commonSetup(const float time, const GLint * size, const GLfloat * p
 	if (this->color_handle != BAD_GL_VALUE)
 		glUniform4fv(this->color_handle, 1, color);
 	this->GLReturnedError("Top::Draw - after color_handle");
+	if (this->ambient_handle != BAD_GL_VALUE)
+		glUniform3fv(this->ambient_handle, 1, ambient);
+	this->GLReturnedError("Top::Draw - after ambient_handle");
+	if (this->diffuse_handle != BAD_GL_VALUE)
+		glUniform3fv(this->diffuse_handle, 1, diffuse);
+	this->GLReturnedError("Top::Draw - after diffuse_handle");
+	if (this->specular_handle != BAD_GL_VALUE)
+		glUniform3fv(this->specular_handle, 1, specular);
+	this->GLReturnedError("Top::Draw - after specular_handle");
+	if (this->shiny_handle != BAD_GL_VALUE)
+		glUniform1f(this->shiny_handle, shiny);
+	this->GLReturnedError("Top::Draw - after shiny_handle");
 
 }
 
@@ -130,6 +139,10 @@ bool Shader::initialize(char * vertex_shader_file, char * fragment_shader_file)
 	this->time_handle = glGetUniformLocation(this->program_id, (const GLchar *) "time");
 	this->light_handle = glGetUniformLocation(this->program_id, (const GLchar *) "light_position");
 	this->color_handle = glGetUniformLocation(this->program_id, (const GLchar *) "color");
+	this->ambient_handle = glGetUniformLocation(this->program_id, (const GLchar *) "ambientScale");
+	this->diffuse_handle = glGetUniformLocation(this->program_id, (const GLchar *) "diffuseScale");
+	this->specular_handle = glGetUniformLocation(this->program_id, (const GLchar *) "specularScale");
+	this->shiny_handle = glGetUniformLocation(this->program_id, (const GLchar *) "shininess");
 
 	glUseProgram(0);
 

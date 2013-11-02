@@ -38,6 +38,18 @@ Drawable *Drawable::inColor(vec4 color) {
 	return new Color(this, color);
 }
 
+Drawable *Drawable::inMaterial(float a, float d, float s, float shiny) {
+	return new Material(this, a, d, s, shiny);
+}
+
+Drawable *Drawable::resetColor() {
+	return new ColorReset(this);
+}
+
+Drawable *Drawable::resetMaterial() {
+	return new MaterialReset(this);
+}
+
 Drawable *Drawable::animateRotation(AnimationGroup *ag, TimeFunction<glm::vec3> *axis, TimeFunction<float> *angle) {
 	Rotation *d = new Rotation(this);
 	ag->addAnimation(new RotationAnimation(d, axis, angle));
@@ -100,6 +112,30 @@ Drawable *DrawableDecorator::inColor(vec4 color) {
 	return this;
 }
 
+Drawable *DrawableDecorator::inMaterial(float a, float d, float s, float shiny) {
+	Drawable *dec = child->inMaterial(a, d, s, shiny);
+	if (dec != child)
+		isTos = false;
+	child = dec;
+	return this;
+}
+
+Drawable *DrawableDecorator::resetColor() {
+	Drawable *d = child->resetColor();
+	if (d != child)
+		isTos = false;
+	child = d;
+	return this;
+}
+
+Drawable *DrawableDecorator::resetMaterial() {
+	Drawable *d = child->resetMaterial();
+	if (d != child)
+		isTos = false;
+	child = d;
+	return this;
+}
+
 Drawable *DrawableDecorator::store(Drawable *&bucket) {
 	if (isTos) {
 		bucket = this;
@@ -128,7 +164,7 @@ DrawableGroup::DrawableGroup() {
 	elements = list<Drawable*>();
 }
 
-void DrawableGroup::draw(mat4 model) {
+void DrawableGroup::draw(const mat4 &model) {
 	for (
 		list<Drawable*>::const_iterator
 			iterator = elements.begin(),
@@ -182,13 +218,33 @@ list<Drawable *> *DrawableGroup::getElements() {
 	return &elements;
 }
 
-void DisableDepthTest::draw(mat4 model) {
+void DisableDepthTest::draw(const mat4 &model) {
 	glDisable(GL_DEPTH_TEST);
 	child->draw(model);
 	glEnable(GL_DEPTH_TEST);
 }
 
-void Color::draw(mat4 model) {
+void Color::draw(const mat4 &model) {
 	Graphics::inst()->setColor(color);
 	child->draw(model);
+}
+
+void Material::draw(const mat4 &model) {
+	Graphics::inst()->setMaterial(a, d, s, shiny);
+	child->draw(model);
+}
+
+void ColorReset::draw(const mat4 &model) {
+	vec4 color = Graphics::inst()->getColor();
+	child->draw(model);
+	Graphics::inst()->setColor(color);
+}
+
+void MaterialReset::draw(const mat4 &model) {
+	float a = Graphics::inst()->getAmbient();
+	float d = Graphics::inst()->getDiffuse();
+	float s = Graphics::inst()->getSpecular();
+	float shiny = Graphics::inst()->getShininess();
+	child->draw(model);
+	Graphics::inst()->setMaterial(a, d, s, shiny);
 }

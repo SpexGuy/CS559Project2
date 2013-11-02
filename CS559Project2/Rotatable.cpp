@@ -24,9 +24,10 @@ void RotatableMixin::setRotation(const vec3 &axis, const float &angle) {
 
 
 
-void Rotation::draw(mat4 model) {
-	transform(model);
-	child->draw(model);
+void Rotation::draw(const mat4 &model) {
+	mat4 m = model;
+	transform(m);
+	child->draw(m);
 }
 
 

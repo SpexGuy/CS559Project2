@@ -11,17 +11,17 @@ public:
 	 */
 	Rocket();
 	virtual bool initialize();
-	virtual void draw(glm::mat4 model);
+	virtual void draw(const glm::mat4 &model);
 	virtual void takeDown();
 
 	/**
 	 *	Replaces the Head of the rocket with a new Mesh.
 	 */
-	void replaceHead(Mesh *newHead);
+	void replaceHead(Drawable *newHead);
  	~Rocket();	
 
 protected:
-	Mesh* head;
+	Drawable* head;
 	int stacks;
 	int slices;
 	float radius;

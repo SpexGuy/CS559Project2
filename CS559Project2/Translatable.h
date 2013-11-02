@@ -36,7 +36,7 @@ private:
 public:
 	Translation(Drawable *child) :
 		DrawableDecorator(child) {}
-	virtual void draw(glm::mat4 model);
+	virtual void draw(const glm::mat4 &model);
 };
 
 class CamTranslation : public TranslatableMixin, public CameraDecorator {
