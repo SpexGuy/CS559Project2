@@ -19,6 +19,8 @@ View::View(Projection *p, Camera *c, Model *m, ViewOverlay *o) {
 	overlay = o;
 }
 
+View::View(){};
+
 void View::render() {
 	this->setupCamera();
 	mat4 context = mat4(1.0f);

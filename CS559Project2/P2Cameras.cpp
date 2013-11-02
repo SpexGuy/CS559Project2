@@ -52,7 +52,7 @@ void PointCamera::moveForward(float offset){
 
 void PointCamera::moveRight(float offset){
 	float turn = offset;
-	this->addAngle(turn);
+	this->addAngle(-turn);
 }
 
 void PointCamera::moveUp(float offset){
@@ -91,28 +91,6 @@ mat4 FreeFlyCamera::generateViewMatrix() {
 			 cos(angle * M_PI / 180.0f) * sin(axisAngle * M_PI / 180.0f)),
 		vec3(0.0f, 1.0f, 0.0f));
 }
-
-mat4 MarsCamera::generateViewMatrix()
-{
-	mat4 view =  lookAt(
-		vec3(radius, 0.0f, 0.0f),
-		vec3(-radius, 0.0f, 2.0f),
-		vec3(1.0f, 0.0f, 0.0f));
-	return glm::rotate(view, this->angle, this->axis);
-}
-
-void MarsCamera::moveForward(float offset){
-	//empty method, camera is kept at constant radius
-}
-
-void MarsCamera::moveRight(float offset){
-
-}
-
-void MarsCamera::moveUp(float offset){
-	
-}
-
 
 void BoundedSpheroidCamera::moveForward(float offset){
 }

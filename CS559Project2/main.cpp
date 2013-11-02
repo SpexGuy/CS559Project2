@@ -69,7 +69,6 @@ public:
 
 	vector<Scene*> Scenes;
 
-
 	Scene *beautyRocket;
 	Scene *marsScene;
 
@@ -84,8 +83,6 @@ public:
 	bool initialize();
 	void enterEditMode();
 	void exitEditMode();
-	void enterFreeflyMode();
-	void exitFreeflyMode();
 	void changeCamera();
 	void takeDown();
 	virtual ~Globals();
@@ -180,6 +177,7 @@ bool Globals::initialize() {
 		//so do translations
 		->translated(vec3(distaceRocketMars, 0.0f, 0.0f))
 		//make the axis face out
+		->scaled(vec3(rocketScale))
 		->rotated(vec3(0.0f, 0.0f, 1.0f), -90.0f);
 
 	//mars must spin twice as fast since its axis is spinning in the opposite direction.
@@ -213,7 +211,21 @@ bool Globals::initialize() {
 	modelRocket->addLight(light);
 	modelRocket->addElement(centeredRocket);
 
-	view = new View(proj, flyCam, model, baseOverlay);
+	cameras.push_back(camMars);
+	cameras.push_back(flyCam);
+	cameras.push_back(cam);
+	cameras.push_back(chaseCam);
+	camerasRocket.push_back(camRocket);
+
+	marsScene = new Scene(cameras, model, baseOverlay);
+	beautyRocket = new Scene(camerasRocket, modelRocket, baseOverlay);
+	Scenes.push_back(marsScene);
+	Scenes.push_back(beautyRocket);
+	currentScene = 0;
+	currentCamera = Scenes[0]->getCamera();
+
+	view = new View(proj, currentCamera, model, baseOverlay);
+
 	window = new SingleViewportWindow(view);
 	wireframe = false;
 	if (!window->initialize("Mars"))
@@ -251,22 +263,7 @@ bool Globals::initialize() {
 		return false;
 
 	editMode = true;
-	flyMode = true;
-	exitFreeflyMode();
 	exitEditMode();
-
-	cameras.push_back(camMars);
-	cameras.push_back(flyCam);
-	cameras.push_back(cam);
-	cameras.push_back(chaseCam);
-	camerasRocket.push_back(camRocket);
-
-	marsScene = new Scene(cameras, model, baseOverlay);
-	beautyRocket = new Scene(camerasRocket, modelRocket, baseOverlay);
-	Scenes.push_back(marsScene);
-	Scenes.push_back(beautyRocket);
-	currentScene = 0;
-	currentCamera = Scenes[0]->getCamera();
 
 	return true;
 }
@@ -283,20 +280,6 @@ void Globals::exitEditMode() {
 		return;
 	editMode = false;
 	view->setOverlay(baseOverlay);
-}
-
-void Globals::enterFreeflyMode() {
-	if (flyMode)
-		return;
-	flyMode = true;
-	view->setCamera(flyCam);
-}
-
-void Globals::exitFreeflyMode() {
-	if (!flyMode)
-		return;
-	flyMode = false;
-	view->setCamera(camMars);
 }
 
 void Globals::changeCamera()
@@ -444,8 +427,6 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 	case 'n':
 		normals = !globals.marsMesh->isDrawingNormals();
 		globals.marsMesh->setDrawNormals(normals);
-		globals.cylinder->setDrawNormals(normals);
-		globals.sphere->setDrawNormals(normals);
 		break;
 
 	case 'p':

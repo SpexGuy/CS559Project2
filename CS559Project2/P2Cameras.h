@@ -56,22 +56,3 @@ public:
 
 	virtual glm::mat4 generateViewMatrix();
 };
-
-/**
- * MarsCamera is a special camera that can be animated to rotate around
- * a point at a certain radius 
- */
-class MarsCamera : public MoveableCamera, public RotatableMixin {
-private:
-		MarsCamera();
-protected:
-	float radius;
-public:
-	MarsCamera(float radius) : MoveableCamera(), radius(radius) {}
-	
-	void moveForward(float offset);
-	void moveRight(float offset);
-	void moveUp(float offset);
-
-	virtual glm::mat4 generateViewMatrix();
-};
