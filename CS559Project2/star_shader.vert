@@ -2,7 +2,7 @@
 
 layout (location = 0) in vec3 vertex_position;
 
-uniform mat4 tmvp;
+uniform mat4 mvp;
 flat out vec4 fragColor;
 
 /**
@@ -17,7 +17,7 @@ float rand(vec3 n)
 
 void main()
 {
-	gl_Position = tmvp * vec4(vertex_position, 1.0);
+	gl_Position = mvp * vec4(vertex_position, 1.0);
 	
 	float a = rand(vertex_position.xyz);
 

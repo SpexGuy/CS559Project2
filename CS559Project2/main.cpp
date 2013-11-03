@@ -35,6 +35,8 @@ public:
 	SpheroidCamera *cam;
 	Camera *camMars;
 	SpheroidCamera *camRocket;
+	SpheroidCamera *camStars;
+
 	Camera *currentCamera;
 
 	Camera *chaseCam;
@@ -42,6 +44,7 @@ public:
 	SpheroidLight *camLight;
 	Model *model;
 	Model *modelRocket;
+	Model *modelStars;
 	Mesh *marsMesh;
 	Mesh *cylinder;
 	Mesh *sphere;
@@ -65,11 +68,13 @@ public:
 
 	vector<Camera*> cameras;
 	vector<Camera*> camerasRocket;
+	vector<Camera*> camerasStars;
 
 	vector<Scene*> Scenes;
 
 	Scene *beautyRocket;
 	Scene *marsScene;
+	Scene *starScene;
 
 	int currentScene;
 
@@ -110,6 +115,7 @@ bool Globals::initialize() {
 
 	model = new Model();
 	modelRocket = new Model();
+	modelStars = new Model();
 
 	marsMesh = Mesh::newMars(marsRadius, marsRadScale, inFile, true);
 	sphere = Mesh::newSphere(10,10, 1.0f, true);
@@ -117,7 +123,9 @@ bool Globals::initialize() {
 	rocketMesh = new Rocket();
 	rocketMesh->scale(vec3(rocketScale));
 	starfieldMesh = PointMesh::newStarField(5000, 8.0f);
-	starfield = starfieldMesh->disableDepthTest();
+	starfield = starfieldMesh
+					->disableDepthTest()
+					->useMVMode(MV_ROTATION);
 
 	const0 = new ConstantTimeFunction(0.0f);
 	const1 = new ConstantTimeFunction(1.0f);
@@ -139,6 +147,9 @@ bool Globals::initialize() {
 
 	camRocket = new SpheroidCamera();
 	camRocket->setRadius(rocketScale);
+
+	camStars = new SpheroidCamera();
+	camStars->setRadius(16.0f);
 
 	flyCam = new FreeFlyCamera();
 	flyCam->setPosition(vec3(0.0f, 0.0f, 3.0f));
@@ -208,16 +219,22 @@ bool Globals::initialize() {
 	modelRocket->addLight(light);
 	modelRocket->addElement(centeredRocket);
 
+	modelStars->addElement(starfieldMesh);
+
 	cameras.push_back(camMars);
 	cameras.push_back(flyCam);
 	cameras.push_back(cam);
 	cameras.push_back(chaseCam);
 	camerasRocket.push_back(camRocket);
+	camerasStars.push_back(camStars);
 
 	marsScene = new Scene(cameras, model, baseOverlay);
 	beautyRocket = new Scene(camerasRocket, modelRocket, baseOverlay);
+	starScene = new Scene(camerasStars, modelStars, baseOverlay);
+
 	Scenes.push_back(marsScene);
 	Scenes.push_back(beautyRocket);
+	Scenes.push_back(starScene);
 	currentScene = 0;
 	currentCamera = Scenes[0]->getCamera();
 

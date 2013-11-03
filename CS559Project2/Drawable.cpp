@@ -54,6 +54,10 @@ Drawable *Drawable::resetMaterial() {
 	return new MaterialReset(this);
 }
 
+Drawable *Drawable::useMVMode(int mode) {
+	return new ModelviewMode(this, mode);
+}
+
 Drawable *Drawable::animateRotation(AnimationGroup *ag, TimeFunction<glm::vec3> *axis, TimeFunction<float> *angle) {
 	Rotation *d = new Rotation(this);
 	ag->addAnimation(new RotationAnimation(d, axis, angle));
@@ -142,6 +146,14 @@ Drawable *DrawableDecorator::resetColor() {
 
 Drawable *DrawableDecorator::resetMaterial() {
 	Drawable *d = child->resetMaterial();
+	if (d != child)
+		isTos = false;
+	child = d;
+	return this;
+}
+
+Drawable *DrawableDecorator::useMVMode(int mode) {
+	Drawable *d = child->useMVMode(mode);
 	if (d != child)
 		isTos = false;
 	child = d;
@@ -269,12 +281,12 @@ void BillboardTransform::draw(const mat4 &model) {
 	vec4 pos = model * vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	vec3 axis = normalize(vec3(model * vec4(this->axis, 0.0f)));
 	
-	//calculate the look vector
-	vec3 look = normalize(vec3(cameraPos-pos));
-	vec3 right = cross(vec3(axis), look);
-	if (right != vec3(0.0f))
+	//find the appropriate orthogonal basis
+	vec3 look = normalize(vec3(cameraPos-pos));	//calculate the look vector
+	vec3 right = cross(vec3(axis), look);	//right = up x look
+	if (right != vec3(0.0f))				//handle special case: up = look
 		right = normalize(right);
-	look = cross(right, axis);
+	look = cross(right, axis);				//calculate the orthogonal look vector
 
 	//build a transformation matrix
 	mat4 transform;
@@ -283,5 +295,13 @@ void BillboardTransform::draw(const mat4 &model) {
 	transform[2] = vec4(right.z, axis.z, look.z, pos.z);
 	transform[3] = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	transform = transpose(transform);
+	//transform inherits information from model, and therefore supercedes it
 	child->draw(transform);
+}
+
+void ModelviewMode::draw(const mat4 &model) {
+	int oldMode = Graphics::inst()->getModelviewMode();
+	Graphics::inst()->setModelviewMode(mode);
+	child->draw(model);
+	Graphics::inst()->setModelviewMode(oldMode);
 }

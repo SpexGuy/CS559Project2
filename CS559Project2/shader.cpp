@@ -34,7 +34,7 @@ Shader::Shader()
 */
 
 void Shader::commonSetup(const float time, const GLint * size, const GLfloat * projection, const GLfloat * modelview,
-						 const GLfloat * mvp, const GLfloat *tmvp, const GLfloat * nm, const GLfloat * light, const GLfloat * color,
+						 const GLfloat * mvp, const GLfloat * nm, const GLfloat * light, const GLfloat * color,
 						 const GLfloat *ambient, const GLfloat *diffuse, const GLfloat *specular, const float shiny) const
 {
 	if (this->time_handle != BAD_GL_VALUE)
@@ -52,9 +52,6 @@ void Shader::commonSetup(const float time, const GLint * size, const GLfloat * p
 	if (this->mvp_handle != BAD_GL_VALUE)
 		glUniformMatrix4fv(this->mvp_handle, 1, GL_FALSE, mvp);
 	this->GLReturnedError("Top::Draw - after mvp_handle");
-	if (this->tmvp_handle != BAD_GL_VALUE)
-		glUniformMatrix4fv(this->tmvp_handle, 1, GL_FALSE, tmvp);
-	this->GLReturnedError("Top::Draw - after tmvp_handle");
 	if (this->normal_matrix_handle != BAD_GL_VALUE)
 		glUniformMatrix3fv(this->normal_matrix_handle, 1, GL_FALSE, nm);
 	this->GLReturnedError("Top::Draw - after normal_matrix_handle");
@@ -134,7 +131,6 @@ bool Shader::initialize(char * vertex_shader_file, char * fragment_shader_file)
 	this->projection_matrix_handle = glGetUniformLocation(this->program_id, (const GLchar *) "projection_matrix");
 	this->normal_matrix_handle = glGetUniformLocation(this->program_id, (const GLchar *) "normal_matrix");
 	this->mvp_handle = glGetUniformLocation(this->program_id, (const GLchar *) "mvp");
-	this->tmvp_handle = glGetUniformLocation(this->program_id, (const GLchar *) "tmvp");
 	this->size_handle = glGetUniformLocation(this->program_id, (const GLchar *) "size");
 	this->time_handle = glGetUniformLocation(this->program_id, (const GLchar *) "time");
 	this->light_handle = glGetUniformLocation(this->program_id, (const GLchar *) "light_position");

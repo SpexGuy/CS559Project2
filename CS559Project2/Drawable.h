@@ -57,6 +57,10 @@ public:
 	 * Returns a pointer to the base of the stack */
 	virtual Drawable *resetMaterial();
 
+	/* pushes a ModelviewMode onto the decorator stack
+	 * Returns a pointer to the base of the stack */
+	virtual Drawable *useMVMode(int mode);
+
 	/* stores the current top of the decorator stack in the bucket */
 	virtual Drawable *store(Drawable *&bucket);
 
@@ -108,7 +112,8 @@ public:
 	virtual Drawable *resetColor();
 	/* pushes a MaterialReset onto the decorator stack */
 	virtual Drawable *resetMaterial();
-	
+	/* pushes a ModelviewMode onto the decorator stack */
+	virtual Drawable *useMVMode(int mode);
 
 	/* stores the current top of the decorator stack in the bucket */
 	virtual Drawable *store(Drawable *&bucket);
@@ -229,3 +234,16 @@ public:
 	virtual void draw(const glm::mat4 &model);
 };
 
+class ModelviewMode : public DrawableDecorator {
+private:
+	ModelviewMode();
+protected:
+	int mode;
+public:
+	ModelviewMode(Drawable *next, const int &mode) :
+		DrawableDecorator(next),
+		mode(mode)
+	{}
+
+	virtual void draw(const glm::mat4 &model);
+};

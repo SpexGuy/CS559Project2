@@ -12,6 +12,9 @@
 #define WHITE  vec4(1.0f, 1.0f, 1.0f, 1.0f)
 #define MARS   vec4(1.0f, 0.2f, 0.2f, 1.0f)
 
+#define MV_FULL 0
+#define MV_ROTATION 2
+
 /**
  * The Graphics class encapsulates all logic related to drawing 3D shapes
  */
@@ -24,6 +27,7 @@ private:
 	glm::vec4 color;
 	glm::vec4 specularColor;
 	float ambient, diffuse, shininess;
+	int modelviewMode;
 
 	Shader *solidShader;
 
@@ -123,6 +127,9 @@ public:
 		this->specularColor = s;
 		this->shininess = shiny;
 	}
+	inline void setModelviewMode(int mode) {
+		modelviewMode = mode;
+	}
 
 	inline glm::mat4 getProjection() const {
 		return projection;
@@ -150,5 +157,8 @@ public:
 	}
 	inline float getShininess() const {
 		return shininess;
+	}
+	inline int getModelviewMode() {
+		return modelviewMode;
 	}
 };
