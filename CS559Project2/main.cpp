@@ -27,27 +27,27 @@ using namespace glm;
 class Globals {
 public:
 	char *inFile;
+
 	Window *window;
 	View *view;
 	ViewOverlay *baseOverlay;
 	PerspectiveProjection *proj;
+
 	FreeFlyCamera *flyCam;
 	SpheroidCamera *cam;
 	Camera *camMars;
 	SpheroidCamera *camRocket;
 	SpheroidCamera *camStars;
-
 	Camera *currentCamera;
-
 	Camera *chaseCam;
+
 	SpheroidLight *light;
-	SpheroidLight *camLight;
+
 	Model *model;
 	Model *modelRocket;
 	Model *modelStars;
+
 	Mesh *marsMesh;
-	Mesh *cylinder;
-	Mesh *sphere;
 	PointMesh *starfieldMesh;
 	Rocket *rocketMesh;
 
@@ -62,7 +62,6 @@ public:
 
 	TimeFunction<float> *rocketAngle;
 	TimeFunction<float> *orbitAngle;
-	TimeFunction<float> *chaseCamAngle;
 	TimeFunction<float> *marsAngle;
 	TimeFunction<float> *marsAxisAngle;
 
@@ -118,11 +117,9 @@ bool Globals::initialize() {
 	modelStars = new Model();
 
 	marsMesh = Mesh::newMars(marsRadius, marsRadScale, inFile, true);
-	sphere = Mesh::newSphere(10,10, 1.0f, true);
-	cylinder = Mesh::newCylinder(10,10, 0.5f, 0.1f, true);
 	rocketMesh = new Rocket();
 	rocketMesh->scale(vec3(rocketScale));
-	starfieldMesh = PointMesh::newStarField(5000, 8.0f);
+	starfieldMesh = PointMesh::newStarField(8000, 8.0f);
 	starfield = starfieldMesh
 					->disableDepthTest()
 					->useMVMode(MV_ROTATION);
@@ -132,12 +129,12 @@ bool Globals::initialize() {
 	yAxis = new Vec3TimeFunction(const0, const1, const0);
 
 	orbitAngle = new LinearTimeFunction(16.0f/1000.0f, 0.0f);
-	chaseCamAngle = new LinearTimeFunction(-16.0f/1000.0f, 0.0f);
 	rocketAngle = new LinearTimeFunction(-13.0f/1000.0f, 0.0f);
 
 	camMars = ((new PointCamera()))
+		->rotated(vec3(0.0f, 0.0f, 1.0f), 30)
 		->animateRotation(model, yAxis, orbitAngle)
-		->translated(vec3(distaceRocketMars - marsRadScale,0.0f,0.0f))
+		->translated(vec3(distaceRocketMars - marsRadScale - 0.01f, 0.0f, 0.0f))
 		->rotated(vec3(0.0f,0.0f,1.0f),-90.0f);
 	camMars->moveUp(-90.0f);
 	camMars->moveRight(180.0f);
@@ -163,6 +160,7 @@ bool Globals::initialize() {
 	 * http://camel.apache.org/java-dsl.html
 	 */
 	rocket = rocketMesh
+					->rotated(vec3(0.0f, 0.0f, 1.0f), 30)
 					//make rocket orbt
 					->animateRotation(model, yAxis, orbitAngle)
 					//move rocket out to orbit
@@ -180,6 +178,7 @@ bool Globals::initialize() {
 
 	BoundedSpheroidCamera* bsc = new BoundedSpheroidCamera();
 	chaseCam = bsc					
+		->rotated(vec3(0.0f, 0.0f, 1.0f), 30)
 		//rotate the camera with the ship
 		->animateRotation(model, yAxis, orbitAngle)
 		//make it orbit
@@ -268,10 +267,6 @@ bool Globals::initialize() {
 		return false;
 	if (!mars->initialize())
 		return false;
-	if (!cylinder->initialize())
-		return false;
-	if (!sphere->initialize())
-		return false;
 	if (!rocket->initialize())
 		return false;
 	if (!starfield->initialize())
@@ -317,8 +312,6 @@ void Globals::changeCamera()
 
 void Globals::takeDown() {
 	mars->takeDown();
-	cylinder->takeDown();
-	sphere->takeDown();
 	rocket->takeDown();
 	starfield->takeDown();
 	Graphics::inst()->takeDown();
@@ -333,8 +326,6 @@ Globals::~Globals() {
 	delete view;
 	delete window;
 	
-	delete cylinder;
-	delete sphere;
 	delete starfield;
 
 	delete rocket;
@@ -346,7 +337,6 @@ Globals::~Globals() {
 
 	delete marsAngle;
 	delete marsAxisAngle;
-	delete chaseCamAngle;
 	delete rocketAngle;
 	delete orbitAngle;
 }

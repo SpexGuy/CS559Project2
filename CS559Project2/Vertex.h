@@ -20,10 +20,9 @@ public:
 	glm::vec3 normal;
 };
 
-class VertexPCNT {
+class VertexPNT {
 public:
 	glm::vec3 position;
-	glm::vec4 color;
 	glm::vec3 normal;
-	glm::vec3 texture;
+	glm::vec2 texture;
 };
