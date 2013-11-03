@@ -15,6 +15,7 @@ public:
 	void update(int time);
 	void pause();
 	void play();
+	virtual void reset();
 	virtual ~Animation() {}
 
 	inline bool isPaused() { return paused; }
@@ -33,6 +34,8 @@ protected:
 public:
 	/* adds a drawable to the end of the list */
 	AnimationGroup *addAnimation(Animation *a);
+	virtual void reset();
+
 
 	/* clears the list */
 	void clearAnimations();

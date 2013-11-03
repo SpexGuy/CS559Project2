@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include "Camera.h"
 #include "Projection.h"
 #include "Model.h"
@@ -53,4 +54,14 @@ protected:
 	 * 0 and the far plane at 1. 
 	 * Sets the view to the base rendering context at (0, 0) */
 	virtual void setupCamera() const;
+	
+};
+
+class HudOverlay : public ViewOverlay{
+public:
+	virtual glm::mat4 draw();
+	HudOverlay(std::vector<char*> text);
+
+protected:
+	std::vector<char*> text;
 };

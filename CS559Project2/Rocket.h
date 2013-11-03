@@ -23,11 +23,11 @@ public:
 	inline bool getEditMode() {
 		return editMode;
 	}
-
+	void setDrawNormals(bool normals);
 	/**
 	 *	Replaces the Head of the rocket with a new Mesh.
 	 */
-	void replaceHead(Drawable *newHead);
+	void replaceHead();
  	~Rocket();	
 
 protected:
@@ -38,5 +38,6 @@ protected:
 	int slices;
 	bool editMode;
 	float radius;
+	Mesh* headMesh;
 
 };

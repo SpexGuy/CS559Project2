@@ -30,8 +30,26 @@ void Animation::pause() {
 void Animation::play() {
 	willPause = false;
 }
+void Animation:: reset()
+{
+	paused = true;
+	timeSpentPaused = timePauseStarted;
+}
 
+void AnimationGroup::reset(){
 
+	Animation::reset();
+	for (
+		list<Animation *>::const_iterator
+			iterator = elements.begin(),
+			end = elements.end();
+		iterator != end;
+		++iterator)
+	{
+		(*iterator)->reset();
+	}
+	
+}
 
 void AnimationGroup::doUpdate(int time) {
 	for (

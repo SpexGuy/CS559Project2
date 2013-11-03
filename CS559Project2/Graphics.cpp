@@ -45,7 +45,7 @@ bool Graphics::initialize() {
 	lineSegs = vector<ivec2>(1);
 	squareTrigs = vector<ivec3>(2);
 
-	cout << "CircleTrigs:" << endl;
+	//cout << "CircleTrigs:" << endl;
 	circlePoints[0] = vec3(0.0f);
 	for (int c = 0; c < 16; c++) {
 		angle = float(2 * M_PI * c / 16.0f);
@@ -112,11 +112,13 @@ void Graphics::drawText2D(const mat4 &base, float x, float y, char *str, float s
 	mat4 pos = translate(base, vec3(x, y, 0));
 	float scaleFactor = size/72.0f;
 	pos = scale(pos, vec3(scaleFactor, scaleFactor, 1.0f));
-	glMatrixMode(GL_PROJECTION);
-	glLoadMatrixf(value_ptr(projection));
-	glMatrixMode(GL_MODELVIEW);
-	glLoadMatrixf(value_ptr(view * pos));
-	glutStrokeString(GLUT_STROKE_ROMAN, (unsigned char*)str);
+	while(*str != '\0') {
+		setupShader(solidShader, pos);
+		glutStrokeCharacter(GLUT_STROKE_ROMAN, *str);
+		pos = translate(pos, vec3(glutStrokeWidth(GLUT_STROKE_ROMAN, *str), 0.0f, 0.0f));
+		str++;
+	}
+	glUseProgram(0);
 }
 
 void Graphics::drawRect2D(const mat4 &base, vec2 blPoint, vec2 trPoint) const {

@@ -28,7 +28,8 @@ bool Rocket::initialize()
 	float strutRadiusInHead = smallRadius*1.25f;
 
 	//Draws the head
-	head = Mesh::newSphere(stacks, slices, HEAD_RADIUS, true)
+	headMesh = Mesh::newSphere(stacks, slices, HEAD_RADIUS, true);
+	head = headMesh
 				->scaled(vec3(1.0f, HEAD_HEIGHT, 1.0f));
 	if (!head->initialize())
 		return false;
@@ -97,10 +98,16 @@ void Rocket::draw(const mat4 &model)
 	}
 }
 
-void Rocket::replaceHead(Drawable *newHead) {
+void Rocket::replaceHead() {
+	Mesh* newHead = Mesh::newSurfaceOfRotation(over->getSpline(30), 30, true);
+	newHead->setDrawNormals(headMesh->isDrawingNormals());
 	head->takeDown();
 	delete head;
-	head = newHead;
+
+	head = newHead->translated(vec3(0.0f, -2.0f, 0.0f))
+					->scaled(vec3(4.0f, 4.0f, 4.0f));
+	head->initialize();
+	headMesh = newHead;
 }
 
 void Rocket::takeDown()
@@ -126,4 +133,8 @@ Rocket::~Rocket()
 		delete elements->back();
 		elements->pop_back();
 	}
+}
+void Rocket::setDrawNormals(bool normals)
+{
+	headMesh->setDrawNormals(normals);
 }

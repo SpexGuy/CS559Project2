@@ -30,7 +30,11 @@ public:
 
 	Window *window;
 	View *view;
-	ViewOverlay *baseOverlay;
+
+	HudOverlay *mainOverlay;
+	HudOverlay *editorOverlay;
+	HudOverlay *starOverlay;
+
 	PerspectiveProjection *proj;
 
 	FreeFlyCamera *flyCam;
@@ -75,6 +79,7 @@ public:
 	Scene *marsScene;
 	Scene *starScene;
 
+	int lastUpdateTime;
 	int currentScene;
 
 	int period;
@@ -101,7 +106,7 @@ void TimerFunc(int value);
 void PassiveMotionFunc(int x, int y);
 
 bool Globals::initialize() {
-
+	lastUpdateTime  = 0;
 	float marsRadius = 1.0f;
 	float marsRadScale = 0.03f;
 	float rocketScale = marsRadius * 0.3f;
@@ -151,9 +156,7 @@ bool Globals::initialize() {
 	flyCam = new FreeFlyCamera();
 	flyCam->setPosition(vec3(0.0f, 0.0f, 3.0f));
 	flyCam->setAngle(180.0f);
-	
-	baseOverlay = new ViewOverlay();
-	
+		
 	//setup decorator stack to make rocket move specially
 	/* This DSL is inspired in part by the Java DSL for Apache's
 	 * Camel project.
@@ -228,17 +231,59 @@ bool Globals::initialize() {
 	camerasRocket.push_back(camRocket);
 	camerasStars.push_back(camStars);
 
-	marsScene = new Scene(cameras, model, baseOverlay);
-	beautyRocket = new Scene(camerasRocket, modelRocket, baseOverlay);
-	starScene = new Scene(camerasStars, modelStars, baseOverlay);
+	vector<char*> text;	
+	text.push_back("Left/Right UP/DOWN PgUP/PgDn - Camera Controls");
+	text.push_back("W - wireframe");
+	text.push_back("P - Pause");
+	text.push_back("N - Normals");
+	text.push_back("F1 - Cycle Camera/Scene");
+	text.push_back("F11 - Flull Screen");
+	text.push_back("");
+	text.push_back("MARS MODE");
 
+	vector<char*> star;
+	star.push_back("Left/Right UP/DOWN PgUP/PgDn - Camera Controls");
+	star.push_back("W-Wireframe");
+	star.push_back("P - Pause");
+	star.push_back("N - Normals");
+	star.push_back("F1 - Cycle Camera/Scene");
+	star.push_back("F11 - Flull Screen");
+	star.push_back("");
+	star.push_back("STAR MODE");
+	
+	vector<char*> edit;
+	edit.push_back("Left/Right UP/DOWN PgUP/PgDn - Camera Controls");
+	edit.push_back("0  - Open Editing / Commit Change");
+	edit.push_back("1/3 - Scale");
+	edit.push_back("2/8 - Move Point Vertical");
+	edit.push_back("4/6 - Move Point Horizontal");
+	edit.push_back("5  - Next Point");
+	edit.push_back("7/9 - Rotate Point");
+	edit.push_back(".  - Close Editing");
+	edit.push_back("W - Wireframe");
+	edit.push_back("P - Pause");
+	edit.push_back("N - Normals");
+	edit.push_back("F1 - Cycle Camera/Scene");
+	edit.push_back("F11 - Flull Screen");
+	edit.push_back("");
+	edit.push_back("EDIT MODE");
+
+	mainOverlay = new HudOverlay(text);
+
+	editorOverlay = new HudOverlay(edit);
+
+	starOverlay = new HudOverlay(star);
+
+	marsScene = new Scene(cameras, model, mainOverlay);
+	beautyRocket = new Scene(camerasRocket, modelRocket, editorOverlay);
+	starScene = new Scene(camerasStars, modelStars, starOverlay);
 	Scenes.push_back(marsScene);
 	Scenes.push_back(beautyRocket);
 	Scenes.push_back(starScene);
 	currentScene = 0;
 	currentCamera = Scenes[0]->getCamera();
-
-	view = new View(proj, currentCamera, model, baseOverlay);
+	
+	view = new View(proj, currentCamera, model, mainOverlay);
 
 	window = new SingleViewportWindow(view);
 	wireframe = false;
@@ -281,14 +326,12 @@ void Globals::enterEditMode() {
 	if (globals.rocketMesh->getEditMode())
 		return;
 	globals.rocketMesh->setEditMode(true);
-	//view->setOverlay(splineOverlay);
 }
 
 void Globals::exitEditMode() {
 	if (!globals.rocketMesh->getEditMode())
 		return;
 	globals.rocketMesh->setEditMode(false);
-	//view->setOverlay(baseOverlay);
 }
 
 void Globals::changeCamera()
@@ -368,17 +411,19 @@ void PassiveMotionFunc(int x, int y) {
 	globals.flyCam->addAngle(-deltaX/10.0f);
 	globals.flyCam->addAxisAngle(deltaY/10.0f);
 
-	if(x <= 10 || (y) <= 10 || x >= size.x-10 || y >= size.y-10) {
-		lastX = centerx;
-		lastY = centery;
-		glutWarpPointer( lastX, lastY );
+	if(globals.currentScene == 0 && globals.Scenes[globals.currentScene]->getCurrentCameraIndex() == 1)
+	{
+		if(x <= 10 || (y) <= 10 || x >= size.x-10 || y >= size.y-10) {
+			lastX = centerx;
+			lastY = centery;
+			glutWarpPointer( lastX, lastY );
+		}
 	}
 	
 }
 
 void KeyboardFunc(unsigned char c, int x, int y) {
 	bool normals;
-	Drawable *newHead;
 
 	if (globals.rocketMesh->getEditMode()) {
 		switch(c) {
@@ -418,7 +463,7 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 		globals.flyCam->setPosition(vec3(0.0f, 0.0f, 3.0f));
 		globals.flyCam->setAngle(180.0f);
 		globals.flyCam->setAxisAngle(90.0f);
-
+		globals.model->reset();
 		break;
 
 	case 'w':
@@ -428,6 +473,7 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 
 	case 'n':
 		normals = !globals.marsMesh->isDrawingNormals();
+		globals.rocketMesh->setDrawNormals(normals);
 		globals.marsMesh->setDrawNormals(normals);
 		break;
 
@@ -456,11 +502,7 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 
 	case '0':
 		globals.enterEditMode();
-		newHead = Mesh::newSurfaceOfRotation(globals.rocketMesh->getEditor()->getSpline(30), 30, true)
-					->translated(vec3(0.0f, -2.0f, 0.0f))
-					->scaled(vec3(4.0f, 4.0f, 4.0f));
-		newHead->initialize();
-		globals.rocketMesh->replaceHead(newHead);
+		globals.rocketMesh->replaceHead();
 		break;
 
 	case 'x':

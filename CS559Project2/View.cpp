@@ -38,7 +38,6 @@ void View::setupCamera() {
 }
 
 
-
 ViewOverlay::ViewOverlay() {
 
 }
@@ -56,4 +55,25 @@ void ViewOverlay::setupCamera() const {
 			lookAt(vec3(0.0f, 0.0f, 0.0f),
 				   vec3(0.0f, 0.0f, -1.0f),
 				   vec3(0.0f, 1.0f, 0.0f)));
+}
+
+HudOverlay::HudOverlay(vector<char*> text)
+{
+	this->text = text;
+}
+
+mat4 HudOverlay::draw()
+{
+	setupCamera();
+	Graphics::inst()->setColor(vec4(1.0f,1.0f,1.0f,1.0f));
+	mat4 base = mat4(1.0f);
+	float lines = (float)text.size();
+	float size = 10.0f;
+
+	for(uint i = 0; i < text.size(); i++)
+	{
+		Graphics::inst()->drawText2D(base, 5.0f, 2.1f*size*(float)(i) + 10.0f , text[i], size);
+	}
+	return base;
+
 }

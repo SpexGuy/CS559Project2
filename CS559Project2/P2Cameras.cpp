@@ -101,11 +101,7 @@ BoundedSpheroidCamera::BoundedSpheroidCamera(){
 
 void BoundedSpheroidCamera::moveRight(float offset){
 	float turn = offset;
-	bound = 90.0f;
-	if((angle+turn) > -bound && (angle+ turn)< bound)
-	{
-		this->addAngle(turn);
-	}
+	this->addAngle(turn);
 }
 
 void BoundedSpheroidCamera::moveUp(float offset){

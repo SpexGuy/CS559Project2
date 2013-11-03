@@ -14,7 +14,7 @@
 using namespace std;
 using namespace glm;
 
-#define DEBUG
+//#define DEBUG
 
 Mesh *Mesh::newMars(float radius, float radScale, char *filename, bool crosshatch) {
 	ifstream inFile(filename);
