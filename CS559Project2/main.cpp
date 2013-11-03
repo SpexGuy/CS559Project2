@@ -233,6 +233,8 @@ bool Globals::initialize() {
 
 	vector<char*> text;	
 	text.push_back("Left/Right UP/DOWN PgUP/PgDn - Camera Controls");
+	text.push_back("O/L ;/K - Light Controls");
+
 	text.push_back("W - wireframe");
 	text.push_back("P - Pause");
 	text.push_back("N - Normals");
@@ -243,7 +245,7 @@ bool Globals::initialize() {
 
 	vector<char*> star;
 	star.push_back("Left/Right UP/DOWN PgUP/PgDn - Camera Controls");
-	star.push_back("W-Wireframe");
+	star.push_back("W - Wireframe");
 	star.push_back("P - Pause");
 	star.push_back("N - Normals");
 	star.push_back("F1 - Cycle Camera/Scene");
@@ -253,6 +255,7 @@ bool Globals::initialize() {
 	
 	vector<char*> edit;
 	edit.push_back("Left/Right UP/DOWN PgUP/PgDn - Camera Controls");
+	edit.push_back("O/L ;/K - Light Controls");
 	edit.push_back("0  - Open Editing / Commit Change");
 	edit.push_back("1/3 - Scale");
 	edit.push_back("2/8 - Move Point Vertical");
