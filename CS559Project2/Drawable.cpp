@@ -1,3 +1,4 @@
+/** See Drawable.h for architecture documentation */
 #include <list>
 #include "Drawable.h"
 #include "Graphics.h"
@@ -11,7 +12,18 @@ using namespace glm;
 using namespace std;
 
 
+//--------------- Drawable --------------
+Drawable *Drawable::pushDecorator(DrawableDecorator *d) {
+	d->setChild(this);
+	return d;
+}
 
+Drawable *Drawable::store(Drawable *&bucket) {
+	bucket = this;
+	return this;
+}
+
+//		----- Decorator Convenience Functions ------
 Drawable *Drawable::rotated(const vec3 &axis, const float &angle) {
 	Rotation *d = new Rotation();
 	d->setRotation(axis, angle);
@@ -64,18 +76,9 @@ Drawable *Drawable::useMVMode(int mode) {
 	return pushDecorator(new ModelviewMode(mode));
 }
 
-Drawable *Drawable::pushDecorator(DrawableDecorator *d) {
-	d->setChild(this);
-	return d;
-}
-
-Drawable *Drawable::store(Drawable *&bucket) {
-	bucket = this;
-	return this;
-}
 
 
-
+//---------------- DrawableDecorator ---------------
 
 Drawable *DrawableDecorator::pushDecorator(DrawableDecorator *dec) {
 	Drawable *d = child->pushDecorator(dec);
@@ -109,6 +112,7 @@ DrawableDecorator::~DrawableDecorator() {
 }
 
 
+//----------------- DrawableGroup ------------------
 
 DrawableGroup::DrawableGroup() {
 	elements = list<Drawable*>();
@@ -168,6 +172,9 @@ list<Drawable *> *DrawableGroup::getElements() {
 	return &elements;
 }
 
+
+//------------ Decorator Implementations ---------------
+
 void DisableDepthTest::draw(const mat4 &model) {
 	glDisable(GL_DEPTH_TEST);
 	child->draw(model);
@@ -185,30 +192,34 @@ void Material::draw(const mat4 &model) {
 }
 
 void ColorReset::draw(const mat4 &model) {
+	//save the old color
 	vec4 color = Graphics::inst()->getColor();
+	//continue down the stack
 	child->draw(model);
+	//restore the old color
 	Graphics::inst()->setColor(color);
 }
 
 void MaterialReset::draw(const mat4 &model) {
+	//save the old material
 	float a = Graphics::inst()->getAmbient();
 	vec4 spec = Graphics::inst()->getSpecularColor();
 	float shiny = Graphics::inst()->getShininess();
+	//continue down the stack
 	child->draw(model);
+	//restore the old material
 	Graphics::inst()->setMaterial(a, spec, shiny);
 }
 
 /** this algorithm is adapted from
- * http://nehe.gamedev.net/article/billboarding_how_to/18011/#5
+ * http://nehe.gamedev.net/article/billboarding_how_to/18011/
  */
 void BillboardTransform::draw(const mat4 &model) {
-	//convert everything to modelspace
-	vec4 cameraPos = inverse(Graphics::inst()->getView()) * vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	vec4 pos = model * vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	vec3 axis = normalize(vec3(model * vec4(this->axis, 0.0f)));
+	//convert camera position to local coordinate space
+	vec4 cameraPos = inverse(Graphics::inst()->getView() * model) * vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	
 	//find the appropriate orthogonal basis
-	vec3 look = normalize(vec3(cameraPos-pos));	//calculate the look vector
+	vec3 look = normalize(vec3(cameraPos));	//calculate the look vector
 	vec3 right = cross(vec3(axis), look);	//right = up x look
 	if (right != vec3(0.0f))				//handle special case: up = look
 		right = normalize(right);
@@ -216,18 +227,20 @@ void BillboardTransform::draw(const mat4 &model) {
 
 	//build a transformation matrix
 	mat4 transform;
-	transform[0] = vec4(right.x, axis.x, look.x, pos.x);
-	transform[1] = vec4(right.y, axis.y, look.y, pos.y);
-	transform[2] = vec4(right.z, axis.z, look.z, pos.z);
+	transform[0] = vec4(     right      , 0.0f);
+	transform[1] = vec4(      axis      , 0.0f);
+	transform[2] = vec4(      look      , 0.0f);
 	transform[3] = vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	transform = transpose(transform);
-	//transform inherits information from model, and therefore supercedes it
-	child->draw(transform);
+	
+	//convert back to modelspace
+	child->draw(model * transform);
 }
 
 void ModelviewMode::draw(const mat4 &model) {
 	int oldMode = Graphics::inst()->getModelviewMode();
 	Graphics::inst()->setModelviewMode(mode);
+
 	child->draw(model);
+	
 	Graphics::inst()->setModelviewMode(oldMode);
 }

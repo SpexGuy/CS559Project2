@@ -8,17 +8,10 @@ class AnimationGroup;
 class DrawableDecorator;
 
 /**
- * A class which can be drawn
+ * A class which can be drawn. It has support for decorators.
  */
 class Drawable {
 public:
-	/* pushes the given decorator onto the decorator stack
-	 * Returns a pointer to the base of the stack */
-	virtual Drawable *pushDecorator(DrawableDecorator *d);
-
-	/* stores the current top of the decorator stack in the bucket */
-	virtual Drawable *store(Drawable *&bucket);
-
 	/* initializes the object with GL.
 	 * Returns whether it was successful*/
 	virtual bool initialize() = 0;
@@ -30,6 +23,13 @@ public:
 	virtual void takeDown() = 0;
 
 	virtual ~Drawable() {}
+
+	/* pushes the given decorator onto the decorator stack
+	 * Returns a pointer to the base of the stack */
+	virtual Drawable *pushDecorator(DrawableDecorator *d);
+
+	/* stores the current top of the decorator stack in the bucket */
+	virtual Drawable *store(Drawable *&bucket);
 
 	//--------- Decorator Functions -----------------
 	//The following functions exist only as wrappers to pushDecorator
@@ -87,6 +87,18 @@ public:
 	
 };
 
+/**
+ * an abstract class which all decorators should extend
+ *
+ * The decorators form a stack on top of the underlying
+ * Drawable. This stack is upside-down so that the order
+ * in which the decorators are activated is the same as
+ * the order in which they were pushed onto the stack.
+ *
+ * Decorators manage their own memory, and will delete
+ * child pointers all the way down the stack including
+ * the terminating Drawable.
+ */
 class DrawableDecorator : public Drawable {
 private:
 	/* copying a DrawableDecorator breaks the memory management scheme */
@@ -101,14 +113,16 @@ protected:
 	{}
 
 public:
-
+	/* {@InheritDoc} */
 	virtual Drawable *pushDecorator(DrawableDecorator *d);
 
-	/* stores the current top of the decorator stack in the bucket */
+	/* {@InheritDoc} */
 	virtual Drawable *store(Drawable *&bucket);
 
+	/* propagates initialization down the stack */
 	virtual bool initialize();
 	
+	/* propagates takeDown down the stack */
 	virtual void takeDown();
 
 	inline void setChild(Drawable *child) {
@@ -118,6 +132,7 @@ public:
 		return child;
 	}
 
+	/* recursively deletes children. */
 	virtual ~DrawableDecorator();
 };
 
@@ -128,11 +143,13 @@ class DrawableGroup : public Drawable {
 public:
 	DrawableGroup();
 
+	/* initializes all children */
 	virtual bool initialize();
 
 	/* draws all drawables in the list */
 	virtual void draw(const glm::mat4 &model);
 
+	/* takes down all children */
 	virtual void takeDown();
 
 	/* adds a drawable to the front of the list */
@@ -151,6 +168,10 @@ private:
 	std::list<Drawable*> elements;
 };
 
+/**
+ * Disables the depth test on the way down the decorator stack,
+ * then reenables it on the way back up.
+ */
 class DisableDepthTest : public DrawableDecorator {
 public:
 	DisableDepthTest() :
@@ -159,6 +180,9 @@ public:
 	virtual void draw(const glm::mat4 &model);
 };
 
+/** Sets the color on the way down the decorator stack.
+ * DOES NOT RESET IT. Push a ColorReset before this to
+ * reset the color. */
 class Color : public DrawableDecorator {
 private:
 	Color();
@@ -173,6 +197,9 @@ public:
 	virtual void draw(const glm::mat4 &model);
 };
 
+/** Sets the material on the way down the decorator stack.
+ * DOES NOT RESET IT. Push a MaterialReset before this to
+ * reset the material. */
 class Material : public DrawableDecorator {
 private:
 	Material();
@@ -190,6 +217,8 @@ public:
 	virtual void draw(const glm::mat4 &model);
 };
 
+/** Saves the color on the way down the stack, and restores
+ * it on the way back up. */
 class ColorReset : public DrawableDecorator {
 public:
 	ColorReset() :
@@ -199,6 +228,8 @@ public:
 	virtual void draw(const glm::mat4 &model);
 };
 
+/** Saves the material on the way down the stack, and restores
+ * it on the way back up. */
 class MaterialReset : public DrawableDecorator {
 public:
 	MaterialReset() :
@@ -208,6 +239,8 @@ public:
 	virtual void draw(const glm::mat4 &model);
 };
 
+/** Creates a transformation which makes the object billboard
+ * around the given local axis, and passes it down the stack. */
 class BillboardTransform : public DrawableDecorator {
 private:
 	BillboardTransform();
@@ -222,6 +255,8 @@ public:
 	virtual void draw(const glm::mat4 &model);
 };
 
+/** Changes the modelview mode on the way down the stack
+ * Resets it on the way back up */
 class ModelviewMode : public DrawableDecorator {
 private:
 	ModelviewMode();

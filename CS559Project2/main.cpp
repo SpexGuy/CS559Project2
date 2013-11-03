@@ -180,12 +180,13 @@ bool Globals::initialize() {
 
 	BoundedSpheroidCamera* bsc = new BoundedSpheroidCamera();
 	chaseCam = bsc					
-		//all rotations of the camera go BACKWARDS
+		//rotate the camera with the ship
 		->animateRotation(model, yAxis, orbitAngle)
-		//so do translations
+		//make it orbit
 		->translated(vec3(distaceRocketMars, 0.0f, 0.0f))
-		//make the axis face out
+		//make it the right size
 		->scaled(vec3(rocketScale))
+		//make the axis face out
 		->rotated(vec3(0.0f, 0.0f, 1.0f), -90.0f);
 
 	//mars must spin twice as fast since its axis is spinning in the opposite direction.

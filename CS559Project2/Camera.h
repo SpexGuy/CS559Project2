@@ -6,8 +6,8 @@ class AnimationGroup;
 class CameraDecorator;
 
 /** 
- * A camera represents a projection and a positon, and therefore
- * is responsible for generating a projection matrix and a view matrix.
+ * A camera represents a positon and direction, and
+ * is responsible for generating a view matrix.
  */
 class Camera {
 public:
@@ -19,10 +19,15 @@ public:
 	/* stores the current top of the decorator stack in the bucket */
 	virtual Camera *store(Camera *&bucket);
 	
+	/* generates a view matrix */
 	virtual glm::mat4 generateViewMatrix() = 0;
 
+	/* Once Controllers are implemented, tnese will be obselete */
+	//@Deprecated
 	void virtual moveForward(float offset) = 0;
+	//@Deprecated
 	void virtual moveRight(float offset) = 0;
+	//@Deprecated
 	void virtual moveUp(float offset) = 0;
 
 	virtual ~Camera() {}
@@ -51,6 +56,18 @@ public:
 
 };
 
+/**
+ * an abstract class which all decorators should extend
+ *
+ * The decorators form a stack on top of the underlying
+ * Camera. This stack is upside-down so that the order
+ * in which the decorators are activated is the same as
+ * the order in which they were pushed onto the stack.
+ *
+ * Decorators manage their own memory, and will delete
+ * child pointers all the way down the stack including
+ * the terminating Camera.
+ */
 class CameraDecorator : public Camera {
 protected:
 	Camera *next;
@@ -61,21 +78,31 @@ public:
 		isTos(true)
 	{}
 
-	/* pushes the given Decorator onto the decorator stack 
-	 * Returns a pointer to the base of the stack */
+	/* {@InheritDoc} */
 	virtual Camera *pushDecorator(CameraDecorator *d);
 	
-	/* stores the current top of the decorator stack in the bucket */
+	/* {@InheritDoc} */
 	virtual Camera *store(Camera *&bucket);
 
 	inline void setNext(Camera *next) {
 		this->next = next;
 	}
+	inline Camera *getNext() {
+		return next;
+	}
 	
 	virtual ~CameraDecorator();
 
+	//@Deprecated
+	/* propagates the call down the stack */
 	virtual void moveForward(float offset);
+
+	//@Deprecated
+	/* propagates the call down the stack */
 	virtual void moveRight(float offset);
+
+	//@Deprecated
+	/* propagates the call down the stack */
 	virtual void moveUp(float offset);
 
 };

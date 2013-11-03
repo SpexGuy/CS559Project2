@@ -1,3 +1,4 @@
+/** See Camera.h for architecture documentation */
 #include "Camera.h"
 #include "Rotatable.h"
 #include "Translatable.h"
@@ -5,6 +6,19 @@
 #include "Animation.h"
 
 using namespace glm;
+
+
+//---------------- Camera -----------------
+
+Camera *Camera::pushDecorator(CameraDecorator *d) {
+	d->setNext(this);
+	return d;
+}
+
+Camera *Camera::store(Camera *&bucket) {
+	bucket = this;
+	return this;
+}
 
 Camera *Camera::rotated(const vec3 &axis, const float &angle) {
 	CamRotation *rot = new CamRotation();
@@ -31,15 +45,8 @@ Camera *Camera::animateRotation(AnimationGroup *ag, TimeFunction<vec3> *axis, Ti
 	return pushDecorator(rot);
 }
 
-Camera *Camera::pushDecorator(CameraDecorator *d) {
-	d->setNext(this);
-	return d;
-}
 
-Camera *Camera::store(Camera *&bucket) {
-	bucket = this;
-	return this;
-}
+//----------------- CameraDecorator -----------------
 
 Camera *CameraDecorator::pushDecorator(CameraDecorator *dec) {
 	Camera *d = next->pushDecorator(dec);

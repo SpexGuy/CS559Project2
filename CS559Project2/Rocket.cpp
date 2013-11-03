@@ -65,24 +65,22 @@ bool Rocket::initialize()
 				->translated(vec3(headToLeg, topOfLeg-(cylinderHeight/4.0f), 0.0f))
 				->rotated(vec3(0.0f,0.0f,1.0f), 90.0f)
 				->scaled(vec3(1.0f,headToLeg, 1.0f));
-	addElement(tmp);
 	if (!tmp->initialize())
 		return false;
+	addElement(tmp);
 
 	over = new SplineEditor(5);
 	spline = over
 		->resetColor()
 		->disableDepthTest()
 		->billboard(vec3(0.0f, 1.0f, 0.0f))
-		->scaled(vec3(0.07f, 0.1f, 0.07f))
-		->scaled(vec3(0.3))
 		->translated(vec3(0.0f, -HEAD_HEIGHT, 0.0f))
 		->scaled(vec3(4.0f))
-		->rotated(vec3(0.0f, 0.0f, 1.0f), 90.0f)
-;
+		->rotated(vec3(0.0f, 0.0f, 1.0f), 90.0f);
 
 	return true;
 }
+
 void Rocket::draw(const mat4 &model)
 {
 	mat4 m = model;
