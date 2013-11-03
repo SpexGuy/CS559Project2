@@ -279,8 +279,9 @@ ShaderFlyweight::ShaderFlyweight() :
 
 bool ShaderFlyweight::initialize() {
 	loadShader(SHADER_SOLID, "solid_shader.vert", "solid_shader.frag");
-	loadShader(SHADER_ADS, "top_shader.vert", "top_shader.frag");
+	loadShader(SHADER_ADS, "ads_shader.vert", "ads_shader.frag");
 	loadShader(SHADER_STAR, "star_shader.vert", "star_shader.frag");
+	loadShader(SHADER_TEXTURE, "texture_shader.vert", "texture_shader.frag");
 
 	return true;
 }

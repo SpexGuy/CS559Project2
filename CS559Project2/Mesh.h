@@ -3,6 +3,7 @@
 #include "Shader.h"
 #include "Vertex.h"
 #include "Transformable.h"
+#include "ilcontainer.h"
 #include <glm/glm.hpp>
 
 class Mesh : public Drawable, public TransformableMixin {
@@ -18,7 +19,7 @@ protected:
 
 	Shader *shader;
 	Shader *solidShader;
-	std::vector<VertexPN> points;
+	std::vector<VertexPNT> points;
 	std::vector<glm::ivec3> trigs;
 	std::vector<glm::vec3> normPoints;
 	std::vector<glm::ivec2> normSegs;
@@ -31,7 +32,9 @@ public:
 	 * to trig[2] and crossing it with the vector from trig[1] to trig[0].
 	 * Calculates point normals by averaging the vectors from all triangles
 	 * which have this point as a vertex. */
-	Mesh(std::vector<glm::vec3> points, std::vector<glm::ivec3> trigs);
+	Mesh(std::vector<glm::vec3> points,
+		 std::vector<glm::vec2> texCoords,
+		 std::vector<glm::ivec3> trigs);
 
 	virtual bool initialize();
 	
@@ -62,13 +65,16 @@ public:
 	 * by tabs.
 	 * Returns */
 	static Mesh *newMars(float radius, float radScale,
-		char *filename, bool crosshatch = false);
+		char *filename, ILContainer *texture,
+		bool crosshatch = false);
 
 	/** creates a spherical mesh with the radius at point i,j
 	 * calculated as radius + radScale*radii[i][j]. 
 	 */
 	static Mesh *newMars(float radius, float radScale,
-		std::vector<std::vector<float>> radii, bool crosshatch = false);
+		std::vector<std::vector<float>> radii,
+		ILContainer *texture,
+		bool crosshatch = false);
 
 	/** creates a cylinder mesh with a certain number of stacks and slices,
 	 *  a top radius and bottom radius. The origin of the cylinder is the 
@@ -90,5 +96,21 @@ public:
 	/** creates a vector of pairs of indices that coorespond to the vector of points to discribe triangles. 
 	 */
 	static std::vector<glm::ivec3> generateTrigs(std::vector<glm::vec3> points,
-			int width, int height, bool endcaps, bool crosshatch);
+			int width, int height, bool endcaps, bool wrap, bool crosshatch);
+};
+
+class TexturedMesh : public Mesh {
+private:
+	TexturedMesh();
+protected:
+	ILContainer *texture;
+	Shader *textureShader;
+public:
+	TexturedMesh(std::vector<glm::vec3> points, std::vector<glm::vec2> texCoords, std::vector<glm::ivec3> trigs, ILContainer *texture) :
+		Mesh(points, texCoords, trigs), texture(texture) {}
+
+	virtual bool initialize();
+	
+	virtual void draw(const glm::mat4 &model);
+
 };

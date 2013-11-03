@@ -74,6 +74,7 @@ private:
 #define SHADER_SOLID 0
 #define SHADER_ADS 1
 #define SHADER_STAR 2
+#define SHADER_TEXTURE 3
 
 class ShaderFlyweight {
 public:

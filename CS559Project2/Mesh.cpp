@@ -16,7 +16,7 @@ using namespace glm;
 
 //#define DEBUG
 
-Mesh *Mesh::newMars(float radius, float radScale, char *filename, bool crosshatch) {
+Mesh *Mesh::newMars(float radius, float radScale, char *filename, ILContainer *texture, bool crosshatch) {
 	ifstream inFile(filename);
 	if (inFile.is_open()) {
 		int width, height;
@@ -37,15 +37,18 @@ Mesh *Mesh::newMars(float radius, float radScale, char *filename, bool crosshatc
 
 		cout << "done reading" << endl;
 
-		return Mesh::newMars(radius, radScale, radii, crosshatch);
+		return Mesh::newMars(radius, radScale, radii, texture, crosshatch);
 	} else {
 		cerr << "Could not open file '" << filename << "'!" << endl;
 		assert(false);
 		return NULL;
 	}
 }
+
 Mesh *Mesh::newMars(float radius, float radScale,
-					vector<vector<float>> radii, bool crosshatch)
+					vector<vector<float>> radii,
+					ILContainer *texture,
+					bool crosshatch)
 {
 	//Assumes that the 2D has the same amount of slices for each stack
 	//Slices are the columns of the mesh
@@ -55,13 +58,16 @@ Mesh *Mesh::newMars(float radius, float radScale,
 	int width = radii[0].size();
 	assert(width > 0);
 
-	vector<vec3> points/*(height*width + 2)*/;
+	vector<vec3> points;
+	vector<vec2> tex;
 
-	for(int i = 0; i< height; i++) {
-		for( int j = 0; j < width; j++) {
-			float r = radius + radScale*radii[i][j];
-			float theta = float(2*M_PI * float(j) / float(width));
-			float phi = float(M_PI * float(i+1) / float(height+1));
+	for(int i = 0; i < height; i++) {
+		for( int j = 0; j <= width; j++) {
+			float r = radius + radScale*radii[i][j%width];
+			float tScale = float(j) / float(width);
+			float pScale = float(i+1) / float(height+1);
+			float theta = float(2*M_PI * tScale);
+			float phi = float(M_PI * pScale);
 
 			float x = r*sin(theta)*sin(phi);
 			float z = r*cos(theta)*sin(phi);
@@ -72,6 +78,7 @@ Mesh *Mesh::newMars(float radius, float radScale,
 				cout << "( " << x << ", " << y << "," << z << " )" <<endl;
 #endif
 			points.push_back(vec3(x,y,z));
+			tex.push_back(vec2(tScale, pScale));
 		}
 	}
 #ifdef DEBUG
@@ -87,11 +94,13 @@ Mesh *Mesh::newMars(float radius, float radScale,
 	float topAvg = topTotal/float(width);
 	float botAvg = botTotal/float(width);
 	points.push_back(vec3(0, radius + topAvg*radScale, 0));
+	tex.push_back(vec2(0, 0));
 	points.push_back(vec3(0, -radius - botAvg*radScale, 0));
+	tex.push_back(vec2(0, 1));
 
-	vector<ivec3> trigs = generateTrigs(points, width, height, true, crosshatch);
+	vector<ivec3> trigs = generateTrigs(points, width+1, height, true, false, crosshatch);
 
-	return new Mesh(points, trigs);
+	return new TexturedMesh(points, tex, trigs, texture);
 }
 
 Mesh *Mesh::newSphere(int stacks, int slices, float radius, bool crosshatch)
@@ -105,8 +114,8 @@ Mesh *Mesh::newSphere(int stacks, int slices, float radius, bool crosshatch)
 	assert(width > 0);
 
 	
-
-	vector<vec3> points/*(height*width + 2)*/;
+	vector<vec2> tex;
+	vector<vec3> points;
 	for(int i = 0; i< height; i++) {
 		for( int j = 0; j < width; j++) {
 			float theta = float(2*M_PI * float(j) / float(width));
@@ -131,9 +140,9 @@ Mesh *Mesh::newSphere(int stacks, int slices, float radius, bool crosshatch)
 	points.push_back(vec3(0, radius, 0));
 	points.push_back(vec3(0, -radius, 0));
 
-	vector<ivec3> trigs = generateTrigs(points, width, height, true, crosshatch);
+	vector<ivec3> trigs = generateTrigs(points, width, height, true, true, crosshatch);
 
-	return new Mesh(points, trigs);
+	return new Mesh(points, tex, trigs);
 }
 
 Mesh *Mesh::newCylinder(int stacks, int slices, float topRadius, float botRadius, bool crosshatch)
@@ -146,6 +155,7 @@ Mesh *Mesh::newCylinder(int stacks, int slices, float topRadius, float botRadius
 	int width = slices;
 	assert(width > 0);
 
+	vector<vec2> tex;
 	vector<vec3> points;
 	float ratio = (topRadius-botRadius)/height;
 
@@ -169,13 +179,14 @@ Mesh *Mesh::newCylinder(int stacks, int slices, float topRadius, float botRadius
 			cout << "Triangles" <<endl;
 #endif
 
-	vector<ivec3> trigs = generateTrigs(points, width, height + 1, false, crosshatch);
+	vector<ivec3> trigs = generateTrigs(points, width, height + 1, false, true, crosshatch);
 
-	return new Mesh(points, trigs);
+	return new Mesh(points, tex, trigs);
 }
 
 Mesh *Mesh::newSurfaceOfRotation(const vector<vec2> &points, int slices, bool crosshatch) {
 	vector<vec3> verts;
+	vector<vec2> tex;
 	for (uint c = 1; c < points.size()-1; c++) {
 		for (int d = 0; d < slices; d++) {
 			verts.push_back(
@@ -187,16 +198,17 @@ Mesh *Mesh::newSurfaceOfRotation(const vector<vec2> &points, int slices, bool cr
 	verts.push_back(vec3(0.0f, points[0].x, 0.0f));
 	verts.push_back(vec3(0.0f, points[points.size()-1].x, 0.0f));
 
-	vector<ivec3> trigs = generateTrigs(verts, slices, points.size()-2, true, crosshatch);
+	vector<ivec3> trigs = generateTrigs(verts, slices, points.size()-2, true, true, crosshatch);
 
-	return new Mesh(verts, trigs);
+	return new Mesh(verts, tex, trigs);
 }
 
-vector<ivec3> Mesh::generateTrigs(vector<vec3> points, int width, int height, bool endcaps, bool crosshatch) {
+vector<ivec3> Mesh::generateTrigs(vector<vec3> points, int width, int height, bool endcaps, bool wrap, bool crosshatch) {
 	assert(int(points.size()) >= width*height + (endcaps ? 2 : 0));
 	vector<ivec3> trigs;
+	int endW = wrap ? width : width-1;
 	for (int c = 0; c < height-1; c++) {
-		for (int d = 0; d < width; d++) {
+		for (int d = 0; d < endW; d++) {
 			int tlIndex = c*width + d;
 			int blIndex = tlIndex + width;
 			int trIndex = c*width + (d+1)%width;
@@ -230,17 +242,19 @@ vector<ivec3> Mesh::generateTrigs(vector<vec3> points, int width, int height, bo
 }
 
 
-Mesh::Mesh(vector<vec3> ppoints, vector<ivec3> trigs) {
+Mesh::Mesh(vector<vec3> ppoints, vector<vec2> texCoords, vector<ivec3> trigs) {
+	assert(texCoords.size() == 0 || texCoords.size() == ppoints.size());
 	this->drawNormals = false;
 	this->vertex_array_handle = this->vertex_coordinate_handle = GLuint(-1);
 	this->normal_array_handle = this->normal_coordinate_handle = GLuint(-1);
-	this->points = vector<VertexPN>(ppoints.size());
+	this->points = vector<VertexPNT>(ppoints.size());
 	this->trigs = trigs;
 
 	for (int c = 0; c < int(points.size()); c++) {
 		points[c].position = ppoints[c];
 		points[c].normal = vec3(0.0f);
-		//points[c].texture
+		if (texCoords.size() > 0)
+			points[c].texture = texCoords[c];
 	}
 
 	for (int c = 0; c < int(trigs.size()); c++) {
@@ -266,16 +280,16 @@ Mesh::Mesh(vector<vec3> ppoints, vector<ivec3> trigs) {
 }
 
 bool Mesh::initialize() {
-	if (!Graphics::inst()->loadBuffer(&this->vertex_array_handle, &this->vertex_coordinate_handle, this->points.size() * sizeof(VertexPN), &this->points[0]))
+	if (!Graphics::inst()->loadBuffer(&this->vertex_array_handle, &this->vertex_coordinate_handle, this->points.size() * sizeof(VertexPNT), &this->points[0]))
 		return false;
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPN), (GLvoid *) 0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPN), (GLvoid *) (1*sizeof(vec3)));
-
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPNT), (GLvoid *) 0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPNT), (GLvoid *) (1*sizeof(vec3)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexPNT), (GLvoid *) (2*sizeof(vec3)));
 
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
-
+	glEnableVertexAttribArray(2);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
@@ -341,5 +355,27 @@ void Mesh::takeDown() {
 	this->vertex_array_handle = this->vertex_coordinate_handle = GLuint(-1);
 	this->normal_array_handle = this->normal_coordinate_handle = GLuint(-1);
 
+}
+
+bool TexturedMesh::initialize() {
+	textureShader = ShaderFlyweight::inst()->getShader(SHADER_TEXTURE);
+	return Mesh::initialize();
+}
+
+void TexturedMesh::draw(const mat4 &model) {
+	if (checkError("TexturedMesh::Draw - on entry"))
+		return;
+
+	mat4 m = model;
+	transform(m);
+
+	texture->bind();
+	Graphics::inst()->drawTriangles(trigs, vertex_array_handle, textureShader, m);
+
+	if(drawNormals) {
+		Graphics::inst()->drawLines(normSegs, normal_array_handle, solidShader, m);
+		if (checkError("TexturedMesh::draw - on exit"))
+			return;
+	}
 }
 

@@ -6,6 +6,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <IL/il.h>
+#include <IL/ilu.h>
+#include <IL/ilut.h>
 #include "Mesh.h"
 #include "Window.h"
 #include "View.h"
@@ -20,6 +23,7 @@
 #include "Animation.h"
 #include "PointMesh.h"
 #include "Scene.h"
+#include "ilcontainer.h"
 
 using namespace std;
 using namespace glm;
@@ -59,6 +63,8 @@ public:
 	Drawable *rocket;
 	Drawable *centeredRocket;
 	Drawable *mars;
+
+	ILContainer *marsTexture;
 
 	TimeFunction<float> *const0;
 	TimeFunction<float> *const1;
@@ -121,7 +127,8 @@ bool Globals::initialize() {
 	modelRocket = new Model();
 	modelStars = new Model();
 
-	marsMesh = Mesh::newMars(marsRadius, marsRadScale, inFile, true);
+	marsTexture = new ILContainer();
+	marsMesh = Mesh::newMars(marsRadius, marsRadScale, inFile, marsTexture, true);
 	rocketMesh = new Rocket();
 	rocketMesh->scale(vec3(rocketScale));
 	starfieldMesh = PointMesh::newStarField(8000, 8.0f);
@@ -315,6 +322,9 @@ bool Globals::initialize() {
 		return false;
 	if (!mars->initialize())
 		return false;
+	if (!marsTexture->initialize("mars_texture.jpg"))
+		return false;
+	marsTexture->bind();
 	if (!rocket->initialize())
 		return false;
 	if (!starfield->initialize())
@@ -360,6 +370,7 @@ void Globals::takeDown() {
 	mars->takeDown();
 	rocket->takeDown();
 	starfield->takeDown();
+	marsTexture->takeDown();
 	Graphics::inst()->takeDown();
 	ShaderFlyweight::inst()->takeDown();
 }
@@ -376,6 +387,8 @@ Globals::~Globals() {
 
 	delete rocket;
 	delete mars;
+
+	delete marsTexture;
 
 	delete const0;
 	delete const1;
@@ -576,6 +589,9 @@ void windowDisplay() {
 
 int main(int argc, char * argv[]) {
 	glutInit(&argc, argv);
+	ilInit();
+	iluInit();
+	ilutInit();
 	if( argc < 2 )
 	{
 		globals.inFile = "mars_low_rez.txt";
