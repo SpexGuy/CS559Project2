@@ -13,54 +13,59 @@ using namespace std;
 
 
 Drawable *Drawable::rotated(const vec3 &axis, const float &angle) {
-	Rotation *d = new Rotation(this);
+	Rotation *d = new Rotation();
 	d->setRotation(axis, angle);
-	return d;
+	return pushDecorator(d);
 }
 
 Drawable *Drawable::translated(const vec3 &position) {
-	Translation *d = new Translation(this);
+	Translation *d = new Translation();
 	d->position(position);
-	return d;
+	return pushDecorator(d);
 }
 
 Drawable *Drawable::scaled(const vec3 &scale) {
-	Scale *d = new Scale(this);
+	Scale *d = new Scale();
 	d->scale(scale);
-	return d;
-}
-
-Drawable *Drawable::billboard(const vec3 &axis) {
-	return new BillboardTransform(this, axis);
-}
-
-Drawable *Drawable::disableDepthTest() {
-	return new DisableDepthTest(this);
-}
-
-Drawable *Drawable::inColor(vec4 color) {
-	return new Color(this, color);
-}
-
-Drawable *Drawable::inMaterial(const float &a, const vec4 &s, const float &shiny) {
-	return new Material(this, a, s, shiny);
-}
-
-Drawable *Drawable::resetColor() {
-	return new ColorReset(this);
-}
-
-Drawable *Drawable::resetMaterial() {
-	return new MaterialReset(this);
-}
-
-Drawable *Drawable::useMVMode(int mode) {
-	return new ModelviewMode(this, mode);
+	return pushDecorator(d);
 }
 
 Drawable *Drawable::animateRotation(AnimationGroup *ag, TimeFunction<glm::vec3> *axis, TimeFunction<float> *angle) {
-	Rotation *d = new Rotation(this);
+	Rotation *d = new Rotation();
 	ag->addAnimation(new RotationAnimation(d, axis, angle));
+	return pushDecorator(d);
+}
+
+Drawable *Drawable::disableDepthTest() {
+	return pushDecorator(new DisableDepthTest());
+}
+
+Drawable *Drawable::inColor(vec4 color) {
+	return pushDecorator(new Color(color));
+}
+
+Drawable *Drawable::inMaterial(const float &a, const vec4 &s, const float &shiny) {
+	return pushDecorator(new Material(a, s, shiny));
+}
+
+Drawable *Drawable::resetColor() {
+	return pushDecorator(new ColorReset());
+}
+
+Drawable *Drawable::resetMaterial() {
+	return pushDecorator(new MaterialReset());
+}
+
+Drawable *Drawable::billboard(const vec3 &axis) {
+	return pushDecorator(new BillboardTransform(axis));
+}
+
+Drawable *Drawable::useMVMode(int mode) {
+	return pushDecorator(new ModelviewMode(mode));
+}
+
+Drawable *Drawable::pushDecorator(DrawableDecorator *d) {
+	d->setChild(this);
 	return d;
 }
 
@@ -72,91 +77,12 @@ Drawable *Drawable::store(Drawable *&bucket) {
 
 
 
-Drawable *DrawableDecorator::rotated(const vec3 &axis, const float &angle) {
-	Drawable *d = child->rotated(axis, angle);
-	if (d != child)
+Drawable *DrawableDecorator::pushDecorator(DrawableDecorator *dec) {
+	Drawable *d = child->pushDecorator(dec);
+	if (d != child) {
 		isTos = false;
-	child = d;
-	return this;
-}
-
-Drawable *DrawableDecorator::translated(const vec3 &position) {
-	Drawable *d = child->translated(position);
-	if (d != child)
-		isTos = false;
-	child = d;
-	return this;
-}
-
-Drawable *DrawableDecorator::scaled(const vec3 &scale) {
-	Drawable *d = child->scaled(scale);
-	if (d != child)
-		isTos = false;
-	child = d;
-	return this;
-}
-
-Drawable *DrawableDecorator::billboard(const vec3 &axis) {
-	Drawable *d = child->billboard(axis);
-	if (d != child)
-		isTos = false;
-	child = d;
-	return this;
-}
-
-Drawable *DrawableDecorator::animateRotation(AnimationGroup *ag, TimeFunction<vec3> *axis, TimeFunction<float> *angle) {
-	Drawable *d = child->animateRotation(ag, axis, angle);
-	if (d != child)
-		isTos = false;
-	child = d;
-	return this;
-}
-
-Drawable *DrawableDecorator::disableDepthTest() {
-	Drawable *d = child->disableDepthTest();
-	if (d != child)
-		isTos = false;
-	child = d;
-	return this;
-}
-
-Drawable *DrawableDecorator::inColor(vec4 color) {
-	Drawable *d = child->inColor(color);
-	if (d != child)
-		isTos = false;
-	child = d;
-	return this;
-}
-
-Drawable *DrawableDecorator::inMaterial(const float &a, const vec4 &s, const float &shiny) {
-	Drawable *dec = child->inMaterial(a, s, shiny);
-	if (dec != child)
-		isTos = false;
-	child = dec;
-	return this;
-}
-
-Drawable *DrawableDecorator::resetColor() {
-	Drawable *d = child->resetColor();
-	if (d != child)
-		isTos = false;
-	child = d;
-	return this;
-}
-
-Drawable *DrawableDecorator::resetMaterial() {
-	Drawable *d = child->resetMaterial();
-	if (d != child)
-		isTos = false;
-	child = d;
-	return this;
-}
-
-Drawable *DrawableDecorator::useMVMode(int mode) {
-	Drawable *d = child->useMVMode(mode);
-	if (d != child)
-		isTos = false;
-	child = d;
+		child = d;
+	}
 	return this;
 }
 

@@ -12,54 +12,9 @@ class DrawableDecorator;
  */
 class Drawable {
 public:
-	/* pushes a Rotation onto the decorator stack 
+	/* pushes the given decorator onto the decorator stack
 	 * Returns a pointer to the base of the stack */
-	virtual Drawable *rotated(const glm::vec3 &axis,
-										const float &angle);
-	
-	/* pushes a Translation onto the decorator stack
-	 * Returns a pointer to the base of the stack */
-	virtual Drawable *translated(const glm::vec3 &position);
-	
-	/* pushes a Scale onto the decorator stack
-	 * Returns a pointer to the base of the stack */
-	virtual Drawable *scaled(const glm::vec3 &scale);
-	
-	/* pushes a BillboardTransform onto the decorator stack
-	 * Returns a pointer to the base of the stack */
-	virtual Drawable *billboard(const glm::vec3 &axis);
-
-	/* pushes a Rotation onto the decorator stack, then adds
-	 * an animation to the given group
-	 * Returns a pointer to the base of the stack */
-	virtual Drawable *animateRotation(
-				AnimationGroup *ag,
-				TimeFunction<glm::vec3> *axis,
-				TimeFunction<float> *angle);
-	
-	/* pushes a DisableDepthTest onto the decorator stack
-	 * Returns a pointer to the base of the stack */
-	virtual Drawable *disableDepthTest();
-
-	/* pushes a Color onto the decorator stack
-	 * Returns a pointer to the base of the stack */
-	virtual Drawable *inColor(glm::vec4 color);
-	
-	/* pushes a Material onto the decorator stack
-	 * Returns a pointer to the base of the stack */
-	virtual Drawable *inMaterial(const float &ambient, const glm::vec4 &specular, const float &shininess);
-	
-	/* pushes a ColorReset onto the decorator stack
-	 * Returns a pointer to the base of the stack */
-	virtual Drawable *resetColor();
-
-	/* pushes a MaterialReset onto the decorator stack
-	 * Returns a pointer to the base of the stack */
-	virtual Drawable *resetMaterial();
-
-	/* pushes a ModelviewMode onto the decorator stack
-	 * Returns a pointer to the base of the stack */
-	virtual Drawable *useMVMode(int mode);
+	virtual Drawable *pushDecorator(DrawableDecorator *d);
 
 	/* stores the current top of the decorator stack in the bucket */
 	virtual Drawable *store(Drawable *&bucket);
@@ -75,45 +30,79 @@ public:
 	virtual void takeDown() = 0;
 
 	virtual ~Drawable() {}
+
+	//--------- Decorator Functions -----------------
+	//The following functions exist only as wrappers to pushDecorator
+	//to enrich the syntax
+
+	/* pushes a Rotation onto the decorator stack 
+	 * Returns a pointer to the base of the stack */
+	Drawable *rotated(const glm::vec3 &axis,
+						const float &angle);
+	
+	/* pushes a Translation onto the decorator stack
+	 * Returns a pointer to the base of the stack */
+	Drawable *translated(const glm::vec3 &position);
+	
+	/* pushes a Scale onto the decorator stack
+	 * Returns a pointer to the base of the stack */
+	Drawable *scaled(const glm::vec3 &scale);
+	
+	/* pushes a BillboardTransform onto the decorator stack
+	 * Returns a pointer to the base of the stack */
+	Drawable *billboard(const glm::vec3 &axis);
+
+	/* pushes a Rotation onto the decorator stack, then adds
+	 * an animation to the given group
+	 * Returns a pointer to the base of the stack */
+	Drawable *animateRotation(
+				AnimationGroup *ag,
+				TimeFunction<glm::vec3> *axis,
+				TimeFunction<float> *angle);
+	
+	/* pushes a DisableDepthTest onto the decorator stack
+	 * Returns a pointer to the base of the stack */
+	Drawable *disableDepthTest();
+	
+	/* pushes a Color onto the decorator stack
+	 * Returns a pointer to the base of the stack */
+	Drawable *inColor(glm::vec4 color);
+	
+	/* pushes a Material onto the decorator stack
+	 * Returns a pointer to the base of the stack */
+	Drawable *inMaterial(const float &ambient,
+		const glm::vec4 &specular, const float &shininess);
+	
+	/* pushes a ColorReset onto the decorator stack
+	 * Returns a pointer to the base of the stack */
+	Drawable *resetColor();
+
+	/* pushes a MaterialReset onto the decorator stack
+	 * Returns a pointer to the base of the stack */
+	Drawable *resetMaterial();
+
+	/* pushes a ModelviewMode onto the decorator stack
+	 * Returns a pointer to the base of the stack */
+	Drawable *useMVMode(int mode);
+	
 };
 
 class DrawableDecorator : public Drawable {
 private:
-	DrawableDecorator();
 	/* copying a DrawableDecorator breaks the memory management scheme */
 	DrawableDecorator(Drawable &copy);
 protected:
 	Drawable *child;
 	bool isTos;
 	
-	DrawableDecorator(Drawable *child) :
-		child(child),
+	DrawableDecorator() :
+		child(NULL),
 		isTos(true)
 	{}
-	
+
 public:
-	/* pushes a Rotation onto the decorator stack */
-	virtual Drawable *rotated(const glm::vec3 &axis, const float &angle);
-	/* pushes a Translation onto the decorator stack */
-	virtual Drawable *translated(const glm::vec3 &position);
-	/* pushes a Scale onto the decorator stack */
-	virtual Drawable *scaled(const glm::vec3 &scale);
-	/* pushes a BillboardTransform onto the decorator stack */
-	virtual Drawable *billboard(const glm::vec3 &axis);
-	/* pushes a Rotation onto the decorator stack, then adds an animation to the given group */
-	virtual Drawable *animateRotation(AnimationGroup *ag, TimeFunction<glm::vec3> *axis, TimeFunction<float> *angle);
-	/* pushes a DisableDepthTest onto the decorator stack */
-	virtual Drawable *disableDepthTest();
-	/* pushes a Color onto the decorator stack */
-	virtual Drawable *inColor(glm::vec4 color);
-	/* pushes a Material onto the decorator stack */
-	virtual Drawable *inMaterial(const float &ambient, const glm::vec4 &specular, const float &shininess);
-	/* pushes a ColorReset onto the decorator stack */
-	virtual Drawable *resetColor();
-	/* pushes a MaterialReset onto the decorator stack */
-	virtual Drawable *resetMaterial();
-	/* pushes a ModelviewMode onto the decorator stack */
-	virtual Drawable *useMVMode(int mode);
+
+	virtual Drawable *pushDecorator(DrawableDecorator *d);
 
 	/* stores the current top of the decorator stack in the bucket */
 	virtual Drawable *store(Drawable *&bucket);
@@ -122,6 +111,9 @@ public:
 	
 	virtual void takeDown();
 
+	inline void setChild(Drawable *child) {
+		this->child = child;
+	}
 	inline Drawable *getChild() {
 		return child;
 	}
@@ -161,8 +153,8 @@ private:
 
 class DisableDepthTest : public DrawableDecorator {
 public:
-	DisableDepthTest(Drawable *child) :
-		DrawableDecorator(child) {}
+	DisableDepthTest() :
+		DrawableDecorator() {}
 	
 	virtual void draw(const glm::mat4 &model);
 };
@@ -173,8 +165,8 @@ private:
 protected:
 	glm::vec4 color;
 public:
-	Color(Drawable *next, const glm::vec4 &color) :
-		DrawableDecorator(next),
+	Color(const glm::vec4 &color) :
+		DrawableDecorator(),
 		color(color)
 	{}
 	
@@ -188,8 +180,8 @@ protected:
 	float ambient, shininess;
 	glm::vec4 specularColor;
 public:
-	Material(Drawable *next, const float &ambient, const glm::vec4 &specularColor, const float &shininess) :
-		DrawableDecorator(next),
+	Material(const float &ambient, const glm::vec4 &specularColor, const float &shininess) :
+		DrawableDecorator(),
 		ambient(ambient),
 		shininess(shininess),
 		specularColor(specularColor)
@@ -199,22 +191,18 @@ public:
 };
 
 class ColorReset : public DrawableDecorator {
-private:
-	ColorReset();
 public:
-	ColorReset(Drawable *next) :
-		DrawableDecorator(next)
+	ColorReset() :
+		DrawableDecorator()
 	{}
 	
 	virtual void draw(const glm::mat4 &model);
 };
 
 class MaterialReset : public DrawableDecorator {
-private:
-	MaterialReset();
 public:
-	MaterialReset(Drawable *next) :
-		DrawableDecorator(next)
+	MaterialReset() :
+		DrawableDecorator()
 	{}
 	
 	virtual void draw(const glm::mat4 &model);
@@ -226,8 +214,8 @@ private:
 protected:
 	glm::vec3 axis;
 public:
-	BillboardTransform(Drawable *next, const glm::vec3 &axis) :
-		DrawableDecorator(next),
+	BillboardTransform(const glm::vec3 &axis) :
+		DrawableDecorator(),
 		axis(glm::normalize(axis))
 	{}
 
@@ -240,8 +228,8 @@ private:
 protected:
 	int mode;
 public:
-	ModelviewMode(Drawable *next, const int &mode) :
-		DrawableDecorator(next),
+	ModelviewMode(const int &mode) :
+		DrawableDecorator(),
 		mode(mode)
 	{}
 

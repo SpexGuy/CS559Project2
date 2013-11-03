@@ -28,20 +28,16 @@ protected:
 };
 
 class Scale : public ScaleableMixin, public DrawableDecorator {
-private:
-	Scale();
 public:
-	Scale(Drawable *child) :
-		DrawableDecorator(child) {}
+	Scale() :
+		DrawableDecorator() {}
 	virtual void draw(const glm::mat4 &model);
 };
 
 class CamScale : public ScaleableMixin, public CameraDecorator {
-private:
-	CamScale();
 public:
-	CamScale(Camera *next) :
-		CameraDecorator(next) {}
+	CamScale() :
+		CameraDecorator() {}
 	virtual glm::mat4 generateViewMatrix();
 };
 

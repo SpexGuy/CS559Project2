@@ -31,19 +31,15 @@ public:
 
 
 class Translation : public TranslatableMixin, public DrawableDecorator {
-private:
-	Translation();
 public:
-	Translation(Drawable *child) :
-		DrawableDecorator(child) {}
+	Translation() :
+		DrawableDecorator() {}
 	virtual void draw(const glm::mat4 &model);
 };
 
 class CamTranslation : public TranslatableMixin, public CameraDecorator {
-private:
-	CamTranslation();
 public:
-	CamTranslation(Camera *next) :
-		CameraDecorator(next) {}
+	CamTranslation() :
+		CameraDecorator() {}
 	virtual glm::mat4 generateViewMatrix();
 };

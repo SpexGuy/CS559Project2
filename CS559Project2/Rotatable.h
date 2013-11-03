@@ -29,20 +29,16 @@ public:
 };
 
 class Rotation : public RotatableMixin, public DrawableDecorator {
-private:
-	Rotation();
 public:
-	Rotation(Drawable *child) :
-		DrawableDecorator(child) {}
+	Rotation() :
+		DrawableDecorator() {}
 	virtual void draw(const glm::mat4 &model);
 };
 
 class CamRotation : public RotatableMixin, public CameraDecorator {
-private:
-	CamRotation();
 public:
-	CamRotation(Camera *next) :
-		CameraDecorator(next) {}
+	CamRotation() :
+		CameraDecorator() {}
 	virtual glm::mat4 generateViewMatrix();
 };
 

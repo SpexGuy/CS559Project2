@@ -5,7 +5,7 @@
 /**
  * A camera which is fixed to the surface of a sphere and points at its center
  */
-class SpheroidCamera : public MoveableCamera, public SphericalCoordinateMixin{
+class SpheroidCamera : public Camera, public SphericalCoordinateMixin{
 public:
 	SpheroidCamera();
 	virtual glm::mat4 generateViewMatrix();
@@ -29,7 +29,7 @@ private:
 	float theta;
 };
 
-class PointCamera : public MoveableCamera, public SphericalAngleMixin {
+class PointCamera : public Camera, public SphericalAngleMixin {
 public:
 	virtual glm::mat4 generateViewMatrix();
 	void moveForward(float offset);
@@ -40,11 +40,11 @@ public:
 /**
  * A camera that is bound to no point and has a movable postion
  */
-class FreeFlyCamera : public MoveableCamera, public SphericalAngleMixin {
+class FreeFlyCamera : public Camera, public SphericalAngleMixin {
 protected:
 	glm::vec3 position;
 public:
-	FreeFlyCamera() : MoveableCamera() {}
+	FreeFlyCamera() : position(glm::vec3(0.0f)) {}
 
 	void moveForward(float offset);
 	void moveRight(float offset);

@@ -7,28 +7,33 @@
 using namespace glm;
 
 Camera *Camera::rotated(const vec3 &axis, const float &angle) {
-	CamRotation *rot = new CamRotation(this);
+	CamRotation *rot = new CamRotation();
 	rot->setRotation(axis, angle);
-	return rot;
+	return pushDecorator(rot);
 }
 
 Camera *Camera::translated(const vec3 &position) {
-	CamTranslation *trans = new CamTranslation(this);
+	CamTranslation *trans = new CamTranslation();
 	trans->position(position);
-	return trans;
+	return pushDecorator(trans);
 }
 
 Camera *Camera::scaled(const vec3 &scale) {
-	CamScale *sc = new CamScale(this);
+	CamScale *sc = new CamScale();
 	sc->scale(scale);
-	return sc;
+	return pushDecorator(sc);
 }
 
 Camera *Camera::animateRotation(AnimationGroup *ag, TimeFunction<vec3> *axis, TimeFunction<float> *angle) {
-	CamRotation *rot = new CamRotation(this);
+	CamRotation *rot = new CamRotation();
 	RotationAnimation *anim = new RotationAnimation(rot, axis, angle);
 	ag->addAnimation(anim);
-	return rot;
+	return pushDecorator(rot);
+}
+
+Camera *Camera::pushDecorator(CameraDecorator *d) {
+	d->setNext(this);
+	return d;
 }
 
 Camera *Camera::store(Camera *&bucket) {
@@ -36,32 +41,8 @@ Camera *Camera::store(Camera *&bucket) {
 	return this;
 }
 
-Camera *CameraDecorator::rotated(const vec3 &axis, const float &angle) {
-	Camera *d = next->rotated(axis, angle);
-	if (d != next)
-		isTos = false;
-	next = d;
-	return this;
-}
-
-Camera *CameraDecorator::translated(const vec3 &position) {
-	Camera *d = next->translated(position);
-	if (d != next)
-		isTos = false;
-	next = d;
-	return this;
-}
-
-Camera *CameraDecorator::scaled(const vec3 &scale) {
-	Camera *d = next->scaled(scale);
-	if (d != next)
-		isTos = false;
-	next = d;
-	return this;
-}
-
-Camera *CameraDecorator::animateRotation(AnimationGroup *ag, TimeFunction<vec3> *axis, TimeFunction<float> *angle) {
-	Camera *d = next->animateRotation(ag, axis, angle);
+Camera *CameraDecorator::pushDecorator(CameraDecorator *dec) {
+	Camera *d = next->pushDecorator(dec);
 	if (d != next)
 		isTos = false;
 	next = d;
