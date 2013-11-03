@@ -78,8 +78,16 @@ Mesh *Mesh::newMars(float radius, float radScale,
 			
 			cout << "Triangles" <<endl;
 #endif
-	points.push_back(vec3(0, radius, 0));
-	points.push_back(vec3(0, -radius, 0));
+	float topTotal = 0;
+	float botTotal = 0;
+	for (int c = 0; c < width; c++) {
+		topTotal += radii[0][c];
+		botTotal += radii.back()[c];
+	}
+	float topAvg = topTotal/float(width);
+	float botAvg = botTotal/float(width);
+	points.push_back(vec3(0, radius + topAvg*radScale, 0));
+	points.push_back(vec3(0, -radius - botAvg*radScale, 0));
 
 	vector<ivec3> trigs = generateTrigs(points, width, height, true, crosshatch);
 

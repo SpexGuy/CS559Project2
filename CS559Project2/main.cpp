@@ -312,7 +312,6 @@ void Globals::changeCamera()
 	view->setModel(Scenes[currentScene]->getModel());
 
 	currentCamera = Scenes[currentScene]->getCamera();
-
 }
 
 void Globals::takeDown() {
@@ -484,10 +483,8 @@ void SpecialFunc(int c, int x, int y) {
 
 	switch (c) {
 		case GLUT_KEY_F1:
-		{
 			globals.changeCamera();
-		}
-		break;
+			break;
 
 		case GLUT_KEY_CTRL_R:
 			globals.currentCamera ->moveForward(1.0f);
@@ -545,8 +542,7 @@ int main(int argc, char * argv[]) {
 	glutInit(&argc, argv);
 	if( argc < 2 )
 	{
-		cerr << "Error: Command Line arguments not valid" << endl;
-		return -1;
+		globals.inFile = "mars_low_rez.txt";
 	}
 	else
 	{
