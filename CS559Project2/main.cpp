@@ -238,15 +238,16 @@ bool Globals::initialize() {
 	camerasRocket.push_back(camRocket);
 	camerasStars.push_back(camStars);
 
-	vector<char*> text;	
+	vector<char*> text;
+	text.push_back("Image credit: http://openuniverse.sourceforge.net/");
+	text.push_back("");
 	text.push_back("Left/Right UP/DOWN PgUP/PgDn - Camera Controls");
 	text.push_back("O/L ;/K - Light Controls");
-
 	text.push_back("W - wireframe");
 	text.push_back("P - Pause");
 	text.push_back("N - Normals");
 	text.push_back("F1 - Cycle Camera/Scene");
-	text.push_back("F11 - Flull Screen");
+	text.push_back("F11 - Full Screen");
 	text.push_back("");
 	text.push_back("MARS MODE");
 
