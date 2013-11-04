@@ -1,6 +1,7 @@
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
 #endif
+/* See Projection.h for architecture documentation */
 #include <math.h>
 #include "Projection.h"
 #include "Graphics.h"
@@ -14,22 +15,18 @@ Projection::Projection() {
 	yon = 10.0f;
 }
 
-void Projection::setPlanes(float hither, float yon) {
-	if (hither <= 0)
-		hither = 0.0000001f;
-	if (hither >= yon)
-		yon = hither + 0.0000001f;
-	this->hither = hither;
-	this->yon = yon;
+void Projection::setPlanes(const float &hither, const float &yon) {
+	this->hither = max(0.0000001f, hither);
+	this->yon = max(this->hither + 0.0000001f, yon);
 }
 
 
 
-OrthogonalProjection::OrthogonalProjection(float height) {
+OrthogonalProjection::OrthogonalProjection(const float &height) {
 	setHeight(height);
 }
 
-void OrthogonalProjection::setHeight(float height) {
+void OrthogonalProjection::setHeight(const float &height) {
 	this->height = height;
 }
 
@@ -45,8 +42,8 @@ mat4 OrthogonalProjection::generateProjectionMatrix() {
 
 
 
-PerspectiveProjection::PerspectiveProjection(float fov) {
-	this->fov = fov;
+PerspectiveProjection::PerspectiveProjection(const float &fov) {
+	setFov(fov);
 }
 
 mat4 PerspectiveProjection::generateProjectionMatrix() {
@@ -54,16 +51,6 @@ mat4 PerspectiveProjection::generateProjectionMatrix() {
 	return perspective(fov, float(size.x)/float(size.y), hither, yon);
 }
 
-void PerspectiveProjection::addFov(float addition) {
-	setFov(fov + addition);
-}
-void PerspectiveProjection::setFov(float fov) {
-	if (fov > 80)
-		fov = 80;
-	else if (fov < 10)
-		fov = 10;
-	this->fov = fov;
-}
-float PerspectiveProjection::getFov() {
-	return fov;
+void PerspectiveProjection::setFov(const float &fov) {
+	this->fov = clamp(fov, 10.0f, 80.0f);
 }

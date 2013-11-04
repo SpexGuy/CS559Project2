@@ -2,6 +2,7 @@
 #include <assert.h>
 #include "ilcontainer.h"
 
+//a static counter to assign unique indexes
 int ILContainer::nextIndex = 0;
 
 bool ILContainer::initialize(const char * file_name)
@@ -25,9 +26,6 @@ bool ILContainer::initialize(const char * file_name)
 	return true;
 }
 
-/*	To use with a shader, the sampler uniform must be fed the
-	same paramter value as you call this function with.
-*/
 void ILContainer::bind()
 {
 	// We are asserting that we have initialized this object before.
@@ -39,6 +37,7 @@ void ILContainer::bind()
 
 void ILContainer::takeDown()
 {
+	//free resources
 	if (this->il_texture_handle != BAD_GL_VALUE)
 		glDeleteTextures(1, &this->il_texture_handle);
 	if (this->il_handle != BAD_IL_VALUE)
@@ -49,6 +48,7 @@ void ILContainer::takeDown()
 }
 
 ILContainer::~ILContainer() {
+	//assert that takeDown has been called
 	assert(il_handle == BAD_IL_VALUE);
 	assert(il_texture_handle == BAD_GL_VALUE);
 }

@@ -10,22 +10,16 @@
 #define	BAD_IL_VALUE	IL_INVALID_VALUE
 #ifndef BAD_GL_VALUE
 #define	BAD_GL_VALUE	GLuint(-1)
-#endif // !BAD_GL_VALUE
+#endif
 
-/*	This class assumes that the object will be dynamically created.
-	This  assumption is  demonstrated in the destructor which calls
-	OpenGL. If an object  is  declared  in  the  global  score, the 
-	destructor will run  after  the  OpenGL  context is  destroyed, 
-	which would be an error.
-*/
-
-class ILContainer
-{
+/** This class represents an image loaded using DevIL
+ * which is used as a texture */
+class ILContainer {
 private:
+	/* each ILContainer is assigned a unique, incrementing index */
 	static int nextIndex;
 public:
-	ILContainer()
-	{
+	ILContainer() {
 		this->il_handle = BAD_IL_VALUE;
 		this->il_texture_handle = BAD_GL_VALUE;
 		this->index = nextIndex++;
@@ -33,8 +27,11 @@ public:
 
 	~ILContainer();
 	
+	/* loads the texture and registers it with GL */
 	bool initialize(const char * file_name);
+	/* binds the texture to its index */
 	void bind();
+	/* releases any GL resources */
 	void takeDown();
 
 	int index;
