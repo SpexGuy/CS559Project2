@@ -186,7 +186,7 @@ bool Globals::initialize() {
 					->inColor(BLUE)
 					->inMaterial(0.1f, vec4(1.0f), 40.0f);
 
-	BoundedSpheroidCamera* bsc = new BoundedSpheroidCamera();
+	BoundedSpheroidCamera* bsc = new BoundedSpheroidCamera(360.0f, 25.0f);
 	chaseCam = bsc					
 		->rotated(vec3(0.0f, 0.0f, 1.0f), 30)
 		//rotate the camera with the ship

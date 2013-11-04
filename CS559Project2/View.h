@@ -57,11 +57,21 @@ protected:
 	
 };
 
+/**
+ * HudOverlay is an overlay that draws text infront of 
+ * everything else. It holds and array of strings that
+ * each represents a line in the HUD.
+ */
 class HudOverlay : public ViewOverlay{
 public:
 	virtual glm::mat4 draw();
+
+	/*
+	 * Creates a HudOverlay with a vector of strings.
+	 */
 	HudOverlay(std::vector<char*> text);
 
 protected:
+	//The vector of shrings of the HudOverlay.
 	std::vector<char*> text;
 };

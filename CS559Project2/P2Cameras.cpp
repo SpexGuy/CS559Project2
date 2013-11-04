@@ -95,20 +95,27 @@ mat4 FreeFlyCamera::generateViewMatrix() {
 void BoundedSpheroidCamera::moveForward(float offset){
 }
 
-BoundedSpheroidCamera::BoundedSpheroidCamera(){
-	this->bound = bound;
+BoundedSpheroidCamera::BoundedSpheroidCamera(float angleBound, float angleAxisBound){
+	this->angleBound = angleBound;
+	this->angleAxisBound = angleAxisBound;
+
 }
 
 void BoundedSpheroidCamera::moveRight(float offset){
 	float turn = offset;
-	this->addAngle(turn);
+	float a = angle;
+	
+	if(((angle +turn) > -180.0f && (angle+ turn)< angleBound+90.0f) || angleBound == 360.0f)
+	{
+		this->addAngle(turn);
+	}
 }
 
 void BoundedSpheroidCamera::moveUp(float offset){
 	float turn = - offset;
-	bound = 25.0f;
+	float bound = 25.0f;
 	float a = angle;
-	if((axisAngle +turn) > -180.0f && (axisAngle+ turn)< bound+90.0f)
+	if(((axisAngle +turn) > -180.0f && (axisAngle+ turn)< angleAxisBound+90.0f) || angleAxisBound == 360.f)
 	{
 		this->addAxisAngle(turn);
 	}
