@@ -4,6 +4,7 @@
 
 using namespace std;
 
+/* checks for an error and prints it */
 bool checkError(char * s) {
 	bool return_error = false;
 #ifdef _DEBUG

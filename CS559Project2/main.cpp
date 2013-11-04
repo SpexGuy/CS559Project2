@@ -325,7 +325,6 @@ bool Globals::initialize() {
 		return false;
 	if (!marsTexture->initialize("mars_texture.jpg"))
 		return false;
-	marsTexture->bind();
 	if (!rocket->initialize())
 		return false;
 	if (!starfield->initialize())
@@ -571,6 +570,7 @@ void SpecialFunc(int c, int x, int y) {
 void TimerFunc(int value) {
 	if (!globals.window->isClosed()) {
 		int time = glutGet(GLUT_ELAPSED_TIME);
+		Graphics::inst()->setTime(time);
 		globals.model->update(time);
 		glutTimerFunc(globals.period, TimerFunc, value);
 		globals.window->update();

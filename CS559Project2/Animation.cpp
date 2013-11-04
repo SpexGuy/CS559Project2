@@ -1,8 +1,11 @@
+/* See Animation.h for architecture comments */
 #include <list>
 #include "Animation.h"
 
 using namespace std;
 
+
+//----------------- Animation -------------------
 
 Animation::Animation() {
 	paused = false;
@@ -12,6 +15,7 @@ Animation::Animation() {
 }
 
 void Animation::update(int time) {
+	/* detect and handle edge on pause flag */
 	if (willPause != paused) {
 		if (willPause)
 			timePauseStarted = time;
@@ -30,14 +34,22 @@ void Animation::pause() {
 void Animation::play() {
 	willPause = false;
 }
-void Animation:: reset()
-{
+
+void Animation:: reset() {
+	//trigger a positive edge
 	paused = true;
+	/* upon positive edge,
+	 * timeSpentPaused = time + timeSpentPaused - timePauseStarted
+	 * by setting timePauseStarted equal to timeSpentPaused,
+	 * this becomes timeSpentPaused = time,
+	 * effectively resetting the system. */
 	timeSpentPaused = timePauseStarted;
 }
 
-void AnimationGroup::reset(){
 
+//-------------- AnimationGroup ---------------
+
+void AnimationGroup::reset(){
 	Animation::reset();
 	for (
 		list<Animation *>::const_iterator
@@ -48,7 +60,6 @@ void AnimationGroup::reset(){
 	{
 		(*iterator)->reset();
 	}
-	
 }
 
 void AnimationGroup::doUpdate(int time) {
@@ -83,6 +94,9 @@ AnimationGroup::~AnimationGroup() {
 		delete *iterator;
 	}
 }
+
+
+//--------------- RotationAnimation ---------------
 
 void RotationAnimation::doUpdate(int time) {
 	obj->setRotation(axis->evaluate(time), angle->evaluate(time));

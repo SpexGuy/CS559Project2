@@ -24,7 +24,7 @@ class Shader
 public:
 	void use() const;
 	virtual void customSetup() const;
-	void commonSetup(const float time, const GLint *size, const GLfloat *projection, const GLfloat *modelview, const GLfloat *mvp, 
+	void commonSetup(const int time, const GLint *size, const GLfloat *projection, const GLfloat *modelview, const GLfloat *mvp, 
 					const GLfloat *nm, const GLfloat *light, const GLfloat *color,
 					const GLfloat *ambient, const GLfloat *diffuse, const GLfloat *specular, const float shiny) const;
 

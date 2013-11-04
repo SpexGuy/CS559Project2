@@ -1,7 +1,7 @@
+/* See Function.h for documentation */
 #include "Function.h"
 
 using namespace glm;
-
 
 
 float LinearTimeFunction::evaluate(int time) {
@@ -10,5 +10,7 @@ float LinearTimeFunction::evaluate(int time) {
 
 
 vec3 Vec3TimeFunction::evaluate(int time) {
-	return vec3(f1->evaluate(time), f2->evaluate(time), f3->evaluate(time));
+	return vec3(f1->evaluate(time),
+				f2->evaluate(time),
+				f3->evaluate(time));
 }

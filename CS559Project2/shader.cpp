@@ -33,12 +33,12 @@ Shader::Shader()
 	loaded with the CustomShader() function.
 */
 
-void Shader::commonSetup(const float time, const GLint * size, const GLfloat * projection, const GLfloat * modelview,
+void Shader::commonSetup(const int time, const GLint * size, const GLfloat * projection, const GLfloat * modelview,
 						 const GLfloat * mvp, const GLfloat * nm, const GLfloat * light, const GLfloat * color,
 						 const GLfloat *ambient, const GLfloat *diffuse, const GLfloat *specular, const float shiny) const
 {
 	if (this->time_handle != BAD_GL_VALUE)
-		glUniform1f(this->time_handle, time);
+		glUniform1d(this->time_handle, time);
 	this->GLReturnedError("Top::Draw - after time_handle");
 	if (this->size_handle != BAD_GL_VALUE)
 		glUniform2iv(this->size_handle, 1, size);
