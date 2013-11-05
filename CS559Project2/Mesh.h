@@ -32,9 +32,9 @@ public:
 	 * to trig[2] and crossing it with the vector from trig[1] to trig[0].
 	 * Calculates point normals by averaging the vectors from all triangles
 	 * which have this point as a vertex. */
-	Mesh(std::vector<glm::vec3> points,
-		 std::vector<glm::vec2> texCoords,
-		 std::vector<glm::ivec3> trigs);
+	Mesh(const std::vector<glm::vec3> &points,
+		 const std::vector<glm::vec2> &texCoords,
+		 const std::vector<glm::ivec3> &trigs);
 
 	virtual bool initialize();
 	
@@ -72,7 +72,7 @@ public:
 	 * calculated as radius + radScale*radii[i][j]. 
 	 */
 	static Mesh *newMars(float radius, float radScale,
-		std::vector<std::vector<float>> radii,
+		const std::vector<std::vector<float>> &radii,
 		ILContainer *texture,
 		bool crosshatch = false);
 
@@ -81,22 +81,29 @@ public:
 	 *  center of the top slice. 
 	 */
 	static Mesh *newCylinder(int stacks, int slices, 
-				float topRadius, float botRadius, bool crosshatch = false);
+				float topRadius, float botRadius,
+				bool crosshatch = false);
 
 	/** creates a sphere mesh with a certain number of stacks and slices,
 	 * along with a radius. The origin of the sphere is center of the sphere.
 	 */
-	static Mesh *newSphere(int stacks, int slices, float radius, bool crosshatch = false);
+	static Mesh *newSphere(int stacks, int slices,
+		float radius, bool crosshatch = false);
 
 	/** creates a surface of rotation mesh with a certain number of slices,
 	 * the stacks are that are is based off the points passed in.  
 	 */
-	static Mesh *newSurfaceOfRotation(const std::vector<glm::vec2> &points, int slices, bool crosshatch = false);
+	static Mesh *newSurfaceOfRotation(
+		const std::vector<glm::vec2> &points,
+		int slices, bool crosshatch = false);
 
 	/** creates a vector of pairs of indices that coorespond to the vector of points to discribe triangles. 
 	 */
-	static std::vector<glm::ivec3> generateTrigs(std::vector<glm::vec3> points,
-			int width, int height, bool endcaps, bool wrap, bool crosshatch);
+	static std::vector<glm::ivec3> generateTrigs(
+		const std::vector<glm::vec3> &points,
+		int width, int height,
+		bool endcaps, bool wrap,
+		bool crosshatch = false);
 };
 
 class TexturedMesh : public Mesh {
@@ -106,8 +113,14 @@ protected:
 	ILContainer *texture;
 	Shader *textureShader;
 public:
-	TexturedMesh(std::vector<glm::vec3> points, std::vector<glm::vec2> texCoords, std::vector<glm::ivec3> trigs, ILContainer *texture) :
-		Mesh(points, texCoords, trigs), texture(texture) {}
+	TexturedMesh(const std::vector<glm::vec3> &points,
+				 const std::vector<glm::vec2> &texCoords,
+				 const std::vector<glm::ivec3> &trigs,
+				 ILContainer *texture) :
+		
+		Mesh(points, texCoords, trigs),
+		texture(texture)
+	{}
 
 	virtual bool initialize();
 	

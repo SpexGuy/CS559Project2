@@ -16,7 +16,9 @@ using namespace glm;
 
 //#define DEBUG
 
-Mesh *Mesh::newMars(float radius, float radScale, char *filename, ILContainer *texture, bool crosshatch) {
+Mesh *Mesh::newMars(float radius, float radScale, char *filename,
+					ILContainer *texture, bool crosshatch) {
+
 	ifstream inFile(filename);
 	if (inFile.is_open()) {
 		int width, height;
@@ -46,7 +48,7 @@ Mesh *Mesh::newMars(float radius, float radScale, char *filename, ILContainer *t
 }
 
 Mesh *Mesh::newMars(float radius, float radScale,
-					vector<vector<float>> radii,
+					const vector<vector<float>> &radii,
 					ILContainer *texture,
 					bool crosshatch)
 {
@@ -73,18 +75,20 @@ Mesh *Mesh::newMars(float radius, float radScale,
 			float z = r*cos(theta)*sin(phi);
 			float y = r*cos(phi);
 
-#ifdef DEBUG
-			if(i < 1 && j < 10)
-				cout << "( " << x << ", " << y << "," << z << " )" <<endl;
-#endif
+			#ifdef DEBUG
+				if(i < 1 && j < 10)
+					cout << "( " << x << ", " << y << "," << z << " )" <<endl;
+			#endif
+
 			points.push_back(vec3(x,y,z));
 			tex.push_back(vec2(tScale, pScale));
 		}
 	}
-#ifdef DEBUG
-			
-			cout << "Triangles" <<endl;
-#endif
+
+	#ifdef DEBUG
+		cout << "Triangles" <<endl;
+	#endif
+
 	float topTotal = 0;
 	float botTotal = 0;
 	for (int c = 0; c < width; c++) {
@@ -184,7 +188,9 @@ Mesh *Mesh::newCylinder(int stacks, int slices, float topRadius, float botRadius
 	return new Mesh(points, tex, trigs);
 }
 
-Mesh *Mesh::newSurfaceOfRotation(const vector<vec2> &points, int slices, bool crosshatch) {
+Mesh *Mesh::newSurfaceOfRotation(const vector<vec2> &points,
+								 int slices,
+								 bool crosshatch) {
 	vector<vec3> verts;
 	vector<vec2> tex;
 	for (uint c = 1; c < points.size()-1; c++) {
@@ -203,7 +209,11 @@ Mesh *Mesh::newSurfaceOfRotation(const vector<vec2> &points, int slices, bool cr
 	return new Mesh(verts, tex, trigs);
 }
 
-vector<ivec3> Mesh::generateTrigs(vector<vec3> points, int width, int height, bool endcaps, bool wrap, bool crosshatch) {
+vector<ivec3> Mesh::generateTrigs(const vector<vec3> &points,
+								  int width, int height,
+								  bool endcaps, bool wrap,
+								  bool crosshatch) {
+
 	assert(int(points.size()) >= width*height + (endcaps ? 2 : 0));
 	vector<ivec3> trigs;
 	int endW = wrap ? width : width-1;
@@ -221,12 +231,12 @@ vector<ivec3> Mesh::generateTrigs(vector<vec3> points, int width, int height, bo
 				trigs.push_back(ivec3(blIndex, brIndex, trIndex));
 			}
 
-#ifdef DEBUG
-			if(c < 1 && (d > width - 1 || d < 1))
-			cout << "( " << trIndex << ", " << tlIndex << "," << blIndex << " )" <<endl;
-			if(c < 1 && (d > width - 1 || d < 1))
-			cout << "( " << blIndex << ", " << brIndex << "," << trIndex << " )" <<endl<<endl;
-#endif
+			#ifdef DEBUG
+				if(c < 1 && (d > width - 1 || d < 1))
+					cout << "( " << trIndex << ", " << tlIndex << "," << blIndex << " )" <<endl;
+				if(c < 1 && (d > width - 1 || d < 1))
+					cout << "( " << blIndex << ", " << brIndex << "," << trIndex << " )" <<endl<<endl;
+			#endif
 		}
 	}
 
@@ -242,7 +252,10 @@ vector<ivec3> Mesh::generateTrigs(vector<vec3> points, int width, int height, bo
 }
 
 
-Mesh::Mesh(vector<vec3> ppoints, vector<vec2> texCoords, vector<ivec3> trigs) {
+Mesh::Mesh(const vector<vec3> &ppoints,
+		   const vector<vec2> &texCoords,
+		   const vector<ivec3> &trigs) {
+
 	assert(texCoords.size() == 0 || texCoords.size() == ppoints.size());
 	this->drawNormals = false;
 	this->vertex_array_handle = this->vertex_coordinate_handle = GLuint(-1);
