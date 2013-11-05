@@ -6,17 +6,18 @@
 using namespace glm;
 using namespace std;
 
+/* find the desired point using the DeCastlejau algorithm */
 vec2 getPoint(SplinePoint *before, SplinePoint *after, float t) {
-	vec2 p0000 = before->position;
-	vec2 p0001 = before->getAfterPoint();
-	vec2 p0002 = after->getBeforePoint();
-	vec2 p0003 = after->position;
-	vec2 p000 = mix(p0000, p0001, t);
-	vec2 p001 = mix(p0001, p0002, t);
-	vec2 p002 = mix(p0002, p0003, t);
+	vec2 p000 = before->position;
+	vec2 p001 = before->getAfterPoint();
+	vec2 p002 = after->getBeforePoint();
+	vec2 p003 = after->position;
 	vec2 p00 = mix(p000, p001, t);
 	vec2 p01 = mix(p001, p002, t);
-	return mix(p00, p01, t);
+	vec2 p02 = mix(p002, p003, t);
+	vec2 p0 = mix(p00, p01, t);
+	vec2 p1 = mix(p01, p02, t);
+	return mix(p0, p1, t);
 }
 
 
@@ -25,7 +26,7 @@ SplineEditor::SplineEditor(int numPoints) : points(numPoints) {
 	currentIndex = 0;
 	points[0] = new SplinePoint(vec2(0, 0), 90, 0.1f);
 	for (int c = 1; c < numPoints-1; c++) {
-		points[c] = new SplinePoint(vec2(float(c)/(numPoints-1), 1.0f/6), 0, 0.1f);
+		points[c] = new SplinePoint(vec2(float(c)/(numPoints-1), 0.2f), 0, 0.1f);
 	}
 	points[numPoints - 1] = new SplinePoint(vec2(1, 0), -90, 0.1f);
 }
@@ -75,14 +76,6 @@ void SplineEditor::drawSpline(const mat4 &base) {
 		}
 		Graphics::inst()->drawLine2D(base, lastPoint, points[p+1]->position);
 	}
-}
-
-void SplineEditor::setupCamera() const {
-	//ivec2 size = Graphics::inst()->getSize();
-	//Graphics::inst()->setProjection(
-	//	ortho(0.0f, 1.0f, 0.0f, float(size.y)/size.x, 0.0f, 1.0f));
-	//Graphics::inst()->setView(
-	//	lookAt(vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f)));
 }
 
 SplinePoint *SplineEditor::currentPoint() {
@@ -145,8 +138,6 @@ vector<vec2> SplineEditor::getSpline(int resolution) {
 	return spline;
 }
 
-
-
 SplineEditor::~SplineEditor() {
 	while(points.size() > 0) {
 		delete points[points.size()-1];
@@ -155,6 +146,7 @@ SplineEditor::~SplineEditor() {
 }
 
 
+//-------------- SplinePoint ----------------
 
 vec2 SplinePoint::getBeforePoint() {
 	return position - vec2(distance*cos(angle * M_PI/180.0f), distance*sin(angle * M_PI/180.0f));

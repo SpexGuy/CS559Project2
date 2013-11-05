@@ -105,7 +105,7 @@ void Rocket::replaceHead() {
 	delete head;
 
 	head = newHead->translated(vec3(0.0f, -2.0f, 0.0f))
-					->scaled(vec3(4.0f, 4.0f, 4.0f));
+					->scaled(vec3(4.0f));
 	head->initialize();
 	headMesh = newHead;
 }
