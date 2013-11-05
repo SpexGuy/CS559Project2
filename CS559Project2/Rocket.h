@@ -11,6 +11,7 @@ public:
 	 * Constructs a Rocket
 	 */
 	Rocket();
+
 	/**
 	 * Initializes the  Rocket
 	 */
@@ -22,9 +23,10 @@ public:
 	virtual void draw(const glm::mat4 &model);
 
 	/**
-	 * Takes down the rocket data from the graphics card.
+	 * Frees GL resources.
 	 */
 	virtual void takeDown();
+
 	inline SplineEditor *getEditor() {
 		return over;
 	}
@@ -42,9 +44,15 @@ public:
 	 */
 	void setDrawNormals(bool normals);
 	/**
-	 *	Replaces the Head of the rocket with a new Mesh.
+	 *	Replaces the head of the rocket with a new Mesh.
 	 */
 	void replaceHead();
+
+	/*
+	 * Replaces the head of the rocket to the oringonal sphere. 
+	 */
+	void revertHead();
+
  	~Rocket();	
 
 protected:

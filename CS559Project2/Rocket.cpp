@@ -138,3 +138,14 @@ void Rocket::setDrawNormals(bool normals)
 {
 	headMesh->setDrawNormals(normals);
 }
+
+void Rocket::revertHead()
+{
+	head->takeDown();
+	delete head;
+	Mesh* newHead = Mesh::newSphere(stacks, slices, HEAD_RADIUS, true);
+	head = newHead
+				->scaled(vec3(1.0f, HEAD_HEIGHT, 1.0f));
+	head->initialize();
+	headMesh = newHead;
+}

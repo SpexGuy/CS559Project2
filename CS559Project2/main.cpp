@@ -398,6 +398,7 @@ Globals::~Globals() {
 	delete marsAxisAngle;
 	delete rocketAngle;
 	delete orbitAngle;
+	
 }
 
 void CloseFunc() {
@@ -480,6 +481,9 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 		globals.flyCam->setAngle(180.0f);
 		globals.flyCam->setAxisAngle(90.0f);
 		globals.model->reset();
+		globals.rocketMesh->revertHead();
+		globals.exitEditMode();
+	
 		break;
 
 	case 'w':
