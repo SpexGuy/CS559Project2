@@ -114,11 +114,6 @@ void PassiveMotionFunc(int x, int y);
 
 bool Globals::initialize() {
 
-	vector<Camera*> cameras;
-	vector<Camera*> camerasRocket;
-	vector<Camera*> camerasStars;
-	vector<Camera*> camerasMars;
-
 	lastUpdateTime  = 0;
 	float marsRadius = 1.0f;
 	float marsRadScale = 0.03f;
@@ -130,11 +125,19 @@ bool Globals::initialize() {
 	proj = new PerspectiveProjection(45.0f);
 	proj->setPlanes(0.01f, 100.0f);
 
+	//Creates the models with will hold the meshes for a given Scene.
 	model = new Model();
 	modelRocket = new Model();
 	modelStars = new Model();
 	Model* modelMars = new Model();
 
+
+	const0 = new ConstantTimeFunction(0.0f);
+	const1 = new ConstantTimeFunction(1.0f);
+	yAxis = new Vec3TimeFunction(const0, const1, const0);
+
+	orbitAngle = new LinearTimeFunction(16.0f/1000.0f, 0.0f);
+	rocketAngle = new LinearTimeFunction(-13.0f/1000.0f, 0.0f);
 
 	marsTexture = new ILContainer();
 	marsMesh = Mesh::newMars(marsRadius, marsRadScale, inFile, marsTexture, true);
@@ -145,34 +148,6 @@ bool Globals::initialize() {
 					->disableDepthTest()
 					->useMVMode(MV_ROTATION);
 
-	const0 = new ConstantTimeFunction(0.0f);
-	const1 = new ConstantTimeFunction(1.0f);
-	yAxis = new Vec3TimeFunction(const0, const1, const0);
-
-	orbitAngle = new LinearTimeFunction(16.0f/1000.0f, 0.0f);
-	rocketAngle = new LinearTimeFunction(-13.0f/1000.0f, 0.0f);
-
-	camMars = ((new PointCamera()))
-		->rotated(vec3(0.0f, 0.0f, 1.0f), 30)
-		->animateRotation(model, yAxis, orbitAngle)
-		->translated(vec3(distaceRocketMars - marsRadScale - 0.01f, 0.0f, 0.0f))
-		->rotated(vec3(0.0f,0.0f,1.0f),-90.0f);
-	camMars->moveUp(-90.0f);
-	camMars->moveRight(180.0f);
-
-	cam = new SpheroidCamera();
-	cam->setRadius(marsRadius*3.0f);
-
-	camRocket = new SpheroidCamera();
-	camRocket->setRadius(rocketScale);
-
-	camStars = new SpheroidCamera();
-	camStars->setRadius(16.0f);
-
-	flyCam = new FreeFlyCamera();
-	flyCam->setPosition(vec3(0.0f, 0.0f, 3.0f));
-	flyCam->setAngle(180.0f);
-		
 	//setup decorator stack to make rocket move specially
 	/* This DSL is inspired in part by the Java DSL for Apache's
 	 * Camel project.
@@ -195,18 +170,6 @@ bool Globals::initialize() {
 					->inColor(BLUE)
 					->inMaterial(0.1f, vec4(1.0f), 40.0f);
 
-	BoundedSpheroidCamera* bsc = new BoundedSpheroidCamera(360.0f, 25.0f);
-	chaseCam = bsc					
-		->rotated(vec3(0.0f, 0.0f, 1.0f), 30)
-		//rotate the camera with the ship
-		->animateRotation(model, yAxis, orbitAngle)
-		//make it orbit
-		->translated(vec3(distaceRocketMars, 0.0f, 0.0f))
-		//make it the right size
-		->scaled(vec3(rocketScale))
-		//make the axis face out
-		->rotated(vec3(0.0f, 0.0f, 1.0f), -90.0f);
-
 	//mars must spin twice as fast since its axis is spinning in the opposite direction.
 	marsAngle = new LinearTimeFunction(12.0f/1000.0f, 0.0f);
 	marsAxisAngle = new LinearTimeFunction(-6.0f/1000.0f, 0.0f);
@@ -223,12 +186,14 @@ bool Globals::initialize() {
 					->store(marsOnly)
 					->inColor(MARS)
 					->inMaterial(0.1f, vec4(0.0f), 1.0f);
-	
+
 	light = new SpheroidLight();
 
 	light->setAngle(90);
 	light->setAxisAngle(90);
 	light->setRadius(15);	
+
+	//Building the models
 
 	model->addLight(light);
 	//the bases are at the top of decorator stacks.
@@ -247,6 +212,46 @@ bool Globals::initialize() {
 
 	modelStars->addElement(starfieldMesh);
 
+	//Building the cameras
+	camMars = ((new PointCamera()))
+		->rotated(vec3(0.0f, 0.0f, 1.0f), 30)
+		->animateRotation(model, yAxis, orbitAngle)
+		->translated(vec3(distaceRocketMars - marsRadScale - 0.01f, 0.0f, 0.0f))
+		->rotated(vec3(0.0f,0.0f,1.0f),-90.0f);
+	camMars->moveUp(-90.0f);
+	camMars->moveRight(180.0f);
+
+	cam = new SpheroidCamera();
+	cam->setRadius(marsRadius*3.0f);
+
+	camRocket = new SpheroidCamera();
+	camRocket->setRadius(rocketScale);
+
+	camStars = new SpheroidCamera();
+	camStars->setRadius(16.0f);
+
+	flyCam = new FreeFlyCamera();
+	flyCam->setPosition(vec3(0.0f, 0.0f, 3.0f));
+	flyCam->setAngle(180.0f);
+
+	BoundedSpheroidCamera* bsc = new BoundedSpheroidCamera(360.0f, 25.0f);
+	chaseCam = bsc					
+		->rotated(vec3(0.0f, 0.0f, 1.0f), 30)
+		//rotate the camera with the ship
+		->animateRotation(model, yAxis, orbitAngle)
+		//make it orbit
+		->translated(vec3(distaceRocketMars, 0.0f, 0.0f))
+		//make it the right size
+		->scaled(vec3(rocketScale))
+		//make the axis face out
+		->rotated(vec3(0.0f, 0.0f, 1.0f), -90.0f);
+
+	//Give all the camera vectors their cooresponding cameras
+	vector<Camera*> cameras;
+	vector<Camera*> camerasRocket;
+	vector<Camera*> camerasStars;
+	vector<Camera*> camerasMars;
+
 	cameras.push_back(camMars);
 	cameras.push_back(flyCam);
 	cameras.push_back(cam);
@@ -255,7 +260,8 @@ bool Globals::initialize() {
 	camerasStars.push_back(camStars);
 	camerasMars.push_back(cam);
 	
-
+	//Building the overlays
+	//Setting the hud overlays to display the associated text.
 	vector<char*> text;
 	text.push_back("Image credit: http://openuniverse.sourceforge.net/");
 	text.push_back("");
@@ -303,6 +309,7 @@ bool Globals::initialize() {
 
 	starOverlay = new HudOverlay(star);
 
+	//Setting up the Scenes
 	marsScene = new Scene(cameras, model, mainOverlay);
 	beautyRocket = new Scene(camerasRocket, modelRocket, editorOverlay);
 	starScene = new Scene(camerasStars, modelStars, starOverlay);
@@ -318,6 +325,7 @@ bool Globals::initialize() {
 	view = new View(proj, currentCamera, Scenes[0]->getModel(), Scenes[0]->getOverLay());
 
 	window = new SingleViewportWindow(view);
+
 	wireframe = false;
 	if (!window->initialize("Mars"))
 		return false;
@@ -368,6 +376,9 @@ void Globals::exitEditMode() {
 	globals.rocketMesh->setEditMode(false);
 }
 
+/**
+ * Changes the active Scene to the marsOnlyScene.
+ */
 void Globals:: boringMarsMode()
 {
 	view->setCamera(marsOnlyScene->getCamera());
@@ -377,6 +388,11 @@ void Globals:: boringMarsMode()
 	currentCamera = marsOnlyScene->getCamera();
 }
 
+/**
+ * Changes the active camera, if the active camera is 
+ * the last camera in the scence it cycles to the next scene
+ * and sets its first camera as the active one.
+ */
 void Globals::changeCamera()
 {
 	if(Scenes[currentScene]->endOfCameraList())
