@@ -50,7 +50,13 @@ void Scene::resetCameraIndex()
 {
 	selectCam =0;
 }
+
 void Scene::setOverlay(ViewOverlay *overlay)
 {
 	this->overlay = overlay;		
+}
+
+Scene::~Scene()
+{
+	
 }

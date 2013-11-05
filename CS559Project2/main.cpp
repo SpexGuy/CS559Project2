@@ -54,6 +54,7 @@ public:
 	Model *model;
 	Model *modelRocket;
 	Model *modelStars;
+	Model *modelMars;
 
 	Mesh *marsMesh;
 	PointMesh *starfieldMesh;
@@ -63,6 +64,7 @@ public:
 	Drawable *rocket;
 	Drawable *centeredRocket;
 	Drawable *mars;
+	Drawable *marsOnly;
 
 	ILContainer *marsTexture;
 
@@ -75,15 +77,12 @@ public:
 	TimeFunction<float> *marsAngle;
 	TimeFunction<float> *marsAxisAngle;
 
-	vector<Camera*> cameras;
-	vector<Camera*> camerasRocket;
-	vector<Camera*> camerasStars;
-
 	vector<Scene*> Scenes;
 
 	Scene *beautyRocket;
 	Scene *marsScene;
 	Scene *starScene;
+	Scene *marsOnlyScene;
 
 	int lastUpdateTime;
 	int currentScene;
@@ -98,6 +97,8 @@ public:
 	void exitEditMode();
 	void changeCamera();
 	void takeDown();
+	void boringMarsMode();
+
 	virtual ~Globals();
 } globals;
 
@@ -112,6 +113,12 @@ void TimerFunc(int value);
 void PassiveMotionFunc(int x, int y);
 
 bool Globals::initialize() {
+
+	vector<Camera*> cameras;
+	vector<Camera*> camerasRocket;
+	vector<Camera*> camerasStars;
+	vector<Camera*> camerasMars;
+
 	lastUpdateTime  = 0;
 	float marsRadius = 1.0f;
 	float marsRadScale = 0.03f;
@@ -126,6 +133,8 @@ bool Globals::initialize() {
 	model = new Model();
 	modelRocket = new Model();
 	modelStars = new Model();
+	Model* modelMars = new Model();
+
 
 	marsTexture = new ILContainer();
 	marsMesh = Mesh::newMars(marsRadius, marsRadScale, inFile, marsTexture, true);
@@ -206,10 +215,12 @@ bool Globals::initialize() {
 	mars = marsMesh
 					//make mars' axis spin
 					->animateRotation(model, yAxis, marsAxisAngle)
+					//store regular axis spinning mars
 					//tilt mars' axis off of y
 					->rotated(vec3(1.0f, 0.0f, 0.0f), 15.0f)
 					//make mars spin on its axis
 					->animateRotation(model, yAxis, marsAngle)
+					->store(marsOnly)
 					->inColor(MARS)
 					->inMaterial(0.1f, vec4(0.0f), 1.0f);
 	
@@ -223,8 +234,13 @@ bool Globals::initialize() {
 	//the bases are at the top of decorator stacks.
 	model->addElement(rocket);
 	model->addElement(mars);
+
 	//this pushes the starfield to the beginning of the model, ensuring that it is drawn behind everything else despite the depth buffer.
 	model->addLight(starfield);
+
+	modelMars->addLight(light);
+	modelMars->addElement(marsOnly);
+	modelMars->addLight(starfield);
 
 	modelRocket->addLight(light);
 	modelRocket->addElement(centeredRocket);
@@ -237,6 +253,8 @@ bool Globals::initialize() {
 	cameras.push_back(chaseCam);
 	camerasRocket.push_back(camRocket);
 	camerasStars.push_back(camStars);
+	camerasMars.push_back(cam);
+	
 
 	vector<char*> text;
 	text.push_back("Image credit: http://openuniverse.sourceforge.net/");
@@ -246,8 +264,8 @@ bool Globals::initialize() {
 	text.push_back("W - wireframe");
 	text.push_back("P - Pause");
 	text.push_back("N - Normals");
-	text.push_back("F1 - Cycle Camera/Scene");
 	text.push_back("F11 - Full Screen");
+	text.push_back("F1 - Cycle Camera/Scene");
 	text.push_back("");
 	text.push_back("MARS MODE");
 
@@ -256,8 +274,8 @@ bool Globals::initialize() {
 	star.push_back("W - Wireframe");
 	star.push_back("P - Pause");
 	star.push_back("N - Normals");
-	star.push_back("F1 - Cycle Camera/Scene");
 	star.push_back("F11 - Flull Screen");
+	star.push_back("F1 - Cycle Camera/Scene");
 	star.push_back("");
 	star.push_back("STAR MODE");
 	
@@ -274,8 +292,8 @@ bool Globals::initialize() {
 	edit.push_back("W - Wireframe");
 	edit.push_back("P - Pause");
 	edit.push_back("N - Normals");
-	edit.push_back("F1 - Cycle Camera/Scene");
 	edit.push_back("F11 - Flull Screen");
+	edit.push_back("F1 - Cycle Camera/Scene");
 	edit.push_back("");
 	edit.push_back("EDIT MODE");
 
@@ -288,13 +306,16 @@ bool Globals::initialize() {
 	marsScene = new Scene(cameras, model, mainOverlay);
 	beautyRocket = new Scene(camerasRocket, modelRocket, editorOverlay);
 	starScene = new Scene(camerasStars, modelStars, starOverlay);
-	Scenes.push_back(marsScene);
+	marsOnlyScene = new Scene(camerasMars, modelMars, mainOverlay);
+
 	Scenes.push_back(beautyRocket);
+	Scenes.push_back(marsScene);
 	Scenes.push_back(starScene);
+	
 	currentScene = 0;
 	currentCamera = Scenes[0]->getCamera();
 	
-	view = new View(proj, currentCamera, model, mainOverlay);
+	view = new View(proj, currentCamera, Scenes[0]->getModel(), Scenes[0]->getOverLay());
 
 	window = new SingleViewportWindow(view);
 	wireframe = false;
@@ -347,6 +368,15 @@ void Globals::exitEditMode() {
 	globals.rocketMesh->setEditMode(false);
 }
 
+void Globals:: boringMarsMode()
+{
+	view->setCamera(marsOnlyScene->getCamera());
+	view->setOverlay(marsOnlyScene->getOverLay());
+	view->setModel(marsOnlyScene->getModel());
+
+	currentCamera = marsOnlyScene->getCamera();
+}
+
 void Globals::changeCamera()
 {
 	if(Scenes[currentScene]->endOfCameraList())
@@ -376,16 +406,31 @@ void Globals::takeDown() {
 }
 
 Globals::~Globals() {
-	delete proj;
-	delete flyCam;
-	delete camMars;
-	delete model;
+
+	delete mainOverlay;
+	delete editorOverlay;
+	delete starOverlay;
+
 	delete view;
 	delete window;
-	
-	delete starfield;
+	 
+	delete proj;
 
+	delete flyCam;
+	delete cam;
+	delete camMars;
+	delete camRocket;
+	delete camStars;
+	delete chaseCam;
+
+	delete model;
+	delete modelRocket;
+	delete modelStars;
+	delete modelMars;
+
+	delete starfield;
 	delete rocket;
+
 	delete mars;
 
 	delete marsTexture;
@@ -398,7 +443,12 @@ Globals::~Globals() {
 	delete marsAxisAngle;
 	delete rocketAngle;
 	delete orbitAngle;
-	
+
+	delete beautyRocket;
+	delete marsScene;
+	delete starScene;
+	delete marsOnlyScene;
+
 }
 
 void CloseFunc() {
@@ -537,6 +587,10 @@ void SpecialFunc(int c, int x, int y) {
 	switch (c) {
 		case GLUT_KEY_F1:
 			globals.changeCamera();
+			break;
+
+		case GLUT_KEY_F2:
+			globals.boringMarsMode();
 			break;
 
 		case GLUT_KEY_CTRL_R:
