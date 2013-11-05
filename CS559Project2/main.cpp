@@ -476,11 +476,20 @@ void CloseFunc() {
  * on StackOverflow.com:
  * http://stackoverflow.com/questions/728049/glutpassivemotionfunc-and-glutwarpmousepointer
  */
-int lastX = 150;
-int lastY = 150;
+int lastX = 512;
+int lastY = 256;
 void PassiveMotionFunc(int x, int y) {
+	//short-circuit return if not in free-fly mode
+	if(globals.Scenes[globals.currentScene] == globals.marsScene
+			&& globals.marsScene->getCurrentCameraIndex() == 1)
+		return;
+
 	int deltaX = x - lastX;
 	int deltaY = y - lastY;
+
+	//short-circuit return if no movement
+	if (deltaX == 0 && deltaY == 0)
+		return;
 
 	lastX = x;
 	lastY = y;
@@ -489,26 +498,23 @@ void PassiveMotionFunc(int x, int y) {
 	int centerx = size.x/2;
 	int centery = size.y/2;
 	
-	if(!globals.Scenes[0]->getCurrentCameraIndex() == 1 || (deltaX == 0 && deltaY == 0) ) return;
-
 	globals.flyCam->addAngle(-deltaX/10.0f);
 	globals.flyCam->addAxisAngle(deltaY/10.0f);
 
-	if(globals.currentScene == 0 && globals.Scenes[globals.currentScene]->getCurrentCameraIndex() == 1)
-	{
-		if(x <= 10 || (y) <= 10 || x >= size.x-10 || y >= size.y-10) {
-			lastX = centerx;
-			lastY = centery;
-			glutWarpPointer( lastX, lastY );
-		}
+	//warping the pointer triggers PassiveMotionFunc, so should be done sparingly.
+	//we choose to do it when the cursor is within 10 pixels of the edge of the screen.
+	if(x <= 10 || (y) <= 10 || x >= size.x-10 || y >= size.y-10) {
+		lastX = centerx;
+		lastY = centery;
+		glutWarpPointer( lastX, lastY );
 	}
-	
 }
 
 void KeyboardFunc(unsigned char c, int x, int y) {
 	bool normals;
 
 	if (globals.rocketMesh->getEditMode()) {
+		//spline editor controls
 		switch(c) {
 		case '2':
 			globals.rocketMesh->getEditor()->moveHorizontal(-0.005f);
@@ -540,8 +546,8 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 		}
 	}
 
-	switch (c)
-	{
+	switch (c) {
+	//reset animations
 	case 'r':
 		globals.flyCam->setPosition(vec3(0.0f, 0.0f, 3.0f));
 		globals.flyCam->setAngle(180.0f);
@@ -549,26 +555,30 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 		globals.model->reset();
 		globals.rocketMesh->revertHead();
 		globals.exitEditMode();
-	
 		break;
 
+	//toggle wireframe
 	case 'w':
 		globals.wireframe = !globals.wireframe;
 		glPolygonMode(GL_FRONT_AND_BACK, globals.wireframe ? GL_LINE : GL_FILL);
 		break;
 
+	//toggle normals
 	case 'n':
 		normals = !globals.marsMesh->isDrawingNormals();
 		globals.rocketMesh->setDrawNormals(normals);
 		globals.marsMesh->setDrawNormals(normals);
 		break;
 
+	//toggle pause
 	case 'p':
 		if (globals.model->isPaused())
 			globals.model->play();
 		else
 			globals.model->pause();
 		break;
+
+	//light controls
 	case ';':
 		globals.light->addAngle(1);
 		break;
@@ -582,15 +592,16 @@ void KeyboardFunc(unsigned char c, int x, int y) {
 		globals.light->addAxisAngle(1);
 		break;
 
+	//spline editor controls
 	case '.':
 		globals.exitEditMode();
 		break;
-
 	case '0':
 		globals.enterEditMode();
 		globals.rocketMesh->replaceHead();
 		break;
 
+	//quit
 	case 'x':
 	case 27:
 		glutLeaveMainLoop();
@@ -609,6 +620,11 @@ void SpecialFunc(int c, int x, int y) {
 			globals.boringMarsMode();
 			break;
 
+		case GLUT_KEY_F11:
+			globals.window->toggleFullscreen();
+			break;
+
+		//------ Camera Controls ------
 		case GLUT_KEY_CTRL_R:
 			globals.currentCamera ->moveForward(1.0f);
 			break;
@@ -620,17 +636,12 @@ void SpecialFunc(int c, int x, int y) {
 			break;
 		case GLUT_KEY_RIGHT:
 			globals.currentCamera ->moveRight(1.0f);
-
 			break;
 		case GLUT_KEY_UP:
 			globals.currentCamera ->moveUp(1.0f);
-
 			break;
 		case GLUT_KEY_DOWN:
 			globals.currentCamera ->moveUp(-1.0f);
-			break;
-		case GLUT_KEY_F11:
-			globals.window->toggleFullscreen();
 			break;
 		case GLUT_KEY_PAGE_UP:
 			globals.proj->addFov(1.0f);
@@ -643,14 +654,20 @@ void SpecialFunc(int c, int x, int y) {
 
 void TimerFunc(int value) {
 	if (!globals.window->isClosed()) {
+		//update elapsed time
 		int time = glutGet(GLUT_ELAPSED_TIME);
+		//keep state in Graphics
 		Graphics::inst()->setTime(time);
+		//update animations
 		globals.model->update(time);
+		//request next call
 		glutTimerFunc(globals.period, TimerFunc, value);
+		//redraw window
 		globals.window->update();
 	}
 }
 
+//boilerplate global functions to pass directly to window
 void windowReshape(int x, int y) {
 	globals.window->reshape(x, y);
 }
@@ -663,24 +680,28 @@ void windowDisplay() {
 }
 
 int main(int argc, char * argv[]) {
+	//initialize libraries
 	glutInit(&argc, argv);
 	ilInit();
 	iluInit();
 	ilutInit();
-	if( argc < 2 )
-	{
-		globals.inFile = "mars_low_rez.txt";
-	}
-	else
-	{
+
+	//parse arguments
+	if( argc < 2 ) {
+		globals.inFile = "mars_hi_rez.txt";
+	} else {
 		globals.inFile = argv[1];
 	}
+
+	//init global arguments
 	glutInitWindowSize(1024, 512);
 	glutInitWindowPosition(0, 0);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH);
 
+	//init globals
 	if (!globals.initialize())
 		return -1;
 
+	//start program
 	glutMainLoop();
 }
