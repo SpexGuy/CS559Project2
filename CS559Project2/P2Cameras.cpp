@@ -63,8 +63,7 @@ void PointCamera::moveUp(float offset){
 
 void FreeFlyCamera::moveForward(float offset) {
 	float trueOffset = offset * 0.05f;
-	position.x += trueOffset * sin(angle * ((float)M_PI) / 180.0f);
-	position.z += trueOffset * cos(angle * ((float)M_PI) / 180.0f);
+	position.y += trueOffset;
 }
 
 void FreeFlyCamera::moveRight(float offset) {
@@ -75,7 +74,8 @@ void FreeFlyCamera::moveRight(float offset) {
 
 void FreeFlyCamera::moveUp(float offset) {
 	float trueOffset = offset * 0.05f;
-	position.y += trueOffset;
+	position.x += trueOffset * sin(angle * ((float)M_PI) / 180.0f);
+	position.z += trueOffset * cos(angle * ((float)M_PI) / 180.0f);
 }
 
 void FreeFlyCamera::setPosition(vec3 position) {
