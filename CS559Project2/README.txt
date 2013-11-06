@@ -29,9 +29,14 @@ Reset function: 'r' - resets the animations and rocket,
 			does not change the cameras.
 
 Code Architecture:
-Decorators <Design Patterns: Elements of Reusable Object-Oriented Software>
+Our codebase is extremely flexible due to our extensive use of Decorators [GOF].
+We effectively build an executable stack on top of each Mesh, which is used
+to alter the modelview matrix on its way down, as well as alter global state
+variables.  The Graphics class is a Singleton [GOF], and accumulates this global
+state which it uses to initialize the shaders.
 
-//Martin edit this part plz
+[GOF] <Design Patterns: Elements of Reusable Object-Oriented Software, Gamma et.al.>
+
 
 Pause function: 'p' - pauses the animations.
 
@@ -44,4 +49,4 @@ ADS lighting - Using phong illumination at each fragment.
 SPLINE EDITOR:
 The head of the rocket uses a spine to create a surface of revolution that will replace
 the head. There is five movable points, the middle points can be rotated, moved, and scaled.
-The top and bottom points can be rotated. 		   
+The top and bottom points can be scaled.		   
