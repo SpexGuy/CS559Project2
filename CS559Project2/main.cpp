@@ -89,7 +89,6 @@ public:
 
 	int period;
 	bool wireframe;
-	bool flyMode;
 
 	Globals();
 	bool initialize();
@@ -480,8 +479,9 @@ int lastX = 512;
 int lastY = 256;
 void PassiveMotionFunc(int x, int y) {
 	//short-circuit return if not in free-fly mode
+	cout<< globals.marsScene->getCurrentCameraIndex() << endl;
 	if(globals.Scenes[globals.currentScene] == globals.marsScene
-			&& globals.marsScene->getCurrentCameraIndex() == 1)
+			&& !globals.marsScene->getCurrentCameraIndex() == 1)
 		return;
 
 	int deltaX = x - lastX;
