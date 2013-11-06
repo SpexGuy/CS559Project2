@@ -26,8 +26,14 @@ Graphics::Graphics() {
 	this->view = mat4(1.0f);
 	this->light = vec3(0.0f);
 	this->size = ivec2(1);
-	this->color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	this->color = BLACK;
+	this->specularColor = WHITE;
+	this->ambient = 1;
+	this->diffuse = 0;
+	this->shininess = 1;
 	this->modelviewMode = MV_FULL;
+	this->texIndex = 0;
+	this->time = 0;
 
 	circleCH = circleVH = 
 	squareCH = squareVH =
@@ -238,7 +244,7 @@ void Graphics::setupShader(const Shader *s, const mat4 &model) const {
 		value_ptr(modelview), value_ptr(mvp), value_ptr(nm),
 		value_ptr(light_pos), value_ptr(color),
 		value_ptr(vec3(ambient)), value_ptr(vec3(1-ambient)),
-		value_ptr(specularColor), shininess);
+		value_ptr(specularColor), shininess, texIndex);
 
 	checkError("Graphics::setupShader - after commonSetup");
 }

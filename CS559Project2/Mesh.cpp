@@ -382,7 +382,7 @@ void TexturedMesh::draw(const mat4 &model) {
 	mat4 m = model;
 	transform(m);
 
-	texture->bind();
+	Graphics::inst()->setTexture(texture->index);
 	Graphics::inst()->drawTriangles(trigs, vertex_array_handle, textureShader, m);
 
 	if(drawNormals) {

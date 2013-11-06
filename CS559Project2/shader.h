@@ -26,7 +26,8 @@ public:
 	virtual void customSetup() const;
 	void commonSetup(const int time, const GLint *size, const GLfloat *projection, const GLfloat *modelview, const GLfloat *mvp, 
 					const GLfloat *nm, const GLfloat *light, const GLfloat *color,
-					const GLfloat *ambient, const GLfloat *diffuse, const GLfloat *specular, const float shiny) const;
+					const GLfloat *ambient, const GLfloat *diffuse, const GLfloat *specular,
+					const float shiny, const int texIndex) const;
 
 	std::stringstream getShaderLog(GLuint shader_id);
 
@@ -45,6 +46,7 @@ protected:
 	GLuint diffuse_handle;
 	GLuint specular_handle;
 	GLuint shiny_handle;
+	GLuint texture_handle;
 
 	GLuint vertex_shader_id;
 	GLuint fragment_shader_id;

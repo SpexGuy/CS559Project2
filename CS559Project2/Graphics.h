@@ -36,6 +36,8 @@ private:
 	
 	int modelviewMode;
 
+	int texIndex;
+
 	int time;
 
 	Shader *solidShader;
@@ -159,6 +161,9 @@ public:
 	inline void setTime(int time) {
 		this->time = time;
 	}
+	inline void setTexture(int texIndex) {
+		this->texIndex = texIndex;
+	}
 
 	inline glm::mat4 getProjection() const {
 		return projection;
@@ -192,5 +197,8 @@ public:
 	}
 	inline int getTime() const {
 		return time;
+	}
+	inline int getTexture() const {
+		return texIndex;
 	}
 };

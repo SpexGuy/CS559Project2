@@ -35,44 +35,48 @@ Shader::Shader()
 
 void Shader::commonSetup(const int time, const GLint * size, const GLfloat * projection, const GLfloat * modelview,
 						 const GLfloat * mvp, const GLfloat * nm, const GLfloat * light, const GLfloat * color,
-						 const GLfloat *ambient, const GLfloat *diffuse, const GLfloat *specular, const float shiny) const
+						 const GLfloat *ambient, const GLfloat *diffuse, const GLfloat *specular, const float shiny,
+						 const int texIndex) const
 {
 	if (this->time_handle != BAD_GL_VALUE)
 		glUniform1d(this->time_handle, time);
-	this->GLReturnedError("Top::Draw - after time_handle");
+	this->GLReturnedError("Shader::commonSetup - after time_handle");
 	if (this->size_handle != BAD_GL_VALUE)
 		glUniform2iv(this->size_handle, 1, size);
-	this->GLReturnedError("Top::Draw - after size_handle");
+	this->GLReturnedError("Shader::commonSetup - after size_handle");
 	if (this->projection_matrix_handle != BAD_GL_VALUE)
 		glUniformMatrix4fv(this->projection_matrix_handle, 1, GL_FALSE, projection);
-	this->GLReturnedError("Top::Draw - after projection_matrix_handle");
+	this->GLReturnedError("Shader::commonSetup - after projection_matrix_handle");
 	if (this->modelview_matrix_handle != BAD_GL_VALUE)
 		glUniformMatrix4fv(this->modelview_matrix_handle, 1, GL_FALSE, modelview);
-	this->GLReturnedError("Top::Draw - after modelview_matrix_handle");
+	this->GLReturnedError("Shader::commonSetup - after modelview_matrix_handle");
 	if (this->mvp_handle != BAD_GL_VALUE)
 		glUniformMatrix4fv(this->mvp_handle, 1, GL_FALSE, mvp);
-	this->GLReturnedError("Top::Draw - after mvp_handle");
+	this->GLReturnedError("Shader::commonSetup - after mvp_handle");
 	if (this->normal_matrix_handle != BAD_GL_VALUE)
 		glUniformMatrix3fv(this->normal_matrix_handle, 1, GL_FALSE, nm);
-	this->GLReturnedError("Top::Draw - after normal_matrix_handle");
+	this->GLReturnedError("Shader::commonSetup - after normal_matrix_handle");
 	if (this->light_handle != BAD_GL_VALUE)
 		glUniform3fv(this->light_handle, 1, light);
-	this->GLReturnedError("Top::Draw - after light_handle");
+	this->GLReturnedError("Shader::commonSetup - after light_handle");
 	if (this->color_handle != BAD_GL_VALUE)
 		glUniform4fv(this->color_handle, 1, color);
-	this->GLReturnedError("Top::Draw - after color_handle");
+	this->GLReturnedError("Shader::commonSetup - after color_handle");
 	if (this->ambient_handle != BAD_GL_VALUE)
 		glUniform3fv(this->ambient_handle, 1, ambient);
-	this->GLReturnedError("Top::Draw - after ambient_handle");
+	this->GLReturnedError("Shader::commonSetup - after ambient_handle");
 	if (this->diffuse_handle != BAD_GL_VALUE)
 		glUniform3fv(this->diffuse_handle, 1, diffuse);
-	this->GLReturnedError("Top::Draw - after diffuse_handle");
+	this->GLReturnedError("Shader::commonSetup - after diffuse_handle");
 	if (this->specular_handle != BAD_GL_VALUE)
 		glUniform4fv(this->specular_handle, 1, specular);
-	this->GLReturnedError("Top::Draw - after specular_handle");
+	this->GLReturnedError("Shader::commonSetup - after specular_handle");
 	if (this->shiny_handle != BAD_GL_VALUE)
 		glUniform1f(this->shiny_handle, shiny);
-	this->GLReturnedError("Top::Draw - after shiny_handle");
+	this->GLReturnedError("Shader::commonSetup - after shiny_handle");
+	if (this->texture_handle != BAD_GL_VALUE)
+		glUniform1i(this->texture_handle, texIndex);
+	this->GLReturnedError("Shader::commonSetup - after texture_handle");
 
 }
 
@@ -139,6 +143,7 @@ bool Shader::initialize(char * vertex_shader_file, char * fragment_shader_file)
 	this->diffuse_handle = glGetUniformLocation(this->program_id, (const GLchar *) "diffuseScale");
 	this->specular_handle = glGetUniformLocation(this->program_id, (const GLchar *) "specularColor");
 	this->shiny_handle = glGetUniformLocation(this->program_id, (const GLchar *) "shininess");
+	this->texture_handle = glGetUniformLocation(this->program_id, (const GLchar *) "textureIndex");
 
 	glUseProgram(0);
 

@@ -82,8 +82,7 @@ bool Rocket::initialize()
 	return true;
 }
 
-void Rocket::draw(const mat4 &model)
-{
+void Rocket::draw(const mat4 &model) {
 	mat4 m = model;
 	transform(m);
 
